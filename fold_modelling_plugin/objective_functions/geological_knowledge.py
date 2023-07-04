@@ -7,16 +7,6 @@ from knowledge_constraints.splot_processor import SPlotProcessor
 from knowledge_constraints._helper import *
 from typing import Union, Dict, List
 
-s0_constraints = dict(
-    {
-        'tightness': {'lb': 30, 'ub': 60, 'mu': 45, 'sigma': 5, 'w': 10.},
-        'asymmetry': {'lb': -0.5, 'ub': 0.5, 'mu': 0, 'sigma': 0.01, 'w': 5.},
-        'fold_wavelength': {'lb': 12e3, 'ub': 18e3, 'mu': 14.5e3, 'sigma': 2000, 'w': 1.},
-        'axial_traces': {'mu': -312., 'sigma': 312/4},
-        'axial_traces': {'mu': -62., 'sigma': 62/4},
-        'axial_traces': {'mu': 187., 'sigma': 187/4},
-        'axial_traces': {'mu': 437., 'sigma': 437/4},
-    })
 
 def check_fourier_parameters(theta):
     if not isinstance(theta, np.ndarray):
