@@ -2,7 +2,7 @@ from modified_loopstructural.extra_utils import *
 import numpy as np
 from scipy.optimize import NonlinearConstraint, BFGS
 from LoopStructural.modelling.features.fold import fourier_series
-from uncertainty_quantification.fold_uncertainty import *
+# from uncertainty_quantification.fold_uncertainty import *
 from knowledge_constraints.splot_processor import SPlotProcessor
 from knowledge_constraints._helper import *
 from typing import Union, Dict, List
@@ -30,7 +30,7 @@ class GeologicalKnowledge(SPlotProcessor):
         x : np.ndarray
             The values of the fold frame coordinates (0 or 1) used to calculate the fitted fold rotation angle curve.
 
-        constraints : Dict[str, Any]
+        constraints : Dict[str, float]
             The constraints for the geological knowledge.
             The constraints dictionary should have the following structure:
             dict(
