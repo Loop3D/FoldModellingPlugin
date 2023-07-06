@@ -6,8 +6,8 @@ def is_axial_plane_compatible(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     Calculate the angle difference between the predicted bedding and the observed one.
 
     This is an objective function that verifies if the predicted and observed bedding or folded foliation are
-    geometrically compatible. If the angle is close to 0 degrees, the axial plane of the predicted folded foliation
-    is representative of the observed folded foliation.
+    geometrically compatible. If the sum of the calculated angles is close to 0 degrees, the axial plane of the
+    predicted folded foliation is representative of the axial surface of observed folded foliation.
 
     Parameters
     ----------
@@ -37,4 +37,6 @@ def is_axial_plane_compatible(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     # Calculate the angle between v1 and v2
     angle_difference = np.arccos(dot_product)
 
-    return angle_difference
+    objective_func = angle_difference.sum()
+
+    return objective_func

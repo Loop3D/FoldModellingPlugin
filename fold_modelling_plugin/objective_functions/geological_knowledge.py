@@ -15,13 +15,15 @@ def check_fourier_parameters(theta):
         raise ValueError("`theta` should have at least 4 Fourier series parameters.")
 
 
-class GeologicalKnowledge(SPlotProcessor):
+class GeologicalKnowledgeFunctions(SPlotProcessor):
     """
     Base class for geological knowledge objective functions
 
     """
 
     def __init__(self, x: np.ndarray, constraints: Dict[str, float]):
+
+        # TODO add attribute to use any custom function otherwise use gaussian likelihood
         """
         Initialize the GeologicalKnowledgeConstraints class.
 
@@ -45,6 +47,7 @@ class GeologicalKnowledge(SPlotProcessor):
                 })
                 lb and ub are the upper and lower bounds of the constraints and are used only for a restricted
                 optimisation mode.
+                #TODO Add initialisation check for dictionary
 
         """
         # Initialize the x values, constraints, and coefficient
@@ -61,6 +64,9 @@ class GeologicalKnowledge(SPlotProcessor):
         # Define the intercept function and splot function
         self.intercept_function = fourier_series_x_intercepts
         self.splot_function = fourier_series
+
+    def axial_plane_objective_function(self):
+        pass
 
     def axial_trace_objective_function(self, theta: np.ndarray) -> Union[int, float]:
         """
