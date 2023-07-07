@@ -1,5 +1,5 @@
 import numpy as np
-
+from fold_modelling_plugin.input.input_data_checker import CheckInputData
 
 class FoldOptimiser:
     """
@@ -28,6 +28,12 @@ class FoldOptimiser:
         self.bounding_box = bounding_box
         self.opt_type = opt_type
         self.knowledge_constraints = knowledge_constraints
+
+    def prepare_knowledge_constraints(self):
+        """
+        Prepare the knowledge constraints data
+        """
+        pass
 
     def setup_fourier_optimisation(self):
         """
