@@ -95,8 +95,8 @@ class CheckInputData:
                 raise ValueError("Knowledge constraints must have the following format for each key: "
                                  "mu, sigma, w.")
             else:
-                for main_key in knowledge_constraints:
-                    if not all(key in knowledge_constraints[main_key] for key in ['mu', 'sigma', 'w']):
+                for main_key in self.knowledge_constraints:
+                    if not all(key in self.knowledge_constraints[main_key] for key in ['mu', 'sigma', 'w']):
                         raise ValueError("Knowledge constraints must have the following format for each key: "
                                          "mu, sigma, w.")
 
