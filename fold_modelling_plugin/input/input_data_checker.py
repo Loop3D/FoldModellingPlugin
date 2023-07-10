@@ -46,15 +46,6 @@ class CheckInputData:
         either strike, dip, or gx, gy, gz
         """
         # # check if the foliation data is a pandas dataframe
-        # if not isinstance(self.folded_foliation_data, pd.DataFrame):
-        #     raise TypeError("Folded foliation data must be a pandas dataframe.")
-        # # check if the foliation data has  X, Y, Z, feature_name columns
-        # if not all(col in self.folded_foliation_data.columns for col in ['X', 'Y', 'Z', 'feature_name']):
-        #     raise ValueError("Folded foliation data must have the columns: X, Y, Z, feature_name.")
-        # # check if the foliation data has either strike, dip or gx, gy, gz columns
-        # if not all(col in self.folded_foliation_data.columns for col in ['strike', 'dip']) or \
-        #         not all(col in self.folded_foliation_data.columns for col in ['gx', 'gy', 'gz']):
-        #     raise ValueError("Folded foliation data must have either strike, dip or gx, gy, gz columns.")
         if not isinstance(self.folded_foliation_data, pd.DataFrame):
             raise TypeError("Foliation data must be a pandas DataFrame.")
         required_columns = ['X', 'Y', 'Z', 'feature_name']
@@ -64,7 +55,6 @@ class CheckInputData:
                 all(column in self.folded_foliation_data.columns for column in ['gx', 'gy', 'gz'])):
             raise ValueError("Foliation data must have either strike, dip or gx, gy, gz columns.")
 
-        return True
 
     def check_knowledge_constraints(self):
         """
@@ -112,13 +102,17 @@ class CheckInputData:
         if not len(self.bounding_box[0]) == 3 or not len(self.bounding_box[1]) == 3:
             raise ValueError("Bounding box must have the following format: [[minX, maxX, minY], [maxY, minZ, maxZ]]")
 
-    # write a function that checks all the input data for the optimisation
+
+    # write a function that checks all the input data
     def check_input_data(self):
         """
         Check the input data for the optimisation
         """
-        self.check_foliation_data()
-        self.check_knowledge_constraints()
         self.check_bounding_box()
+        self.check_foliation_data()
+        if self.knowledge_constraints is not None:
+            self.check_knowledge_constraints()
 
-# write test function for the class CheckInputData in the file test_input_data_checker.py in the folder tests
+        else:
+            pass
+
