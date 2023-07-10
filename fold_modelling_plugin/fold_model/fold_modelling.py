@@ -1,4 +1,4 @@
-from knowledge_constraints._helper import *
+# from knowledge_constraints._helper import *
 from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
 from knowledge_constraints.splot_processor import SPlotProcessor
 from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
@@ -11,31 +11,45 @@ from geological_sampler.sampling_methods import *
 from uncertainty_quantification.fold_uncertainty import *
 import numpy as np
 import pandas as pd
-
+from fold_modelling_plugin._helper import *
+from fold_modelling_plugin.input.input_data_processor import InputDataProcessor
 
 
 class FoldModel:
 
-    def __init__(self, bounding_box):
+    def __init__(self, data, bounding_box):
 
+        data_processor = InputDataProcessor(data, bounding_box)
+        self.data = data_processor.process_data()
         self.bounding_box = bounding_box
         self.model = None
+        self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
+        self.points = self.data[['X', 'Y', 'Z']].to_numpy()  # coordinates of the data points
+
     def initialise_model(self):
 
         self.model = GeologicalModel(self.bounding_box[0, :],
                                      self.bounding_box[1, :])
 
     def process_data(self, axial_normal):
+        axial_normal /= np.linalg.norm(axial_normal)  # normalise axial normal
+        dgx = np.tile(axial_normal, (len(self.points), 1))
+        name = 's1'
+        s1_dict = create_gradient_dict(x=self.points[:, 0],
+                                       y=self.points[:, 1],
+                                       z=self.points[:, 2],
+                                       nx=dgx[:, 0],
+                                       ny=dgx[:, 1],
+                                       nz=dgx[:, 2],
+                                       feature_name=name, coord=0)
+        dataset = pd.DataFrame()
+        dataset = dataset.append(pd.DataFrame
+                                 (s1_dict, columns=['X', 'Y', 'Z', 'gx', 'gy',
+                                                    'gz', 'feature_name', 'coord']))
 
-        # d = s1_data.loc[s1_data.feature_name == 'STSC'].copy()
-        # self.points = self.model.rescale(d[['X', 'Y', 'Z']].to_numpy())
-        # self.points = self.model.rescale(s1_data[['X', 'Y', 'Z']].to_numpy())
-        # self.model_initialisation()
-        # self.coords = self.model.data[['X', 'Y', 'Z']].to_numpy()
-        assert len(self.points) == len(self.orientation_data), "coordinates must have the same length as data"
+        assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
 
-        data = make_dataset_3(self.orientation_data, self.points, name='s0')
-        dataset = make_dataset_2(self.points, axial_normal, coord=0)
+        data = make_dataset_3(self.data, self.points, name='s0')
         y = rotate_vector(axial_normal, np.pi / 2, dimension=3)
         y_coord = make_dataset_2(self.points, y, coord=1)
         # self.model.data = self.model.data.append(dataset)
@@ -229,4 +243,3 @@ class FoldModel:
         print(predicted_bedding)
 
         return predicted_bedding
-
