@@ -6,6 +6,7 @@ from LoopStructural.modelling.features.fold import fourier_series
 from knowledge_constraints.splot_processor import SPlotProcessor
 from knowledge_constraints._helper import *
 from typing import Union, Dict, List
+import VonMisesFisher
 
 
 def check_fourier_parameters(theta):
@@ -55,8 +56,9 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         self.constraints = constraints
 
         # Define the constraint names
-        self.constraint_names = ['asymmetry', 'tightness', 'fold_wavelength', 'axial_traces', 'hinge_angle',
-                                 'axis_wavelength']
+        self.constraint_names = ['asymmetry', 'tightness', 'fold_wavelength',
+                                 'axial_traces', 'hinge_angle',
+                                 'axis_wavelength', 'axial_surface']
 
         # Initialize the constraint function map
         self.constraint_function_map = None
@@ -65,8 +67,47 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         self.intercept_function = fourier_series_x_intercepts
         self.splot_function = fourier_series
 
-    def axial_plane_objective_function(self):
-        pass
+    def axial_surface_objective_function(self, x: np.ndarray) -> Union[int, float]:
+        """
+        Objective function for the axial surface.
+        This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            the unit vector that represents the axial surface.
+            This is evaluated every iteration in the optimisation process
+
+        Returns
+        -------
+        Union[int, float]
+            The logpdf value from the VonMisesFisher distribution.
+
+         Raises
+        ------
+        KeyError
+        If the required keys are not found in the constraints dictionary.
+
+        """
+        # Check if the required keys exist in the constraints dictionary
+        if 'axial_surface' not in self.constraints:
+            raise KeyError("'axial_surface' key not found in constraints dictionary.")
+        if 'mu' not in self.constraints['axial_surface']:
+            raise KeyError("'mu' key not found in 'axial_surface' dictionary.")
+        if 'kappa' not in self.constraints['axial_surface']:
+            raise KeyError("'kappa' key not found in 'axial_surface' dictionary.")
+
+        # Extract parameters for the VonMisesFisher distribution
+        mu = self.constraints['axial_surface']['mu']
+        kappa = self.constraints['axial_surface']['kappa']
+
+        # Create a VonMisesFisher distribution with the given parameters
+        vmf = VonMisesFisher(mu, kappa)
+
+        # Calculate the logpdf of the input array
+        vmf_logpdf = vmf.logpdf(x)
+
+        return vmf_logpdf
 
     def axial_trace_objective_function(self, theta: np.ndarray) -> Union[int, float]:
         """
@@ -462,4 +503,3 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Return the list of constraints
         return constraints
-
