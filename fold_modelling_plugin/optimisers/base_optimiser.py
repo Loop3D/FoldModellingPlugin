@@ -96,5 +96,3 @@ class BaseOptimiser:
                                      strategy=strategy, mutation=mutation, **self.kwargs)
 
         return opt
-
-    #TODO: Add a method to solve the optimisation problem
