@@ -75,7 +75,7 @@ def save_load_object(obj=None, file_path=None, mode='save'):
         raise ValueError("Invalid mode. Must be either 'save' or 'load'.")
 
 
-def strike_dip_vector(strike, dip):
+def strike_dip_to_vector(strike, dip):
     """
     Calculate the strike-dip vector given the strike and dip angles.
 
@@ -132,6 +132,7 @@ def normal_vector_to_strike_and_dip(normal_vector):
     strike = -np.rad2deg(np.arctan2(normal_vector[:, 1], normal_vector[:, 0]))
 
     return np.array([strike, dip]).T
+
 
 def rotate_vector(v, angle, dimension=2):
     """
@@ -235,11 +236,8 @@ def get_fold_curves(geological_feature, fold_frame=0):
     return x, curve
 
 
-def create_dict(x=None, y=None, z=None, strike=None, dip=None, feature_name=None, coord=None, data_type=None, **kwargs):
-    """
-
-    :rtype: object
-    """
+def create_dict(x=None, y=None, z=None, strike=None, dip=None, feature_name=None,
+                coord=None, data_type=None, **kwargs):
     if data_type == 'foliation':
         fn = np.empty(len(x)).astype(str)
         fn.fill(feature_name)
@@ -267,3 +265,23 @@ def create_dict(x=None, y=None, z=None, strike=None, dip=None, feature_name=None
                       'feature_name': fn,
                       'coord': c}
         return dictionary
+
+
+def create_gradient_dict(x=None, y=None, z=None,
+                         nx=None, ny=None, nz=None,
+                         feature_name=None, coord=None,
+                         **kwargs):
+
+    fn = np.empty(len(x)).astype(str)
+    fn.fill(feature_name)
+    c = np.empty((len(x))).astype(int)
+    c.fill(coord)
+    dictionary = {'X': x,
+                  'Y': y,
+                  'Z': z,
+                  'gx': nx,
+                  'gy': ny,
+                  'gz': nz,
+                  'feature_name': fn,
+                  'coord': c}
+    return dictionary
