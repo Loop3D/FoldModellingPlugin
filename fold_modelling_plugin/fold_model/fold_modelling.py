@@ -13,11 +13,14 @@ import numpy as np
 import pandas as pd
 from fold_modelling_plugin._helper import *
 from fold_modelling_plugin.input.input_data_processor import InputDataProcessor
+from from_loopstructural._fold import FoldEvent
+from from_loopstructural._fold_frame import FoldFrame
+from from_loopstructural._svariogram import SVariogram
 
 
 class FoldModel:
 
-    def __init__(self, data, bounding_box):
+    def __init__(self, data, bounding_box, **kwargs):
 
         data_processor = InputDataProcessor(data, bounding_box)
         self.data = data_processor.process_data()
@@ -25,72 +28,69 @@ class FoldModel:
         self.model = None
         self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
         self.points = self.data[['X', 'Y', 'Z']].to_numpy()  # coordinates of the data points
+        assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
+        self.kwargs = kwargs
+        self.axial_surface = None
+        self.scaled_points = None
 
     def initialise_model(self):
 
         self.model = GeologicalModel(self.bounding_box[0, :],
                                      self.bounding_box[1, :])
+        self.scaled_points = self.model.scale(self.points)
 
     def process_data(self, axial_normal):
-        axial_normal /= np.linalg.norm(axial_normal)  # normalise axial normal
-        dgx = np.tile(axial_normal, (len(self.points), 1))
-        name = 's1'
-        s1_dict = create_gradient_dict(x=self.points[:, 0],
-                                       y=self.points[:, 1],
-                                       z=self.points[:, 2],
-                                       nx=dgx[:, 0],
-                                       ny=dgx[:, 1],
-                                       nz=dgx[:, 2],
-                                       feature_name=name, coord=0)
-        dataset = pd.DataFrame()
-        dataset = dataset.append(pd.DataFrame
-                                 (s1_dict, columns=['X', 'Y', 'Z', 'gx', 'gy',
-                                                    'gz', 'feature_name', 'coord']))
+        # normalise axial surface normal
+        axial_normal /= np.linalg.norm(axial_normal)
+        # create a dataset from the axial surface normal
+        dataset = make_dataset(axial_normal, self.points, name='s1', coord=0)
 
         assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
 
-        data = make_dataset_3(self.data, self.points, name='s0')
+        # data = make_dataset_3(self.data, self.points, name='s0')
         y = rotate_vector(axial_normal, np.pi / 2, dimension=3)
-        y_coord = make_dataset_2(self.points, y, coord=1)
+        y_coord = make_dataset(y, self.points, name='s1', coord=1)
         # self.model.data = self.model.data.append(dataset)
         # self.model.data = self.model.data.append(y_coord)
-        data = data.append(dataset)
-        data = data.append(y_coord)
-        self.model.data = data
+        # dataset = data.append(dataset)
+        dataset = dataset.append(y_coord)
+        return dataset
 
     def build_fold_frame(self, axial_normal):
 
         # self.model.data = data
-        self.process_data(axial_normal)
+        dataset = self.process_data(axial_normal)
+        self.model.data = dataset
         self.axial_surface = self.model.create_and_add_fold_frame('s1',
-                                                                  buffer=0.3,
+                                                                  buffer=0.6,
                                                                   solver='pyamg',
-                                                                  nelements=2e4,
+                                                                  nelements=1e3,
                                                                   damp=True)
 
         self.model.update(progressbar=False)
 
-        # try:
-        # self.axial_surface.model.set_model(self.model)
-        # except:
-        #     pass
-
-        return self.axial_surface
-
     def calculate_fold_rotation_angle(self):
 
-        # self.axial_surface = self.build_fold_frame()
-        # calculate the fold limb rotation angles and the scalar field of the axial surface
+        # create a fold frame object
         foldframe = FoldFrame('s1', self.axial_surface)
-        # s0gg = ref_s0.evaluate_gradient(locations[i])
-        s1g = self.axial_surface[0].evaluate_gradient(self.coords)
+        # get the gradient of the axial surface
+        s1g = self.axial_surface[0].evaluate_gradient(self.scaled_points)
+        # normalise the gradient
         s1g /= np.linalg.norm(s1g, axis=1)[:, None]
-        # dot = np.einsum('ij,ij->i', s1g, self.orientation_data)
-        # self.orientation_data[dot<0] *= -1
 
-        flr, fld = foldframe.calculate_fold_limb_rotation(self.coords, self.orientation_data)
+        if 'av_fold_axis' in self.kwargs:
+            # calculate the fold limb rotation angle
 
-        return flr, fld
+            flr, fld = foldframe.calculate_fold_limb_rotation(self.scaled_points, self.gradient_data)
+
+            return flr, fld
+
+        if 'av_fold_axis' not in self.kwargs:
+            # calculate the fold axis rotation angle
+            far, fad = foldframe.calculate_fold_axis_rotation(self.scaled_points, s1g,
+                                                              fold_axis=self.kwargs['fold_axis'])
+            
+            return far, fad
 
     def calculate_rotation_angles(self):
 
