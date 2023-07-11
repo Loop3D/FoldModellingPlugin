@@ -5,6 +5,7 @@ from LoopStructural.modelling.features.fold import fourier_series
 from uncertainty_quantification.fold_uncertainty import *
 import dill
 import mplstereonet
+import pandas as pd
 
 
 # def gaussian_func(b, mu, sigma):
@@ -271,7 +272,6 @@ def create_gradient_dict(x=None, y=None, z=None,
                          nx=None, ny=None, nz=None,
                          feature_name=None, coord=None,
                          **kwargs):
-
     fn = np.empty(len(x)).astype(str)
     fn.fill(feature_name)
     c = np.empty((len(x))).astype(int)
@@ -285,3 +285,39 @@ def create_gradient_dict(x=None, y=None, z=None,
                   'feature_name': fn,
                   'coord': c}
     return dictionary
+
+
+def make_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: int = 0) -> pd.DataFrame:
+    """
+
+    Make a dataset from one unit vector and xyz points of the folded feature data.
+
+    Parameters
+    ----------
+    vec : np.ndarray
+        The unit vector to be used as the gradient.
+    points : np.ndarray
+        The xyz coordinates of the data points.
+    name : str, optional
+        The name of the feature, by default 's0'.
+    coord : int, optional
+        The coordinate, by default 0.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame where each row represents a data point with its coordinates (X, Y, Z),
+        gradient (gx, gy, gz), feature name, and coordinate.
+    """
+    g = np.tile(vec, (len(points), 1))
+    dataset = pd.DataFrame()
+    dataset['X'] = points[:, 0]
+    dataset['Y'] = points[:, 1]
+    dataset['Z'] = points[:, 2]
+    dataset['gx'] = g[:, 0]
+    dataset['gy'] = g[:, 1]
+    dataset['gz'] = g[:, 2]
+    dataset['feature_name'] = name
+    dataset['coord'] = coord
+
+    return dataset
