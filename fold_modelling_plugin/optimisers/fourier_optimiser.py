@@ -1,3 +1,5 @@
+from typing import Tuple, Callable, Union, Any, Optional, Dict
+
 from modified_loopstructural.extra_utils import *
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, normalize
 import numpy as np
@@ -26,17 +28,57 @@ def get_wavelength_guesses(guess, size):
     mu, sigma = guess, guess / 3
     return np.random.normal(mu, abs(sigma), size)
 
+
 def objective_wrapper(func1, func2):
     def objective_function(x):
         return func1(x) + func2(x)
+
     return objective_function
 
 
 class FourierSeriesOptimiser(FoldOptimiser):
+    """
+    A class used to represent a Fourier Series Optimiser.
 
-    def __init__(self, fold_frame_coordinate, rotation_angle,
-                 knowledge_constraints=None, x, **kwargs):
+    ...
 
+    Attributes
+    ----------
+    fold_frame_coordinate : float
+        The fold frame coordinate for the optimiser.
+    rotation_angle : float
+        The rotation angle for the optimiser.
+    knowledge_constraints : dict, optional
+        The knowledge constraints for the optimiser.
+    x : float
+        The x value for the optimiser.
+    kwargs : dict
+        Additional keyword arguments.
+
+    Methods
+    -------
+    TODO: Add methods here.
+    """
+
+    def __init__(self, fold_frame_coordinate: float, rotation_angle: float,
+                 knowledge_constraints: Optional[Dict[str, Any]] = None, x: float,
+                 **kwargs: Dict[str, Any]):
+        """
+        Constructs all the necessary attributes for the Fourier Series Optimiser object.
+
+        Parameters
+        ----------
+            fold_frame_coordinate : float
+                The fold frame coordinate for the optimiser.
+            rotation_angle : float
+                The rotation angle for the optimiser.
+            knowledge_constraints : dict, optional
+                The knowledge constraints for the optimiser.
+            x : float
+                The x value for the optimiser.
+            **kwargs : dict
+                Additional keyword arguments.
+        """
         self.objective_value = 0
         self.fold_frame_coordinate = fold_frame_coordinate
         self.rotation_angle = np.tan(np.deg2rad(rotation_angle))
@@ -45,142 +87,120 @@ class FourierSeriesOptimiser(FoldOptimiser):
         self.x = x
         self.kwargs = kwargs
 
-    def prepare_and_setup_knowledge_constraints(self):
+    def prepare_and_setup_knowledge_constraints(self) -> Optional[Union[GeologicalKnowledgeFunctions, None]]:
         """
-        Prepare the geological knowledge constraints and objective functions
+        Prepare the geological knowledge constraints and objective functions.
+
+        Returns
+        -------
+        GeologicalKnowledgeFunctions or None
+            Returns the geological knowledge constraints and objective functions if they exist,
+            otherwise returns None.
         """
 
+        # Check if knowledge constraints exist
         if self.knowledge_constraints is not None:
+            # Check if mode is restricted
             if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
                 geological_knowledge = GeologicalKnowledgeFunctions(self.x, self.knowledge_constraints)
                 ready_constraints = geological_knowledge.setup_objective_functions_for_restricted_mode(self)
 
                 return ready_constraints
-
             else:
-
                 geological_knowledge = GeologicalKnowledgeFunctions(self.x, self.knowledge_constraints)
 
                 return geological_knowledge
 
+        # If knowledge constraints do not exist, return None
         if self.knowledge_constraints is None:
             return None
 
-    def setup_optimisation(self):
+    def generate_initial_guess(self) -> Union[np.ndarray, Any]:
         """
-        Setup fourier series optimisation
+        Generate an initial guess for the optimisation.
+        It generates a guess of the wavelength for the Fourier series. The format of the guess depends
+        on the method of optimisation - differential evolution or trust region. If it's differential evolution,
+        it will generate the bounds for the optimisation. If it's trust region, it will generate the initial guess of
+        the wavelength.
+
+        Returns
+        -------
+        np.ndarray or Any
+            Returns the initial guess or bounds for the optimisation.
         """
 
-        if 'method' in self.kwargs:
-            if self.kwargs['method'] == 'differential_evolution':
-                solver = self.optimise_with_differential_evolution
-
-            if self.kwargs['method'] == 'trust-constr':
-                solver = self.optimise_with_trust_region
-
-        if 'method' not in self.kwargs:
-            solver = self.optimise_with_trust_region
-
-        objective_function = loglikelihood_fourier_series(self.rotation_angle,
-                                                          self.fold_frame_coordinate)
-
-        geological_knowledge = self.prepare_and_setup_knowledge_constraints()
-        guess = self.generate_initial_guess()
-
-        return objective_function, geological_knowledge, solver, guess
-
-    def generate_initial_guess(self):
-        """
-        Generate an initial guess for the optimisation
-        It generates a guess of the wavelength, for fourier series. the format of the guess depends
-        if the method of optimisation is differential evolution or trust region. If it's differential evolution
-        it will generate the bounds for the optimisation, if it's trust region it will generate the initial guess of
-        the wavelength
-
-        """
+        # Check if method is specified in kwargs
         if 'method' in self.kwargs:
             if self.kwargs['method'] == 'differential_evolution':
                 if 'wl_guess' in self.kwargs:
                     wl = get_wavelength_guesses(self.kwargs['wl_guess'], 1000)
                 else:
-                    # calculate semivariogram and get the wavelength guess
-                    guess, lags, variogram = calculate_semivariogram(self.rotation_angle,
-                                                                     self.fold_frame_coordinate)
-                    wl = get_wavelength_guesses(x0[3], 1000)
-                    bounds = np.array([(-1, 1), (-1, 1), (-1, 1),
-                                       (wl[wl > 0].min() / 2, wl.max())], dtype=object)
+                    # Calculate semivariogram and get the wavelength guess
+                    guess, lags, variogram = calculate_semivariogram(self.rotation_angle, self.fold_frame_coordinate)
+                    wl = get_wavelength_guesses(guess[3], 1000)
+                    bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
                     return bounds
 
+        # Check if wl_guess is specified in kwargs
         if 'wl_guess' in self.kwargs:
             guess = np.array([0, 1, 1, self.kwargs['wl_guess']], dtype=object)
+            return guess
         else:
-            # calculate semivariogram and get the wavelength guess
-            guess, lags, variogram = calculate_semivariogram(self.rotation_angle,
-                                                             self.fold_frame_coordinate)
+            # Calculate semivariogram and get the wavelength guess
+            guess, lags, variogram = calculate_semivariogram(self.rotation_angle, self.fold_frame_coordinate)
 
             return guess
 
-    def optimise(self):
+    def setup_optimisation(self) -> Tuple[Callable,
+                                          Union[GeologicalKnowledgeFunctions, None], Callable, Any]:
         """
-        Optimise the fourier series
+        Setup Fourier series optimisation.
+
+        Returns
+        -------
+        tuple
+            Returns a tuple containing the objective function, geological knowledge, solver, and initial guess.
         """
+
+        # Check if method is specified in kwargs and assign the appropriate solver
+        if 'method' in self.kwargs and self.kwargs['method'] == 'differential_evolution':
+            solver = self.optimise_with_differential_evolution
+        else:
+            solver = self.optimise_with_trust_region
+
+        # Setup objective function
+        objective_function = loglikelihood_fourier_series(self.rotation_angle, self.fold_frame_coordinate)
+
+        # Prepare and setup knowledge constraints
+        geological_knowledge = self.prepare_and_setup_knowledge_constraints()
+
+        # Generate initial guess
+        guess = self.generate_initial_guess()
+
+        return objective_function, geological_knowledge, solver, guess
+
+    def optimise(self) -> Dict[str, Any]:
+        """
+        Optimise the Fourier series.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Returns the result of the optimisation.
+        """
+
+        # Setup optimisation
         objective_function, geological_knowledge, solver, guess = self.setup_optimisation()
 
+        # Check if geological knowledge exists
         if geological_knowledge is not None:
+            # Check if mode is restricted
             if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
                 opt = solver(objective_function, x0=guess, constraints=geological_knowledge)
             else:
                 objective_function = objective_wrapper(objective_function, geological_knowledge)
                 opt = solver(objective_function, x0=guess, constraints=geological_knowledge.constraints)
-
         else:
             opt = solver(objective_function, x0=guess)
-
-        return opt
-
-    def __call__(self, *args, **kwargs):
-
-    def fit_constrained_fourier_series(self, w, x0=None):
-
-        # constraints = self.knowledge_constraints.prepare_and_setup_constraints()
-
-        if x0 is not None:
-            opt = minimize(self.mle_objective, x0,
-                           # constraints=constraints,
-                           method='trust-constr', jac='2-point')
-
-        if self.coeff == 4:
-            x0 = np.array([0, 1, 1, w], dtype=object)
-
-        if self.coeff == 8:
-            x0 = np.array([0, 1, 1, w[0], 1, 1, w[1]], dtype=object)
-
-        opt = minimize(self.mle_objective, x0,
-                       # constraints=constraints,
-                       method='trust-constr', jac='2-point')
-
-        return opt
-
-    def fit_constrained_fourier_series_DE(self, wls, x0=None):
-
-        # constraints = self.knowledge_constraints.prepare_and_setup_constraints()
-
-        # bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (x0[0]/2, wls.max())])
-
-        if self.coeff == 4:
-            # x0 = np.array([0, 1, 1, wls])
-            wl = get_wavelength_guesses(x0[3], 1000)
-            bounds = np.array([(-1, 1), (-1, 1), (-1, 1),
-                               (wl[wl > 0].min() / 2, wl.max())], dtype=object)
-
-        opt = differential_evolution(self.mle_objective,
-                                     bounds=bounds,
-                                     init='halton',
-                                     maxiter=5000,
-                                     # seed=80,
-                                     polish=True,
-                                     strategy='best2exp',
-                                     mutation=(0.3, 0.99),
-                                     )
 
         return opt
