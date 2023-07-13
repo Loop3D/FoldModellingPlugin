@@ -1,4 +1,6 @@
 # from knowledge_constraints._helper import *
+from typing import Union, Dict, Any, List
+
 from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
 from knowledge_constraints.splot_processor import SPlotProcessor
 from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
@@ -16,12 +18,62 @@ from fold_modelling_plugin.input.input_data_processor import InputDataProcessor
 from from_loopstructural._fold import FoldEvent
 from from_loopstructural._fold_frame import FoldFrame
 from from_loopstructural._svariogram import SVariogram
+from base_fold_frame_builder import BaseFoldFrameBuilder
 
 
-class FoldModel:
+def fold_function(params):
+    def rot_func(x):
+        return np.rad2deg(
+            np.arctan(fourier_series(x, *params.x)))
 
-    def __init__(self, data, bounding_box, **kwargs):
+    return rot_func
 
+
+class FoldModel(BaseFoldFrameBuilder):
+    """
+    A class used to represent a fold model.
+
+    ...
+
+    Attributes
+    ----------
+    data : pd.DataFrame
+        processed data
+    bounding_box : list
+        bounding box for the model
+    model : Any
+        the GeologicalModel object to be built, initialised as None
+    gradient_data : np.ndarray
+        gradient data extracted from the data DataFrame
+    points : np.ndarray
+        coordinates of the data points
+    kwargs : dict
+        additional keyword arguments
+    axial_surface : Any
+        axial surface of the model, initialised as None
+    scaled_points : Any
+        scaled from UTM to the model scale, initialised as None
+
+    Methods
+    -------
+    No methods defined yet.
+    """
+
+    def __init__(self, data: pd.DataFrame,
+                 bounding_box: Union[list, np.ndarray],
+                 **kwargs: Dict[str, Any]):
+        """
+        Constructs all the necessary attributes for the FoldModel object.
+
+        Parameters
+        ----------
+            data : pd.DataFrame
+                structural data
+            bounding_box : list or np.ndarray
+                bounding box for the model
+            **kwargs : dict
+                additional keyword arguments
+        """
         data_processor = InputDataProcessor(data, bounding_box)
         self.data = data_processor.process_data()
         self.bounding_box = bounding_box
@@ -33,13 +85,38 @@ class FoldModel:
         self.axial_surface = None
         self.scaled_points = None
 
-    def initialise_model(self):
+    def initialise_model(self) -> None:
+        """
+        Initialises the geological model and scales the points (xyz).
 
-        self.model = GeologicalModel(self.bounding_box[0, :],
-                                     self.bounding_box[1, :])
+        The GeologicalModel class is initialised with the bounding box.
+        The xyz points of the FoldModel object are then scaled using the geological model.
+
+        Returns
+        -------
+        None
+        """
+        self.model = GeologicalModel(self.bounding_box[0, :], self.bounding_box[1, :])
         self.scaled_points = self.model.scale(self.points)
 
-    def process_data(self, axial_normal):
+    def process_axial_surface_proposition(self, axial_normal: np.ndarray) -> pd.DataFrame:
+        """
+        Process the axial surface proposition at each iteration by creating a dataset from the axial surface normal.
+
+        The axial surface normal is first normalised. A dataset is then created from the axial surface normal.
+        A rotated vector is created by rotating the axial normal by 90 degrees to be perpendicular to the axial surface.
+        The rotated vector is the Y axis of the fold frame.
+
+        Parameters
+        ----------
+        axial_normal : np.ndarray
+            The axial surface normal vector.
+
+        Returns
+        -------
+        pd.DataFrame
+            The dataset to use to build a fold frame.
+        """
         # normalise axial surface normal
         axial_normal /= np.linalg.norm(axial_normal)
         # create a dataset from the axial surface normal
@@ -47,124 +124,187 @@ class FoldModel:
 
         assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
 
-        # data = make_dataset_3(self.data, self.points, name='s0')
+        # rotate the axial normal by 90 degrees to create the Y axis of the fold frame
         y = rotate_vector(axial_normal, np.pi / 2, dimension=3)
+        # create a dataset from the Y axis of the fold frame
         y_coord = make_dataset(y, self.points, name='s1', coord=1)
-        # self.model.data = self.model.data.append(dataset)
-        # self.model.data = self.model.data.append(y_coord)
-        # dataset = data.append(dataset)
+
+        # append the two datasets together
         dataset = dataset.append(y_coord)
+
         return dataset
 
-    def build_fold_frame(self, axial_normal):
+    def build_fold_frame(self, axial_normal: np.ndarray) -> None:
+        """
+        Builds a fold frame.
 
-        # self.model.data = data
-        dataset = self.process_data(axial_normal)
+        This function processes the axial surface proposition (iteration),
+        updates the model data, creates and adds a fold frame to the model, and then interpolates the fold frame.
+
+        Parameters
+        ----------
+        axial_normal : np.ndarray
+            The axial surface normal vector proposition to be processed.
+
+        Returns
+        -------
+        None
+        """
+        # process the axial surface proposition and get the dataset
+        dataset = self.process_axial_surface_proposition(axial_normal)
+
+        # update the model data with the dataset
         self.model.data = dataset
+
+        # create and add a fold frame to the model
         self.axial_surface = self.model.create_and_add_fold_frame('s1',
                                                                   buffer=0.6,
                                                                   solver='pyamg',
                                                                   nelements=1e3,
                                                                   damp=True)
 
+        # update the model
         self.model.update(progressbar=False)
 
-    def calculate_fold_rotation_angle(self):
+    def create_and_build_fold_event(self) -> Any:
+        """
+        Creates and builds a fold event.
 
-        # create a fold frame object
+        A fold frame object is first created from the axial surface proposition.
+        The gradient of the axial surface is then calculated and normalised.
+        The fold limb rotation angle is calculated depending on the argument 'av_fold_axis'. If the argument is set True,
+        the fold limb rotation angle is calculated using the average fold axis. If the argument is set False, the fold
+        limb rotation angle is calculated down a folded fold axis, which is the case of noncylindrical folds.
+
+        Returns
+        -------
+        FoldEvent
+            The created fold event.
+        """
+        # create a fold frame object from the axial surface
         foldframe = FoldFrame('s1', self.axial_surface)
-        # get the gradient of the axial surface
+
+        # calculate the gradient of the axial surface
         s1g = self.axial_surface[0].evaluate_gradient(self.scaled_points)
+
         # normalise the gradient
         s1g /= np.linalg.norm(s1g, axis=1)[:, None]
 
-        if 'av_fold_axis' in self.kwargs:
+        # check if 'av_fold_axis' is in kwargs and if it's True
+        if 'av_fold_axis' in self.kwargs and self.kwargs['av_fold_axis']:
+            # calculate intersection lineation l
+            il = calculate_intersection_lineation(s1g, self.gradient_data)
+
+            # calculate the mean of intersection lineation and normalise it
+            av_fold_axis = il.mean(0)
+            av_fold_axis /= np.linalg.norm(av_fold_axis)
+
             # calculate the fold limb rotation angle
+            flr, fld = foldframe.calculate_fold_limb_rotation(self.scaled_points,
+                                                              self.gradient_data,
+                                                              axis=av_fold_axis)
 
-            flr, fld = foldframe.calculate_fold_limb_rotation(self.scaled_points, self.gradient_data)
+            # fit a fourier series to the fold limb rotation
+            fitted_flr = self.fit_fourier_series(fld, flr, constr_type='fold_limb')
 
-            return flr, fld
+            # create a fold function from the fitted fourier series
+            fold_limb_rotation_function = fold_function(fitted_flr)
 
-        if 'av_fold_axis' not in self.kwargs:
+            # create a fold event with the axial surface, fold limb rotation function and fold axis
+            fold = FoldEvent(self.axial_surface,
+                             fold_limb_rotation=fold_limb_rotation_function,
+                             fold_axis=av_fold_axis)
+
+            return fold
+
+        # check if 'av_fold_axis' is not in kwargs or if it's False
+        if 'av_fold_axis' not in self.kwargs or not self.kwargs['av_fold_axis']:
             # calculate the fold axis rotation angle
             far, fad = foldframe.calculate_fold_axis_rotation(self.scaled_points, s1g,
                                                               fold_axis=self.kwargs['fold_axis'])
-            
-            return far, fad
 
-    def calculate_rotation_angles(self):
+            # fit a fourier series to the calculated fold axis rotation angle
+            fitted_far = self.fit_fourier_series(fad, far, constr_type='fold_axis')
 
-        self.fold = self.model.create_and_add_folded_foliation('s0',
-                                                               fold_frame=self.axial_surface,
-                                                               axis_wl=500,
-                                                               limb_wl=500,
-                                                               buffer=0.3,
-                                                               solver='fake',
-                                                               nelements=100,
-                                                               skip_variogram=True,
-                                                               # svario=False,
-                                                               damp=True)
-        self.model.update(progressbar=False)
-        self.fold.set_model(self.model)
+            # create a fold function from the fitted fourier series
+            fold_axis_rotation_function = fold_function(fitted_far)
 
-        # flr = self.fold.fold.fold_limb_rotation.rotation_angle
-        # fld = self.fold.fold.fold_limb_rotation.fold_frame_coordinate
+            # create a fold event with the axial surface and fold axis rotation function
+            fold = FoldEvent(self.axial_surface,
+                             fold_axis_rotation=fold_axis_rotation_function)
 
-        far = self.fold.fold.fold_axis_rotation.rotation_angle
-        fad = self.fold.fold.fold_axis_rotation.fold_frame_coordinate
+            # calculate the fold limb rotation angle
+            flr, fld = foldframe.calculate_fold_limb_rotation(self.scaled_points, self.gradient_data,
+                                                              axis=fold.get_fold_axis_orientation)
 
-        fitted_far = self.fit_fourier_series(fad, far, constr_type='fold_axis')
-        print(fitted_far.x)
+            # fit a fourier series to the fold limb rotation
+            fitted_flr = self.fit_fourier_series(fld, flr, constr_type='fold_limb')
 
-        fold_axis_rotation = FoldRotationAngle(far, fad)
-        fold_axis_rotation.set_function(lambda x: np.rad2deg(
-            np.arctan(fourier_series(x, *fitted_far.x))))
+            # create a fold function from the fitted fourier series
+            fold_limb_rotation_function = fold_function(fitted_flr)
 
-        fold = FoldEvent(self.axial_surface,
-                         fold_axis_rotation=fold_axis_rotation)
+            # set the fold limb rotation of the fold event
+            fold.fold_limb_rotation = fold_limb_rotation_function
 
-        # fold_axis = fold.fold_axis_rotation(self.points)
-        flr, fld = self.fold.fold.foldframe.calculate_fold_limb_rotation(self.fold.builder,
-                                                                         axis=fold.get_fold_axis_orientation)
-        # flr *= -1
-        fitted_flr = self.fit_fourier_series(fld, flr, constr_type='fold_limb')
-        print(fitted_flr.x)
-        fold_limb_rotation = FoldRotationAngle(flr, fld)
-        fold_limb_rotation.set_function(lambda x: np.rad2deg(
-            np.arctan(fourier_series(x, *fitted_flr.x))))
+            return fold
 
-        fold.fold_limb_rotation = fold_limb_rotation
+    def calculate_svariogram(self, fold_frame: np.ndarray,
+                             rotation_angles: np.ndarray) -> np.ndarray:
+        """
+        Calculates the S-Variogram (semi-variogram) of the fold rotation angles.
+        for more details about the S-Variogram, see Grose et al (2017)
 
-        return fold
+        Depending on the keyword arguments 'axis_wl' and 'limb_wl',
+        this function either returns the initial guess of the fold axis or fold limb rotation angles
+        to optimise a fourier series.
 
-    def svariogram(self, fold_frame, rotation_angles):
+        Parameters
+        ----------
+        fold_frame : np.ndarray
+            The fold frame to be used for the semi-variogram calculation.
+        rotation_angles : np.ndarray
+            The rotation angles to be used for the semi-variogram calculation.
 
-        if self.wavelength_guess is not None:
+        Returns
+        -------
+        np.ndarray
+            the initial guess for fourier series optimisation.
+        """
+        # check if 'axis_wl' is in kwargs
+        if 'axis_wl' in self.kwargs:
+            return np.array([0, 1, 1, self.kwargs['axis_wl']])
 
-            return [0, 1, 1, self.wavelength_guess]
+        # check if 'limb_wl' is in kwargs
+        if 'limb_wl' in self.kwargs:
+            return np.array([0, 1, 1, self.kwargs['limb_wl']])
 
+        # if neither 'axis_wl' nor 'limb_wl' is in kwargs
         else:
+            # check if the length of rotation_angles is less than 5
             if len(rotation_angles) < 5:
-
+                # calculate the pairwise distance
                 pdist = np.abs(fold_frame[:, None] - fold_frame[None, :])
                 pdist[pdist == 0.] = np.nan
                 lagx = np.nanmean(np.nanmin(pdist, axis=1))
-                theta, lag, vario = calculate_semivariogram(fold_frame, rotation_angles,
-                                                            lag=lagx,
-                                                            nlag=60)
+
+                # calculate the semivariogram
+                theta, lags, variogram = calculate_semivariogram(fold_frame, rotation_angles,
+                                                                 lag=lagx,
+                                                                 nlag=60)
+
 
             else:
-
-                theta, lag, vario = calculate_semivariogram(fold_frame, rotation_angles,
-                                                            lag=None,
-                                                            nlag=None)
+                # calculate the semivariogram
+                theta, lags, variogram = calculate_semivariogram(fold_frame, rotation_angles,
+                                                                 lag=None,
+                                                                 nlag=None)
 
         return theta
 
     def fit_fourier_series(self, fold_frame, rotation_angle, constr_type='fold_limb'):
         # fit a fourier series to the rotation angles and the scalar field
         # flr, fld = self.calculate_fold_rotation_angle()
-        guess = self.svariogram(fold_frame, rotation_angle)
+        guess = self.calculate_svariogram(fold_frame, rotation_angle)
         # print(guess[3])
         if constr_type == 'fold_limb':
             x = np.linspace(self.axial_surface[0].min(),
