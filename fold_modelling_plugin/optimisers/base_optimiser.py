@@ -2,9 +2,11 @@ from typing import Callable, Dict, Any, Tuple
 
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
+import functools
+from abc import ABC, abstractmethod
 
 
-class BaseOptimiser:
+class BaseOptimiser(ABC):
     """
     A base class that to represent an abstract Optimiser.
 
@@ -25,21 +27,9 @@ class BaseOptimiser:
         Solves the optimisation problem using the differential evolution method.
     """
 
-    def __init__(self, objective_function: Callable, **kwargs: Dict[str, Any]) -> None:
-        """
-        Constructs all the necessary attributes for the optimiser object.
-
-        Parameters
-        ----------
-            objective_function : Callable
-                a function which is to be minimized.
-            **kwargs : Dict[str, Any]
-                additional keyword arguments.
-        """
-        self.objective_function = objective_function
-        self.kwargs = kwargs
-
-    def solve_with_trust_region(self, x0: np.ndarray) -> Dict:
+    @abstractmethod
+    def optimise_with_trust_region(self, objective_function: Callable,
+                                   x0: np.ndarray, constraints=None) -> Dict:
         """
         Solves the optimization problem using the trust region method.
 
@@ -54,15 +44,17 @@ class BaseOptimiser:
                 The solution of the optimisation.
         """
 
-        opt = minimize(self.objective_function, x0,
-                       method='trust-constr', jac='2-point', **self.kwargs)
+        opt = minimize(objective_function, x0,
+                       method='trust-constr', jac='2-point',
+                       constraints=constraints, **self.kwargs)
 
         return opt
 
-    def solve_with_differential_evolution(self, bounds: Tuple, init: str = 'halton',
-                                          maxiter: int = 5000, seed: int = 80,
-                                          polish: bool = True, strategy: str = 'best2exp',
-                                          mutation: Tuple[float, float] = (0.3, 0.99)) -> Dict:
+    @abstractmethod
+    def optimise_with_differential_evolution(self, objective_function: Callable, bounds: Tuple, init: str = 'halton',
+                                             maxiter: int = 5000, seed: int = 80,
+                                             polish: bool = True, strategy: str = 'best2exp',
+                                             mutation: Tuple[float, float] = (0.3, 0.99)) -> Dict:
         """
         Solves the optimization problem using the differential evolution method.
         Check Scipy documentation for more info
@@ -89,10 +81,15 @@ class BaseOptimiser:
         -------
             opt : Dict
                 The solution of the optimization.
+                :param objective_function:
         """
 
-        opt = differential_evolution(self.objective_function, bounds=bounds, init=init,
+        opt = differential_evolution(objective_function, bounds=bounds, init=init,
                                      maxiter=maxiter, seed=seed, polish=polish,
                                      strategy=strategy, mutation=mutation, **self.kwargs)
 
         return opt
+
+    @abstractmethod
+    def optimise(self, *args, **kwargs) -> Any:
+        pass
