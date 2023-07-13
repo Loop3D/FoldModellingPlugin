@@ -82,7 +82,7 @@ def loglikelihood_fourier_series(rotation_angle, fold_frame_coordinate):
         y_pred = get_predicted_rotation_angle(theta, fold_frame_coordinate)
         log_likelihood = 0
         for fr, fd in zip(y, y_pred):
-            log_likelihood += - loglikelihood(fr, fd)
+            log_likelihood += -loglikelihood(fr, fd)
 
         return log_likelihood
 
