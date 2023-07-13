@@ -5,84 +5,32 @@ import numpy as np
 from scipy.stats import vonmises
 
 
+
+
+
+
+
+
 class MaximumLikelihoodEstimation:
     """
     This is a base class for Maximum Likelihood Estimation for Fourier series or the axial surface.
     """
 
-    def __init__(self, rotation_angle, fold_frame,
-                 knowledge_constraints, folded_foliation_data, opt_type='fourier'):
-
-        self.y = rotation_angle
-        self.fold_frame = fold_frame
-        self.knowledge_constraints = knowledge_constraints
-        self.orientation_data = folded_foliation_data
+    def __init__(self, opt_type='fourier'):
+        # check which objective function to use
         self.opt_type = opt_type
-        self.mle = None
-
-    def setup_optimisation(self):
         if self.opt_type == 'fourier':
-            self.mle = self.mle_fourier_series
+            self.mle = mle_fourier_series
         if self.opt_type == 'axial_surface':
-            self.mle = self.mle_axial_surface
+            self.mle = mle_axial_surface
+
+    def setup_mle_optimisation(self):
+        if self.opt_type == 'fourier':
+            self.mle = mle_fourier_series
+        if self.opt_type == 'axial_surface':
+            self.mle = mle_axial_surface
 
         return self.mle
-
-    def predicted_rotation_angle(self, theta):
-
-        y_pred = np.tan(np.deg2rad(fourier_series(
-            self.fold_frame, *theta)))
-
-        return y_pred
-
-    def loglikelihood(self, theta):
-
-        y_pred = self.predicted_rotation_angle(theta)
-        sigma = 1e-2
-        likelihood = gaussian_log_likelihood(y, y_pred, sigma)
-        return likelihood
-
-    def mle_fourier_series(self, theta):
-
-        log_likelihood = 0
-        for fr, fd in zip(self.rotation_angle, self.fold_frame):
-            log_likelihood += -self.loglikelihood(fr, fd, theta)
-
-        if self.knowledge_constraints is None:
-            total = log_likelihood
-        else:
-            total = (1e-2 * log_likelihood) + self.knowledge_constraints(theta)
-
-        return total
-
-    def mle_axial_surface(self, x: float) -> Union[int, float]:
-        """
-        Objective function for the axial surface.
-        This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.
-
-        Parameters
-        ----------
-        x : float
-            represents the angle between the observed folded foliation and the predicted one.
-
-        Returns
-        -------
-        Union[int, float]
-            The logpdf value from the VonMises distribution.
-        """
-        # Define the mu and kappa of the VonMises distribution
-        # mu = 0 because we want to minimises the angle between the observed and predicted folded foliation
-        # kappa = 100 because we want to have a sharp distribution very close to the mean 0 (mu)
-        mu = 0
-        kappa = 100
-
-        # Create a VonMises distribution with the given parameters
-        vm = vonmises(mu, kappa)
-
-        # Calculate the logpdf of the input array
-        vm_logpdf = vm.logpdf(x)
-
-        return vm_logpdf
 
     def mle_axial_surface(self, strike_dip):  # axial_normal):
 
@@ -149,10 +97,6 @@ class MaximumLikelihoodEstimation:
 
         return objective
 
-    def optimisation(self):
-
-        pass
-
     def __call__(self, *args, **kwargs):
 
-        return self.optimisation()
+        return self.mle
