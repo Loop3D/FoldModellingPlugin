@@ -36,32 +36,40 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         constraints : Dict[str, float]
             The constraints for the geological knowledge.
             The constraints dictionary should have the following structure:
-            dict(
-                {
-                    'tightness': {'lb':, 'ub':, 'mu':, 'sigma':, 'w':},
-                    'asymmetry': {'lb':, 'ub':, 'mu':, 'sigma':, 'w':},
-                    'fold_wavelength': {'lb':, 'ub':, 'mu':, 'sigma':, 'w':},
-                    'axial_traces': {'mu':, 'sigma':},
-                    'axial_traces': {'mu':., 'sigma':},
-                    'axial_traces': {'mu':, 'sigma':},
-                    'axial_traces': {'mu':, 'sigma':},
-                })
+            {
+                'fold_limb_rotation_angle': {
+                    'tightness': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+                    'asymmetry': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+                    'fold_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+                    'axial_trace_1': {'mu':10, 'sigma':10},
+                    'axial_traces_2': {'mu':10, 'sigma':10},
+                    'axial_traces_3': {'mu':10, 'sigma':10},
+                    'axial_traces_4': {'mu':10, 'sigma':10},
+                },
+                'fold_axis_rotation_angle': {
+                    'hinge_angle': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+                    'fold_axis_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+                },
+                'fold_axial_surface': {
+                    'axial_surface': {'lb':10, 'ub':10, 'mu':10, 'kappa':10, 'w':10}
+                }
+            }
                 lb and ub are the upper and lower bounds of the constraints and are used only for a restricted
                 optimisation mode.
                 #TODO Add initialisation check for dictionary
 
         """
-        # Initialize the x values, constraints, and coefficient
+        # Initialize the x values, constraints
         self.x = x
         self.constraints = constraints
 
         # Define the constraint names
         self.constraint_names = ['asymmetry', 'tightness', 'fold_wavelength',
-                                 'axial_traces', 'hinge_angle',
-                                 'axis_wavelength', 'axial_surface']
+                                 'axial_trace', 'hinge_angle',
+                                 'fold_axis_wavelength', 'axial_surface']
 
         # Initialize the constraint function map
-        self.constraint_function_map = None
+        self.objective_functions_map = None
 
         # Define the intercept function and splot function
         self.intercept_function = fourier_series_x_intercepts
@@ -200,7 +208,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         return likelihood
 
-    def axis_wavelength_objective_function(self, theta: np.ndarray) -> float:
+    def fold_axis_wavelength_objective_function(self, theta: np.ndarray) -> float:
         """
         Calculate the objective function for the fold axis wavelength constraint.
 
@@ -384,7 +392,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         return likelihood
 
-    def setup_constraint_functions(self):
+    def setup_objective_functions(self):
         """
         Setup the mapping between constraint names and their corresponding objective function methods.
 
@@ -393,7 +401,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         function based on the constraint name.
         """
         # Create a dictionary to map the constraint names to their corresponding objective function methods
-        self.constraint_function_map = {
+        self.objective_functions_map = {
 
             'asymmetry': self.asymmetry_objective_function,
 
@@ -401,9 +409,9 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
             'fold_wavelength': self.wavelength_objective_function,
 
-            'axis_wavelength': self.axis_wavelength_objective_function,
+            'fold_axis_wavelength': self.axis_wavelength_objective_function,
 
-            'axial_traces': self.axial_trace_objective_function,
+            'axial_trace': self.axial_trace_objective_function,
 
             'hinge_angle': self.hinge_angle_objective_function
         }
@@ -435,7 +443,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         self.check_fourier_parameters(theta)
 
         # Setup the constraint objective functions
-        self.setup_constraint_functions()
+        self.setup_objective_functions()
 
         # Initialize the total objective function value to 0
         total_objective_value = 0
@@ -452,9 +460,8 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         # Return the total objective function value
         return total_objective_value
 
-    def prepare_and_setup_constraints(self) -> List[NonlinearConstraint]:
+    def setup_objective_functions_for_restricted_mode(self) -> List[NonlinearConstraint]:
         """
-        Prepare and setup the constraints for optimisation.
 
         This function prepares the constraints by calculating the lower and upper bounds for each constraint and
         setting up the NonlinearConstraint objects from scipy.optimize. It also sets up the constraint functions.
@@ -462,8 +469,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         This function is used only when the optimisation is in a restricted mode. The restricted mode means that the
         optimisation algorithm cannot leave the parameter space defined by the geological knowledge constraints.
         The drawback of fitting a fold rotation angle model in this mode is that if the constraints provided are not
-        representative of the studied fold geometry, the fitted model will be as well not representative of the studied
-        folds.
+        representative of the studied fold geometry, the fitted model will be as well not representative.
 
         Returns
         -------
@@ -476,7 +482,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             If the constraint info is not a dictionary.
         """
         # Setup the constraint functions
-        self.setup_constraint_functions()
+        self.setup_objective_functions()
 
         # Initialize the list of constraints
         constraints = []
