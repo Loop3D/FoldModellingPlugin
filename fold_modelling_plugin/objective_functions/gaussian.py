@@ -1,6 +1,8 @@
 import numpy as np
 from typing import Union
 from utils import fourier_series, get_predicted_rotation_angle
+from scipy.stats import vonmises
+
 
 def gaussian_log_likelihood(b: Union[int, float], mu: Union[int, float], sigma: Union[int, float]) -> float:
     """
@@ -76,7 +78,6 @@ def loglikelihood_axial_surface(x: float) -> Union[int, float]:
 
 
 def loglikelihood_fourier_series(rotation_angle, fold_frame_coordinate):
-
     def objective_fourier_series(theta):
         y = np.tan(np.deg2rad(rotation_angle))
         y_pred = get_predicted_rotation_angle(theta, fold_frame_coordinate)
