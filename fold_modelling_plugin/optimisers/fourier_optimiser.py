@@ -60,8 +60,8 @@ class FourierSeriesOptimiser(FoldOptimiser):
     TODO: Add methods here.
     """
 
-    def __init__(self, fold_frame_coordinate: float, rotation_angle: float,
-                 knowledge_constraints: Optional[Dict[str, Any]] = None, x: float,
+    def __init__(self, fold_frame_coordinate: float, rotation_angle: float, x: np.ndarray,
+                 geological_knowledge: Optional[Dict[str, Any]] = None,
                  **kwargs: Dict[str, Any]):
         """
         Constructs all the necessary attributes for the Fourier Series Optimiser object.
@@ -74,20 +74,23 @@ class FourierSeriesOptimiser(FoldOptimiser):
                 The rotation angle for the optimiser.
             knowledge_constraints : dict, optional
                 The knowledge constraints for the optimiser.
-            x : float
-                The x value for the optimiser.
+            x : np.ndarray
+                The interpolated fold frame coordinate z or y np.linspace(z.min(), z.max(), 100).
+                It's used to calculate the optimised Fourier series everywhere in the model space.
             **kwargs : dict
                 Additional keyword arguments.
         """
+        FoldOptimiser.__init__(self, **kwargs)
         self.objective_value = 0
         self.fold_frame_coordinate = fold_frame_coordinate
         self.rotation_angle = np.tan(np.deg2rad(rotation_angle))
         # TODO: Add a check if the knowledge constraints are in the correct format
-        self.knowledge_constraints = knowledge_constraints
+        self.geological_knowledge = geological_knowledge
         self.x = x
         self.kwargs = kwargs
 
-    def prepare_and_setup_knowledge_constraints(self) -> Optional[Union[GeologicalKnowledgeFunctions, None]]:
+    def prepare_and_setup_knowledge_constraints(self, geological_knowledge: Optional[Dict[str, Any]] = None) -> \
+            Optional[Union[GeologicalKnowledgeFunctions, None]]:
         """
         Prepare the geological knowledge constraints and objective functions.
 
@@ -100,19 +103,11 @@ class FourierSeriesOptimiser(FoldOptimiser):
 
         # Check if knowledge constraints exist
         if self.knowledge_constraints is not None:
-            # Check if mode is restricted
-            if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
-                geological_knowledge = GeologicalKnowledgeFunctions(self.x, self.knowledge_constraints)
-                ready_constraints = geological_knowledge.setup_objective_functions_for_restricted_mode(self)
-
-                return ready_constraints
-            else:
-                geological_knowledge = GeologicalKnowledgeFunctions(self.x, self.knowledge_constraints)
-
-                return geological_knowledge
+            _geological_knowledge = super().prepare_and_setup_knowledge_constraints(geological_knowledge)
+            return _geological_knowledge
 
         # If knowledge constraints do not exist, return None
-        if self.knowledge_constraints is None:
+        if self.geological_knowledge is None:
             return None
 
     def generate_initial_guess(self) -> Union[np.ndarray, Any]:
@@ -134,6 +129,8 @@ class FourierSeriesOptimiser(FoldOptimiser):
             if self.kwargs['method'] == 'differential_evolution':
                 if 'wl_guess' in self.kwargs:
                     wl = get_wavelength_guesses(self.kwargs['wl_guess'], 1000)
+                    bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
+                    return bounds
                 else:
                     # Calculate semivariogram and get the wavelength guess
                     guess, lags, variogram = calculate_semivariogram(self.rotation_angle, self.fold_frame_coordinate)
@@ -172,7 +169,7 @@ class FourierSeriesOptimiser(FoldOptimiser):
         objective_function = loglikelihood_fourier_series(self.rotation_angle, self.fold_frame_coordinate)
 
         # Prepare and setup knowledge constraints
-        geological_knowledge = self.prepare_and_setup_knowledge_constraints()
+        geological_knowledge, solver = super().setup_optimisation()
 
         # Generate initial guess
         guess = self.generate_initial_guess()
