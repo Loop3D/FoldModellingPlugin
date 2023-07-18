@@ -331,6 +331,8 @@ class FoldModel(BaseFoldFrameBuilder):
         if knowledge_type == 'fold_axis':
             x = np.linspace(self.axial_surface[1].min(), self.axial_surface[1].max(), 100)
 
+        self.geological_knowledge.x = x
+
         # Create a FourierSeriesOptimiser instance
         fourier_opt = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x,
                                              knowledge_constraints=self.geological_knowledge[knowledge_type])
