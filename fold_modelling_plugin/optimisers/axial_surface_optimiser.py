@@ -44,7 +44,7 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
     folded_foliation (np.ndarray): The normal vector of the folded foliation.
 
     Returns:
-    np.ndarray: The normalized intersection lineation vector.
+    np.ndarray: The normalised intersection lineation vector.
     """
     # Check if the inputs are numpy arrays
     if not isinstance(axial_surface, np.ndarray):
