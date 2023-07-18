@@ -1,9 +1,12 @@
+from abc import ABC
+from typing import Dict, Any, Optional, Union, Tuple
+
 from scipy.optimize import minimize
 # import knowledge_constraints
 # importlib.reload(knowledge_constraints)
 # from modified_loopstructural.modified_foldframe import FoldFrame
 # from modified_loopstructural.extra_utils import *
-from knowledge_constraints._helper import *
+# from knowledge_constraints._helper import *
 from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
 from knowledge_constraints.splot_processor import SPlotProcessor
 from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
@@ -11,77 +14,25 @@ from LoopStructural import GeologicalModel
 from LoopStructural.modelling.features.fold import FoldEvent
 from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
 from LoopStructural.modelling.features.fold import fourier_series
-from LoopStructural.utils.helper import *
-from geological_sampler.sampling_methods import *
-from uncertainty_quantification.fold_uncertainty import *
+# from LoopStructural.utils.helper import *
+# from geological_sampler.sampling_methods import *
+# from uncertainty_quantification.fold_uncertainty import *
 import numpy as np
 import pandas as pd
-import mplstereonet
-from sklearn.preprocessing import StandardScaler
+# import mplstereonet
+# from sklearn.preprocessing import StandardScaler
 from scipy.optimize import minimize, differential_evolution
-from scipy.stats import vonmises_fisher
-
-
-def huber_loss(residuals, delta=0.5):
-    s = np.zeros(len(residuals))
-
-    for i, residual in enumerate(residuals):
-        if abs(residual) <= delta:
-            s[i] = 0.5 * residual ** 2
-        else:
-            s[i] = delta * abs(residual) - 0.5 * delta ** 2
-
-    return s
-
-
-def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=60):
-    svario = SVariogram(fold_frame, fold_rotation)
-    svario.calc_semivariogram(lag=lag, nlag=nlag)
-    wv = svario.find_wavelengths()
-    theta = np.ones(4)
-    theta[3] = wv[0]
-    theta[0] = 0
-    # py = wv[2]
-
-    return theta, svario.lags, svario.variogram
-
-
-def make_dataset_3(vec, xyz, name=None):
-    # dgx = np.tile(vec, (len(xyz), 1))
-
-    s2_dict = create_gradient_dict(x=xyz[:, 0],
-                                   y=xyz[:, 1],
-                                   z=xyz[:, 2],
-                                   nx=vec[:, 0],
-                                   ny=vec[:, 1],
-                                   nz=vec[:, 2],
-                                   feature_name=name, coord=0,
-                                   data_type='foliation')
-    dataset = pd.DataFrame()
-    dataset = dataset.append(pd.DataFrame
-                             (s2_dict, columns=['X', 'Y', 'Z', 'gx', 'gy', 'gz', 'feature_name', 'coord']))
-    return dataset
-
-
-def make_dataset_2(xyz, vec, coord=0):
-    # vec = np.array(vec)
-    # xyz = self.points
-
-    dgx = np.tile(vec, (len(xyz), 1))
-
-    s1_dict = create_gradient_dict(x=xyz[:, 0],
-                                   y=xyz[:, 1],
-                                   z=xyz[:, 2],
-                                   nx=dgx[:, 0],
-                                   ny=dgx[:, 1],
-                                   nz=dgx[:, 2],
-                                   feature_name='s1', coord=coord,
-                                   data_type='foliation')
-    # s1_dict = make_constant(s1_dict)
-    dataset = pd.DataFrame()
-    dataset = dataset.append(pd.DataFrame
-                             (s1_dict, columns=['X', 'Y', 'Z', 'gx', 'gy', 'gz', 'feature_name', 'coord']))
-    return dataset
+from scipy.stats import vonmises_fisher, vonmises
+from fold_optimiser import FoldOptimiser
+from fold_modelling_plugin.objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
+from fold_modelling_plugin.input import CheckInputData
+from fold_modelling_plugin.utils import calculate_semivariogram, \
+    fourier_series, \
+    strike_dip_to_vector, normal_vector_to_strike_and_dip, \
+from fold_modelling_plugin.objective_functions.von_mises_fisher import VonMisesFisher
+from fold_modelling_plugin.objective_functions.axial_plane import is_axial_plane_compatible
+from fold_modelling_plugin.fold_model import FoldModel
+from fold_modelling_plugin.objective_functions.gaussian import loglikelihood_axial_surface
 
 
 def calculate_intersection_lineation(axial_surface, folded_foliation):
@@ -114,109 +65,250 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
     return intesection_lineation
 
 
-def get_fold_curves(geological_feature, fold_axis=None):
-    if fold_axis is not None:
-        x = np.linspace(geological_feature.fold.foldframe[1].min(),
-                        geological_feature.fold.foldframe[1].max(), 200)
-        curve = geological_feature.fold.fold_axis_rotation(x)
-        return x, curve
-
-    if fold_axis is None:
-        x = np.linspace(geological_feature.fold.foldframe[0].min(),
-                        geological_feature.fold.foldframe[0].max(), 200)
-        curve = geological_feature.fold.fold_limb_rotation(x)
-        return x, curve
-
-
-
-
-
-def scale(data):
-    mms = StandardScaler()
-    mms.fit(data)
-    data_transformed = mms.transform(data)
-
-    return data_transformed
-
-
 # def logp(value: TensorVariable, mu: TensorVariable) -> TensorVariable:
 #     return -(value - mu)**2
 
 
-class AxialSurfaceOptimizer:
-    def __init__(self, grid, bounding_box, folded_foliation_data, constraints, model,
-                 axial_strike_dip=None,
-                 wavelength_guess=None,
-                 guess_method='plane_fit'):
-        self.orientation_data = folded_foliation_data
-        self.axial_strike_dip = axial_strike_dip
-        self.initial_axial_guess = None
-        self.wavelength_guess = wavelength_guess
-        self.model = model  # self.model_initialisation()
-        self.guess_method = guess_method
-        self.grid = grid
-        self.axial_surface = None
-        self.optimised_axial_surface = None
-        self.constraints = constraints
-        self.points = self.model.rescale(self.model.data[['X', 'Y', 'Z']].to_numpy())
-        self.fitted_params = None
-        self.coords = self.model.data[['X', 'Y', 'Z']].to_numpy()
-        self.fold = None
+class AxialSurfaceOptimiser(FoldOptimiser, FoldModel, ABC):
+    """
+        Optimiser for Axial Surfaces.
+
+        This class inherits from FoldOptimiser, FoldModel and ABC. It is used to optimise the axial surfaces
+        based on the provided data, bounding box, geological knowledge.
+
+    """
+
+    def __init__(self, data: pd.DataFrame,
+                 bounding_box: Union[list, np.ndarray],
+                 geological_knowledge: Optional[Dict[str, Any]] = None,
+                 **kwargs: Dict[str, Any]):
+
+        """
+                Initialise the AxialSurfaceOptimiser with data, bounding box, geological knowledge and other parameters.
+
+                Parameters
+                ----------
+                data : pd.DataFrame
+                    The input data for optimisation.
+                bounding_box : Union[list, np.ndarray]
+                    The bounding box for the optimisation.
+                geological_knowledge : Optional[Dict[str, Any]], optional
+                    The geological knowledge used for optimisation, by default None.
+                **kwargs : Dict[str, Any]
+                    Other optional parameters for optimisation. Can include scipy optimisation parameters for
+                    differential evolution and trust-constr methods.
+                    mode : str, optional, optimisation mode, can be 'restricted' or 'unrestricted',
+                    by default 'unrestricted'.
+                    method : str, optional, optimisation method, can be 'differential_evolution' or 'trust-region',
+                    by default 'differential_evolution'.
+
+                """
+
+        # Check the input data
+        check_input = CheckInputData(data, bounding_box,
+                                     knowledge_constraints=geological_knowledge, **kwargs)
+        check_input.check_input_data()
+
+        FoldOptimiser.__init__(self, **kwargs)
+        FoldModel.__init__(self, data, bounding_box, geological_knowledge=geological_knowledge, **kwargs)
+
+        self.data = data
         self.bounding_box = bounding_box
+        self.geological_knowledge = geological_knowledge
+        self.kwargs = kwargs
+        self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
+        self.geo_objective = None
+        self.objective_function = None
+        self.guess = None
+        self.solver = None
 
 
-    def initial_guess(self):
+    def loglikelihood(self, x, predicted_foliation: np.ndarray,
+                      geological_knowledge: GeologicalKnowledgeFunctions) -> float:
+        """
+         Calculate the maximum likelihood estimate of the axial surface and the geological knowledge.
 
-        if self.axial_strike_dip is not None:
+         Parameters
+         ----------
+         x : np.ndarray
+             The axial surface normal vector to be optimised.
+         predicted_foliation : np.ndarray
+             The predicted foliation data.
+         geological_knowledge : GeologicalKnowledgeFunctions
+             The geological knowledge functions.
 
-            self.initial_axial_guess = self.axial_strike_dip
+         Returns
+         -------
+         float
+             The calculated loglikelihood of the axial surface. Returns None if input is not valid.
+         """
 
-    def setup_optimisation():
-        pass
+        # Calculate the angle difference between the predicted and observed foliation
+        angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
+        # Calculate the loglikelihood of the axial surface
+        loglikelihood = loglikelihood_axial_surface(angle_difference) + geological_knowledge(x)
 
+        return loglikelihood
 
+    def mle_optimisation(self, strike_dip: Tuple[float, float]):
+        """
+        Performs Maximum Likelihood Estimation (MLE) optimisation.
 
-    def find_axial_surface(self):
-        init = self.initial_guess()
-        x0 = self.initial_axial_guess
-        # n = 30
-        # V = generate_directional_training_dataset(x0,
-        #                                           concentration=100,
-        #                                           size=n)
-        # init_pos = V['normals']
-        # init_pos /= np.linalg.norm(init_pos, axis=1)[:, None]
-        # del V
-        # gc.collect()
-        # min_nx = init_pos[:, 0].min()
-        # max_nx = init_pos[:, 0].max()
-        # min_ny = init_pos[:, 1].min()
-        # max_ny = init_pos[:, 1].max()
-        # min_nz = init_pos[:, 2].min()
-        # max_nz = init_pos[:, 2].max()
-        # bounds = np.array([(min_nx, max_nx),
-        #                    (min_ny, max_ny),
-        #                    (min_nz, max_nz)])
-        # mu, sigma = 80, 10 # mean and standard deviation
-        np.random.seed(180)
-        dip = np.random.normal(80, 10, 20)
-        strike = np.random.normal(110, 10, 20)
-        mask = dip < 90
-        dip = dip[mask]
-        strike = strike[mask]
-        init_pos = np.array([strike, dip]).T
-        bounds = np.array([(0, 360), (0, 90)])  # np.array([(-1, 1), (-1, 1), (-1, 1)])
-        best_pos = differential_evolution(self.mle_objective,
-                                          bounds,
-                                          # x0=[0.9999999, -0., 0.],
-                                          init=init_pos,
-                                          # init='sobol',
-                                          strategy='best2exp',
-                                          # mutation=(0.2, 0.45),
-                                          polish=True,
-                                          )
-        x = best_pos.x
-        x /= np.linalg.norm(x)
+        Parameters
+        ----------
+        strike_dip : tuple
+            A tuple containing strike and dip values of the estimated axial surface.
 
-        self.optimised_axial_surface = x
+        Returns
+        -------
+        logpdf : float
+            The log-likelihood of the MLE.
 
-        return self.optimised_axial_surface
+        Notes
+        -----
+        This function performs MLE optimisation and used when geological knowledge constraints are provided.
+        The function returns the log-likelihood of the MLE that is optimised
+        """
+
+        axial_normal = strike_dip_to_vector(*strike_dip)
+        axial_normal /= np.linalg.norm(axial_normal)
+
+        predicted_foliation = self.get_predicted_foliation(strike_dip)
+        logpdf = -self.loglikelihood(axial_normal, predicted_foliation, self.geo_objective)
+        return logpdf
+
+    def angle_optimisation(self, strike_dip: Tuple[float, float]):
+        """
+            Minimises the angle between the observed and predicted folded foliation.
+
+            Parameters
+            ----------
+            strike_dip : tuple
+                A tuple containing strike and dip values of the estimated axial surface.
+
+            Returns
+            -------
+            angle_difference : float
+                The difference between the predicted and actual angle.
+
+            Notes
+            -----
+            This function optimises the axial surface by minimising the angle between the predicted and observed folded
+            foliation. This function is used when there are no geological knowledge constraints provided.
+        """
+
+        axial_normal = strike_dip_to_vector(*strike_dip)
+        axial_normal /= np.linalg.norm(axial_normal)
+        predicted_foliation = self.get_predicted_foliation(axial_normal)
+        angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
+        return angle_difference
+
+    def generate_initial_guess(self):
+        """
+        Generate the initial guess for the optimisation for differential evolution algorithm.
+        The initial guess is generated using the Von Mises Fisher distribution.
+
+        """
+        if 'axial_surface_guess' in self.kwargs:
+            guess = self.kwargs['axial_surface_guess']
+            if len(guess) == 2:
+                # Create a VonMisesFisher distribution with the given parameters
+                mu = strike_dip_to_vector(*guess)
+                kappa = 5
+                vmf = VonMisesFisher(mu, kappa)
+                # Sample from the distribution
+                initial_guess = vmf.draw_samples(size=20, random_state=180)
+                initial_guess = normal_vector_to_strike_and_dip(initial_guess)
+                return initial_guess
+
+            if len(guess) == 3:
+                mu = guess
+                # normalise guess
+                mu /= np.linalg.norm(mu)
+                kappa = 5
+                vmf = VonMisesFisher(mu, kappa)
+                # Sample from the distribution
+                initial_guess = vmf.draw_samples(size=20, random_state=180)
+                initial_guess = normal_vector_to_strike_and_dip(initial_guess)
+                return initial_guess
+            else:
+                raise ValueError("'axial_surface_guess' should be a list or a np.array "
+                                 "of the form [strike, dip] or a 3D unit vector")
+
+        if 'axial_surface_guess' not in self.kwargs:
+            # use the halton method to initialise the optimisation
+            return 'halton'
+
+    def setup_optimisation(self, geological_knowledge: Optional[Dict[str, Any]] = None):
+        """
+           Sets up the optimisation algorithm.
+
+           Parameters
+           ----------
+           geological_knowledge : dict, optional
+               A dictionary containing geological knowledge. Default is None.
+
+           Returns
+           -------
+           objective_function : callable
+               The objective function to be minimised.
+           _geological_knowledge : dict or None
+               The geological knowledge objective functions.
+           solver : BaseOptimiser
+               The solver from BaseOptimiser to be used for optimisation.
+           guess : Union[np.ndarray, str]
+               The initial guess for the optimisation.
+        """
+        # TODO - check format of the geological knowledge dictionary
+        _geological_knowledge, solver = super().setup_optimisation(geological_knowledge)
+        # guess = self.generate_initial_guess()
+
+        # Generate initial guess
+        guess = self.generate_initial_guess()
+        # Setup objective function
+        if _geological_knowledge is not None:
+            # if _geological_knowledge exists then use the negative logpdf of the Von Mises distribution
+            # as the objective function to minimise
+            objective_function = self.mle_optimisation()
+
+        # if no geological knowledge is provided then use the angle difference between the predicted and observed
+        # foliation as the objective function to minimise
+        else:
+            objective_function = self.angle_optimisation()
+
+        return objective_function, _geological_knowledge, solver, guess
+
+    def optimise(self, geological_knowledge: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Runs the optimisation.
+
+        Parameters
+        ----------
+        geological_knowledge : dict, optional
+            A dictionary containing geological knowledge. Default is None.
+
+        Returns
+        -------
+        opt : Dict
+            The result of the optimisation.
+
+        Notes
+        -----
+        This function runs the optimisation by setting up the optimisation problem,
+        checking if geological knowledge exists, and running the solver.
+        """
+        # Setup optimisation
+        self.objective_function, self.geo_objective, self.solver, self.guess = \
+            self.setup_optimisation(geological_knowledge['fold_axial_surface'])
+
+        # Check if geological knowledge exists
+        if geological_knowledge is not None:
+            # Check if mode is restricted
+            if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
+                opt = self.solver(self.objective_function, x0=self.guess, constraints=self.geo_objective)
+            else:
+                pass
+        else:
+            opt = self.solver(self.objective_function, x0=self.guess)
+
+        return opt
