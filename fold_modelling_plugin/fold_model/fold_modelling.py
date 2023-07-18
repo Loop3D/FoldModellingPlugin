@@ -1,5 +1,5 @@
 # from knowledge_constraints._helper import *
-from typing import Union, Dict, Any, List
+from typing import Union, Dict, Any, List, Optional
 
 from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
 from knowledge_constraints.splot_processor import SPlotProcessor
@@ -19,6 +19,7 @@ from from_loopstructural._fold import FoldEvent
 from from_loopstructural._fold_frame import FoldFrame
 from from_loopstructural._svariogram import SVariogram
 from base_fold_frame_builder import BaseFoldFrameBuilder
+from fold_modelling_pluging.optimisers.fourier_optimiser import FourierSeriesOptimiser
 
 
 def fold_function(params):
@@ -31,7 +32,7 @@ def fold_function(params):
 
 class FoldModel(BaseFoldFrameBuilder):
     """
-    A class used to represent a fold model.
+    A class used to build a fold model.
 
     ...
 
@@ -61,6 +62,7 @@ class FoldModel(BaseFoldFrameBuilder):
 
     def __init__(self, data: pd.DataFrame,
                  bounding_box: Union[list, np.ndarray],
+                 geological_knowledge: Optional[Dict[str, Any]] = None,
                  **kwargs: Dict[str, Any]):
         """
         Constructs all the necessary attributes for the FoldModel object.
@@ -74,7 +76,8 @@ class FoldModel(BaseFoldFrameBuilder):
             **kwargs : dict
                 additional keyword arguments
         """
-        data_processor = InputDataProcessor(data, bounding_box)
+        data_processor = InputDataProcessor(data, bounding_box,
+                                            knowledge_constraints=geological_knowledge)
         self.data = data_processor.process_data()
         self.bounding_box = bounding_box
         self.model = None
@@ -84,6 +87,7 @@ class FoldModel(BaseFoldFrameBuilder):
         self.kwargs = kwargs
         self.axial_surface = None
         self.scaled_points = None
+        self.geological_knowledge = geological_knowledge
 
     def initialise_model(self) -> None:
         """
@@ -166,7 +170,7 @@ class FoldModel(BaseFoldFrameBuilder):
         # update the model
         self.model.update(progressbar=False)
 
-    def create_and_build_fold_event(self) -> Any:
+    def create_and_build_fold_event(self) -> FoldEvent:
         """
         Creates and builds a fold event.
 
@@ -205,7 +209,7 @@ class FoldModel(BaseFoldFrameBuilder):
                                                               axis=av_fold_axis)
 
             # fit a fourier series to the fold limb rotation
-            fitted_flr = self.fit_fourier_series(fld, flr, constr_type='fold_limb')
+            fitted_flr = self.fit_fourier_series(fld, flr, knowledge_type='fold_limb')
 
             # create a fold function from the fitted fourier series
             fold_limb_rotation_function = fold_function(fitted_flr)
@@ -224,7 +228,7 @@ class FoldModel(BaseFoldFrameBuilder):
                                                               fold_axis=self.kwargs['fold_axis'])
 
             # fit a fourier series to the calculated fold axis rotation angle
-            fitted_far = self.fit_fourier_series(fad, far, constr_type='fold_axis')
+            fitted_far = self.fit_fourier_series(fad, far, knowledge_type='fold_axis')
 
             # create a fold function from the fitted fourier series
             fold_axis_rotation_function = fold_function(fitted_far)
@@ -238,7 +242,7 @@ class FoldModel(BaseFoldFrameBuilder):
                                                               axis=fold.get_fold_axis_orientation)
 
             # fit a fourier series to the fold limb rotation
-            fitted_flr = self.fit_fourier_series(fld, flr, constr_type='fold_limb')
+            fitted_flr = self.fit_fourier_series(fld, flr, knowledge_type='fold_limb')
 
             # create a fold function from the fitted fourier series
             fold_limb_rotation_function = fold_function(fitted_flr)
@@ -301,85 +305,99 @@ class FoldModel(BaseFoldFrameBuilder):
 
         return theta
 
-    def fit_fourier_series(self, fold_frame, rotation_angle, constr_type='fold_limb'):
-        # fit a fourier series to the rotation angles and the scalar field
-        # flr, fld = self.calculate_fold_rotation_angle()
-        guess = self.calculate_svariogram(fold_frame, rotation_angle)
-        # print(guess[3])
-        if constr_type == 'fold_limb':
-            x = np.linspace(self.axial_surface[0].min(),
-                            self.axial_surface[0].max(), 100)
-        if constr_type == 'fold_axis':
-            x = np.linspace(self.axial_surface[1].min(),
-                            self.axial_surface[1].max(), 100)
+    def fit_fourier_series(self, fold_frame_coordinate: np.ndarray, rotation_angle: np.ndarray,
+                           knowledge_type: str = 'fold_limb') -> List[float]:
+        """
+        Fit the Fourier series.
 
-        # print(x)
-        fourier_opt = FourierSeriesOptimiser(fold_frame, rotation_angle,
-                                             self.constraints[constr_type], x,
-                                             at_constrain_only=None,
-                                             coeff=4)
-        # fourier_loglike = fourier_opt.objective_value
-        # print(guess[3])
-        opt = fourier_opt.fit_constrained_fourier_series(guess[3], x0=guess)
+        Parameters
+        ----------
+        fold_frame_coordinate : np.ndarray
+            The fold frame coordinate.
+        rotation_angle :  np.ndarray
+            The fold limb or axis rotation angle.
+        knowledge_type : str, optional
+            The type of knowledge, use 'fold_limb' or 'fold_axis', by default 'fold_limb'.
 
-        return opt
+        Returns
+        -------
+        List[float]
+            Returns the result of the optimisation.
+        """
 
-    def get_predicted_bedding(self, fld, flr, fitted_params):
+        # Check the type of knowledge and generate x accordingly
+        if knowledge_type == 'fold_limb':
+            x = np.linspace(self.axial_surface[0].min(), self.axial_surface[0].max(), 100)
+        if knowledge_type == 'fold_axis':
+            x = np.linspace(self.axial_surface[1].min(), self.axial_surface[1].max(), 100)
 
-        # calculate the fold direction using the fourier parameters
-        fold_limb_rotation = FoldRotationAngle(flr, fld)
-        # fold_limb_rotation.fitted_params = theta
-        fold_limb_rotation.set_function(lambda x: np.rad2deg(
-            np.arctan(fourier_series(x, *fitted_params))))
-        s1g = self.axial_surface[0].evaluate_gradient(self.coords)
+        # Create a FourierSeriesOptimiser instance
+        fourier_opt = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x,
+                                             knowledge_constraints=self.geological_knowledge[knowledge_type])
+
+        # Optimise the Fourier series
+        opt = fourier_opt.optimise()
+
+        return opt.x
+
+    def calculate_folded_foliation_vectors(self) -> np.ndarray:
+        """
+        Calculate the folded foliation vectors.
+
+        Returns
+        -------
+        List[float]
+            Returns the predicted bedding.
+        """
+
+        # Create and build fold event
+        fold = self.create_and_build_fold_event()
+
+        # Evaluate and normalize the gradient
+        s1g = self.axial_surface[0].evaluate_gradient(self.scaled_points)
         s1g /= np.linalg.norm(s1g, axis=1)[:, None]
-        # print(len(s1g))
-        fold_axis = calculate_intersection_lineation(s1g, self.orientation_data)
-        mean_fold_axis = fold_axis.mean(0)
-        mean_fold_axis /= np.linalg.norm(mean_fold_axis)
-        # print(len(fold_axis))
-        fold = FoldEvent(self.axial_surface,
-                         fold_limb_rotation=fold_limb_rotation,
-                         fold_axis=mean_fold_axis)
-        fold_direction, fold_axis, zg = fold.get_deformed_orientation(self.coords)
+
+        # Get deformed orientation and normalize the fold direction
+        fold_direction, fold_axis, gz = fold.get_deformed_orientation(self.scaled_points)
         fold_direction /= np.linalg.norm(fold_direction, axis=1)[:, None]
+
+        # Correct any vector to be consistent with the axial surface orientation
         dot = np.einsum('ij,ij->i', s1g, fold_direction)
         fold_direction[dot < 0] *= -1
+
+        # Calculate predicted bedding and normalize it
         predicted_bedding = np.cross(fold_axis, fold_direction)
         predicted_bedding /= np.linalg.norm(predicted_bedding, axis=1)[:, None]
 
-        # free up memory
-        del fold_direction, fold_axis, fold, dot, s1g, fold_limb_rotation
+        # TODO write function that free up memory
+        # Free up memory
+        del fold_direction, fold_axis, fold, dot, s1g
         gc.collect()
 
         return predicted_bedding
 
-    def get_predicted_bedding_2(self, fold):
+    def get_predicted_foliation(self, axial_normal: np.ndarray) -> np.ndarray:
+        """
+        Get the predicted foliation.
 
-        #         # calculate the fold direction using the fourier parameters
-        #         fold_limb_rotation = FoldRotationAngle(flr, fld)
-        #         # fold_limb_rotation.fitted_params = theta
-        #         fold_limb_rotation.set_function(lambda x: np.rad2deg(
-        #                 np.arctan(fourier_series(x, *ffitted_params))))
+        Parameters
+        ----------
+        axial_normal : np.ndarray
+            The axial foliation normal vector.
 
-        #         fold_axis_rotation = FoldRotationAngle(far, fad)
-        #         fold_axis_rotation.set_function(lambda x: np.rad2deg(
-        #                 np.arctan(fourier_series(x, *afitted_params))))
+        Returns
+        -------
+        np.ndarray
+            Returns the normal vectors to the predicted foliation.
+        """
 
-        s1g = self.axial_surface[0].evaluate_gradient(self.coords)
-        s1g /= np.linalg.norm(s1g, axis=1)[:, None]
-        # print(len(s1g))
-        # print(len(fold_axis))
-        # fold = FoldEvent(self.axial_surface,
-        #                  fold_limb_rotation=fold_limb_rotation,
-        #                  fold_axis_rotation=fold_axis_rotation)
-        fold_direction, fold_axis = fold.get_deformed_orientation(self.coords)
-        fold_direction /= np.linalg.norm(fold_direction, axis=1)[:, None]
-        dot = np.einsum('ij,ij->i', s1g, fold_direction)
-        fold_direction[dot < 0] *= -1
-        predicted_bedding = np.cross(fold_axis, fold_direction)
-        predicted_bedding /= np.linalg.norm(predicted_bedding, axis=1)[:, None]
-        # predicted_bedding = rotate_vector(predicted_bedding, np.pi, dimension=3)
-        print(predicted_bedding)
+        # Build the fold frame
+        self.build_fold_frame(axial_normal)
 
-        return predicted_bedding
+        # Create and build fold event
+        self.create_and_build_fold_event()
+
+        # Calculate folded foliation vectors
+        predicted_foliation = self.calculate_folded_foliation_vectors()
+
+        return predicted_foliation
