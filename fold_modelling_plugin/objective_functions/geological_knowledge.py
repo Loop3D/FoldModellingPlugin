@@ -22,7 +22,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
     """
 
-    def __init__(self, x: np.ndarray, constraints: Dict[str, float]):
+    def __init__(self, constraints: Dict[str, float], x=np.ndarray,):
 
         # TODO add attribute to use any custom function otherwise use gaussian likelihood
         """
@@ -54,7 +54,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
                     'axial_surface': {'lb':10, 'ub':10, 'mu':10, 'kappa':10, 'w':10}
                 }
             }
-                lb and ub are the upper and lower bounds of the constraints and are used only for a restricted
+                lb and ub are the lower and the upper bounds of the constraints and are used only for a restricted
                 optimisation mode.
                 #TODO Add initialisation check for dictionary
 
@@ -413,7 +413,9 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
             'axial_trace': self.axial_trace_objective_function,
 
-            'hinge_angle': self.hinge_angle_objective_function
+            'hinge_angle': self.hinge_angle_objective_function,
+
+            'axial_surface': self.axial_surface_objective_function
         }
 
     def __call__(self, theta: np.ndarray) -> float:
@@ -440,7 +442,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Check if theta is an array and has at least 4 parameters
         # If not, an exception will be raised
-        self.check_fourier_parameters(theta)
+        # self.check_fourier_parameters(theta)
 
         # Setup the constraint objective functions
         self.setup_objective_functions()
