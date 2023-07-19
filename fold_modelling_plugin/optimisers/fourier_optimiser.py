@@ -86,6 +86,7 @@ class FourierSeriesOptimiser(FoldOptimiser):
         self.rotation_angle = np.tan(np.deg2rad(rotation_angle))
         # TODO: Add a check if the knowledge constraints are in the correct format
         self.geological_knowledge = geological_knowledge
+        # TODO: check how to initialise self.x = x in self.geological_knowledge
         self.x = x
         self.kwargs = kwargs
 
