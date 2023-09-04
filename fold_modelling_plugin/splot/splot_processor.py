@@ -20,7 +20,7 @@ class SPlotProcessor:
         }
         self.constraints = constraints
 
-    def find_amax_amin(self, theta):
+    def find_amax_amin(self, theta, v='radians'):
         """
             Helper method to find the amax and amin values of a fold rotation angle curve
 
@@ -36,11 +36,20 @@ class SPlotProcessor:
             amin : float
                 The minimum value of the curve in radians
             """
-        curve = self.calculate_splot(self.x, theta)
-        amax = np.arctan(np.deg2rad(curve.max()))
-        amin = np.arctan(np.deg2rad(curve.min()))
 
-        return amax, amin
+        curve = self.calculate_splot(self.x, theta)
+
+        if v == 'radians':
+            amax = np.arctan(np.deg2rad(curve.max()))
+            amin = np.arctan(np.deg2rad(curve.min()))
+
+            return amax, amin
+
+        if v == 'degrees':
+            amax = curve.max()
+            amin = curve.min()
+
+            return amax, amin, curve
 
     def calculate_splot(self, fold_frame, theta):
         """
@@ -103,5 +112,10 @@ class SPlotProcessor:
                 The asymmetry of the curve measured in degrees.
 
             """
-        amax, amin = self.find_amax_amin(theta)
-        return np.rad2deg(np.tan((amax + amin) / 2))
+
+        amax, amin, curve = self.find_amax_amin(theta, v='degrees')
+        median = np.median(curve)
+        tightness_range = amax + amin
+        asymmetry = median / tightness_range
+
+        return asymmetry
