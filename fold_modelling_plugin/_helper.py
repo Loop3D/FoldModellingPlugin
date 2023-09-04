@@ -1,9 +1,9 @@
-from modified_loopstructural.extra_utils import *
+# from modified_loopstructural.extra_utils import *
 import numpy as np
 import joblib as jb
-from LoopStructural.modelling.features.fold import fourier_series
-from uncertainty_quantification.fold_uncertainty import *
-import dill
+from LoopStructural._modelling._features.fold import fourier_series
+# from uncertainty_quantification.fold_uncertainty import *
+# import dill
 import mplstereonet
 import pandas as pd
 
@@ -37,7 +37,7 @@ def parallel(function, array, jobs=1):
 def axial_plane_stereonet(strike, dip):
     """
     Calculate the axial plane in a stereonet given the strike and dip angles.
-    https://mplstereonet.readthedocs.io/en/latest/examples/axial_plane.html
+    credit: https://mplstereonet.readthedocs.io/en/latest/examples/axial_plane.html
 
     Parameters:
     strike (np.ndarray): The strike angles in degrees.
@@ -157,7 +157,8 @@ def create_gradient_dict(x=None, y=None, z=None,
     return dictionary
 
 
-def make_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: int = 0) -> pd.DataFrame:
+def make_dataset(vec: np.ndarray, points: np.ndarray,
+                 name: str = 's0', coord: int = 0) -> pd.DataFrame:
     """
 
     Make a dataset from one unit vector and xyz points of the folded feature data.
