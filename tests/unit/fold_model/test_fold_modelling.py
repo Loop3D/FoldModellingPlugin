@@ -1,7 +1,11 @@
 import unittest
 import pandas as pd
 import numpy as np
-from fold_modelling_plugin.fold_model.fold_modelling import FoldModel
+import sys
+
+# sys.path.append("/FoldModellingPlugin/fold_modelling_plugin/fold_model")
+from FoldModellingPlugin.fold_modelling_plugin.fold_model.fold_modelling import FoldModel
+
 
 class TestFoldModel(unittest.TestCase):
 
@@ -62,6 +66,7 @@ class TestFoldModel(unittest.TestCase):
         folded_foliation_vectors = self.fold_model.calculate_folded_foliation_vectors()
         self.assertTrue(isinstance(folded_foliation_vectors, np.ndarray))
         self.assertEqual(len(folded_foliation_vectors), len(self.data))
+
 
 if __name__ == '__main__':
     unittest.main()

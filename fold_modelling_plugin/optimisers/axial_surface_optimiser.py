@@ -14,7 +14,7 @@ from LoopStructural import GeologicalModel
 from LoopStructural.modelling.features.fold import FoldEvent
 from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
 from LoopStructural.modelling.features.fold import fourier_series
-# from LoopStructural.utils.helper import *
+# from LoopStructural.helper.helper import *
 # from geological_sampler.sampling_methods import *
 # from uncertainty_quantification.fold_uncertainty import *
 import numpy as np

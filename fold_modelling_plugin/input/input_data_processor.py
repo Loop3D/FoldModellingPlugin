@@ -1,8 +1,8 @@
 import pandas as pd
 from typing import List, Optional, Dict
 import numpy as np
-import CheckInputData
-from fold_modelling_plugin._helper import *
+from .input_data_checker import CheckInputData
+from FoldModellingPlugin.fold_modelling_plugin.helper._helper import *
 
 
 class InputDataProcessor(CheckInputData):

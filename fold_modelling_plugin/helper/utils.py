@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+from ..from_loopstructural._svariogram import SVariogram
 from typing import Union
 
 

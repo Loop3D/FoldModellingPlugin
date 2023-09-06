@@ -1,10 +1,8 @@
-import logging
+# import logging
+# from ....utils import getLogger
+# logger = getLogger(__name__)
 
 import numpy as np
-
-from ....utils import getLogger
-
-logger = getLogger(__name__)
 
 
 def find_peaks_and_troughs(x, y):
@@ -83,22 +81,22 @@ class SVariogram:
         -------
 
         """
-        logger.info("Calculating S-Variogram")
+        # logger.info("Calculating S-Variogram")
         if lag is not None:
             step = lag
-            logger.info(f"Using lag: {step} kwarg for S-variogram")
+            # logger.info(f"Using lag: {step} kwarg for S-variogram")
 
         if nlag is not None:
             nstep = nlag
-            logger.info(f"Using nlag {nstep} kwarg for s-variogram")
+            # logger.info(f"Using nlag {nstep} kwarg for s-variogram")
 
             self.lags = np.arange(step / 2.0, nstep * step, step)
 
         if nlag is None and lag is not None:
             nstep = int(np.ceil((np.nanmax(self.xdata) - np.nanmin(self.xdata)) / step))
-            logger.info(
-                f"Using lag kwarg but calculating nlag as {nstep} for s-variogram"
-            )
+            # logger.info(
+            #     f"Using lag kwarg but calculating nlag as {nstep} for s-variogram"
+            # )
 
             self.lags = np.arange(step / 2.0, nstep * step, step)
 
@@ -115,14 +113,14 @@ class SVariogram:
             # find number of steps to cover range in data
             nstep = int(np.ceil((np.nanmax(self.xdata) - np.nanmin(self.xdata)) / step))
             if nstep > 200:
-                logger.warning(f"Variogram has too many steps: {nstep}, using 200")
+                # logger.warning(f"Variogram has too many steps: {nstep}, using 200")
                 maximum = step * nstep
                 nstep = 200
                 step = maximum / nstep
             self.lags = np.arange(step / 2.0, nstep * step, step)
-            logger.info(
-                f"Using average minimum nearest neighbour distance as lag distance size {step} and using {nstep} lags"
-            )
+            # logger.info(
+            #     f"Using average minimum nearest neighbour distance as lag distance size {step} and using {nstep} lags"
+            # )
         tol = self.lags[1] - self.lags[0]
         self.variogram = np.zeros(self.lags.shape)
         self.variogram[:] = np.nan

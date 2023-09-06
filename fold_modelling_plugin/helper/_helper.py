@@ -1,7 +1,7 @@
 # from modified_loopstructural.extra_utils import *
 import numpy as np
 import joblib as jb
-from LoopStructural._modelling._features.fold import fourier_series
+from LoopStructural.modelling.features.fold import fourier_series
 # from uncertainty_quantification.fold_uncertainty import *
 # import dill
 import mplstereonet

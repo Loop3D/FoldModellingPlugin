@@ -1,12 +1,9 @@
-import logging
+# import logging
+# from ....utils import getLogger
+# logger = getLogger(__name__)
 
 import numpy as np
-
-from loopstructural.modelling.features._structural_frame import StructuralFrame
-
-from ....utils import getLogger
-
-logger = getLogger(__name__)
+from LoopStructural.modelling.features._structural_frame import StructuralFrame
 
 
 class FoldFrame(StructuralFrame):
