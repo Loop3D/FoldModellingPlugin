@@ -1,13 +1,15 @@
 from typing import Optional, Dict, Any, Union
 import pandas as pd
 import numpy as np
-from fold_modelling_plugin.input.input_data_checker import CheckInputData
-from base_optimiser import BaseOptimiser
+from ..input.input_data_checker import CheckInputData
+from ..helper._helper import *
+from ..helper.utils import *
+from .base_optimiser import BaseOptimiser
 from abc import ABC, abstractmethod
-from fold_modelling_plugin.objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
+from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 
 
-class FoldOptimiser(ABC, BaseOptimiser):
+class FoldOptimiser(BaseOptimiser):
     """
     Base class for fold geometry optimisation.
     """

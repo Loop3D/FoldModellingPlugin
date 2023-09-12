@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from LoopStructural import GeologicalModel
 from ..helper._helper import *
+from ..helper.utils import *
 # from
 from ..input.input_data_processor import InputDataProcessor
 from ..from_loopstructural._fold import FoldEvent

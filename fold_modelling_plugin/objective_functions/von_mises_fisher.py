@@ -1,5 +1,5 @@
 from typing import List
-rom scipy.stats import vonmises_fisher
+from scipy.stats import vonmises_fisher
 import numpy as np
 
 

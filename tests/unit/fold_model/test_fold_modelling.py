@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import sys
 
-# sys.path.append("/FoldModellingPlugin/fold_modelling_plugin/fold_model")
-from FoldModellingPlugin.fold_modelling_plugin.fold_model.fold_modelling import FoldModel
+# sys.path.append("/FoldModellingPlugin/fold_modelling_plugin/fold_modelling")
+from FoldModellingPlugin.fold_modelling_plugin.fold_modelling.engine import FoldModel
 
 
 class TestFoldModel(unittest.TestCase):
@@ -14,6 +14,7 @@ class TestFoldModel(unittest.TestCase):
             'X': [1, 2, 3],
             'Y': [4, 5, 6],
             'Z': [7, 8, 9],
+            'feature_name': ['s0', 's0', 's0'],
             'gx': [0.1, 0.2, 0.3],
             'gy': [0.4, 0.5, 0.6],
             'gz': [0.7, 0.8, 0.9]

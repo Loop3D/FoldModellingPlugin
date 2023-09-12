@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+from typing import List, Optional, Dict
 
 class CheckInputData:
     """
@@ -55,7 +55,6 @@ class CheckInputData:
                 all(column in self.folded_foliation_data.columns for column in ['gx', 'gy', 'gz'])):
             raise ValueError("Foliation data must have either strike, dip or gx, gy, gz columns.")
 
-
     def check_knowledge_constraints(self):
         """
         Check the knowledge constraints dictionary format
@@ -77,7 +76,7 @@ class CheckInputData:
             # check if the knowledge constraints has one of the keys: tightness, asymmetry,
             # fold_wavelength, axial_trace, axial_surface
             if not any(key in self.knowledge_constraints for key in ['tightness', 'asymmetry', 'fold_wavelength',
-                                                                     'axial_trace', 'axial_surface']):
+                                                                        'axial_trace', 'axial_surface']):
                 raise ValueError("Knowledge constraints must have one of the keys: tightness, asymmetry, "
                                  "fold_wavelength, axial_trace, axial_surface.")
             # check if the knowledge constraints has the correct format for each key (mu, sigma, w)
@@ -99,9 +98,8 @@ class CheckInputData:
         if not isinstance(self.bounding_box, (np.ndarray, list)):
             raise TypeError("Bounding box must be a numpy array or a list.")
         # check if the bounding box has the correct format
-        if not len(self.bounding_box[0]) == 3 or not len(self.bounding_box[1]) == 3:
+        if not len(self.bounding_box[0]) == 3 and not len(self.bounding_box[1]) == 3:
             raise ValueError("Bounding box must have the following format: [[minX, maxX, minY], [maxY, minZ, maxZ]]")
-
 
     # write a function that checks all the input data
     def check_input_data(self):
@@ -115,4 +113,3 @@ class CheckInputData:
 
         else:
             pass
-

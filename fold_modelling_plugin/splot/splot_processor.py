@@ -1,9 +1,6 @@
-from modified_loopstructural.extra_utils import *
+from ..helper.utils import *
 import numpy as np
-import joblib as jb
 from LoopStructural.modelling.features.fold import fourier_series
-from uncertainty_quantification.fold_uncertainty import *
-from knowledge_constraints._helper import *
 
 
 class SPlotProcessor:
@@ -12,7 +9,7 @@ class SPlotProcessor:
         self.splot_cache = {}
         self.splot_function_map = {
             4: fourier_series,
-            7: fourier_series_2
+            # 7: fourier_series_2
         }
         self.intercept_function_map = {
             4: fourier_series_x_intercepts,
@@ -74,8 +71,9 @@ class SPlotProcessor:
         result = None
         if coeff == 4:
             result = self.splot_function_map[coeff](fold_frame, *theta)
-        if coeff == 7:
-            result = self.splot_function_map[coeff](fold_frame, theta)
+        # TODO: implement fourier series with variable number of coefficients
+        # if coeff == 7:
+        #     result = self.splot_function_map[coeff](fold_frame, theta)
 
         return result
 
@@ -93,7 +91,7 @@ class SPlotProcessor:
             tightness : float
                 The tightness metric of the curve
             """
-        amax, amin = self.find_amax_amin(theta)
+        amax, amin = self.find_amax_amin(theta, v='radians')
         return 180 - np.rad2deg(2 * np.tan((amax - amin) / 2))
 
     def calculate_asymmetry(self, theta):
