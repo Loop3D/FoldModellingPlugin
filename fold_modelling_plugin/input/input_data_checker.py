@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from typing import List, Optional, Dict
 
+
 class CheckInputData:
     """
     A class used to check the input data for the optimisation.
@@ -55,6 +56,9 @@ class CheckInputData:
                 all(column in self.folded_foliation_data.columns for column in ['gx', 'gy', 'gz'])):
             raise ValueError("Foliation data must have either strike, dip or gx, gy, gz columns.")
 
+    # TODO : 1. rewrite check_knowledge_constraints
+    #  2. then test it before
+    #  3. implementing it in the geological knowledge class
     def check_knowledge_constraints(self):
         """
         Checks if the given nested dictionary is in the correct format.
