@@ -86,6 +86,18 @@ def save_load_object(obj=None, file_path=None, mode='save'):
         raise ValueError("Invalid mode. Must be either 'save' or 'load'.")
 
 
+def strike_dip_to_vectors(strike, dip):
+
+    vec = np.zeros((len(strike), 3))
+    s_r = np.deg2rad(strike)
+    d_r = np.deg2rad((dip))
+    vec[:, 0] = np.sin(d_r) * np.cos(s_r)
+    vec[:, 1] = -np.sin(d_r) * np.sin(s_r)
+    vec[:, 2] = np.cos(d_r)
+    vec /= np.linalg.norm(vec, axis=1)[:, None]
+    return vec
+
+
 def strike_dip_to_vector(strike, dip):
     """
     Calculate the strike-dip vector given the strike and dip angles.
