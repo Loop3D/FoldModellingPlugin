@@ -57,37 +57,116 @@ class CheckInputData:
 
     def check_knowledge_constraints(self):
         """
-        Check the knowledge constraints dictionary format
-           The constraints dictionary should have the following structure:
-            dict(
-                {
-                    'tightness': { 'mu':, 'sigma':, 'w':},
-                    'asymmetry': { 'mu':, 'sigma':, 'w':},
-                    'fold_wavelength': { 'mu':, 'sigma':, 'w':},
-                    'axial_trace': {'mu':, 'sigma':, 'w':},
-                    'axial_surface':{'mu':, 'sigma':, 'w':},
-                })
-                To add more axial traces, use the following format: axial_trace_1, axial_trace_2 etc.
+        Checks if the given nested dictionary is in the correct format.
+
+        Args:
+          nested_dict: The nested dictionary to check.
+
+        Returns:
+          True if the nested dictionary is in the correct format, False otherwise.
         """
-        if self.knowledge_constraints is not None:
-            # check if the knowledge constraints is a dictionary
-            if not isinstance(self.knowledge_constraints, dict):
-                raise TypeError("Knowledge constraints must be a dictionary.")
-            # check if the knowledge constraints has one of the keys: tightness, asymmetry,
-            # fold_wavelength, axial_trace, axial_surface
-            if not any(key in self.knowledge_constraints for key in ['tightness', 'asymmetry', 'fold_wavelength',
-                                                                        'axial_trace', 'axial_surface']):
-                raise ValueError("Knowledge constraints must have one of the keys: tightness, asymmetry, "
-                                 "fold_wavelength, axial_trace, axial_surface.")
-            # check if the knowledge constraints has the correct format for each key (mu, sigma, w)
-            if not all(key in self.knowledge_constraints for key in ['mu', 'sigma', 'w']):
-                raise ValueError("Knowledge constraints must have the following format for each key: "
-                                 "mu, sigma, w.")
-            else:
-                for main_key in self.knowledge_constraints:
-                    if not all(key in self.knowledge_constraints[main_key] for key in ['mu', 'sigma', 'w']):
-                        raise ValueError("Knowledge constraints must have the following format for each key: "
-                                         "mu, sigma, w.")
+
+        # Check if the nested dictionary has the correct keys.
+        required_keys = [
+            'fold_limb_rotation_angle',
+            'fold_axis_rotation_angle',
+            'fold_axial_surface'
+        ]
+        for key in required_keys:
+            if key not in nested_dict:
+                raise ValueError(f'The nested dictionary must have the key "{key}".')
+
+        # Check the format of the 'fold_limb_rotation_angle' dictionary.
+        fold_limb_rotation_angle_dict = nested_dict['fold_limb_rotation_angle']
+        required_keys_fold_limb_rotation_angle = [
+            'tightness',
+            'asymmetry',
+            'fold_wavelength',
+            'axial_traces'
+        ]
+        for key in required_keys_fold_limb_rotation_angle:
+            if key not in fold_limb_rotation_angle_dict:
+                raise ValueError(
+                    f'The nested dictionary must have the key "{key}" in the '
+                    f'"fold_limb_rotation_angle" dictionary.')
+
+        # Check the format of the 'axial_traces' list.
+        axial_traces = fold_limb_rotation_angle_dict['axial_traces']
+        if not isinstance(axial_traces, list):
+            raise ValueError(
+                'The "axial_traces" value in the "fold_limb_rotation_angle" dictionary '
+                'must be a list.')
+
+        for axial_trace in axial_traces:
+            required_keys_axial_trace = ['mu', 'sigma']
+            for key in required_keys_axial_trace:
+                if key not in axial_trace:
+                    raise ValueError(
+                        f'The "axial_trace" list must have the key "{key}".')
+
+        # Check the format of the 'fold_axis_rotation_angle' dictionary.
+        fold_axis_rotation_angle_dict = nested_dict['fold_axis_rotation_angle']
+        required_keys_fold_axis_rotation_angle = ['hinge_angle', 'fold_axis_wavelength']
+        for key in required_keys_fold_axis_rotation_angle:
+            if key not in fold_axis_rotation_angle_dict:
+                raise ValueError(
+                    f'The nested dictionary must have the key "{key}" in the '
+                    f'"fold_axis_rotation_angle" dictionary.')
+
+        # Check the format of the 'fold_axial_surface' dictionary.
+        fold_axial_surface_dict = nested_dict['fold_axial_surface']
+        required_keys_fold_axial_surface = ['axial_surface']
+        for key in required_keys_fold_axial_surface:
+            if key not in fold_axial_surface_dict:
+                raise ValueError(
+                    f'The nested dictionary must have the key "{key}" in the '
+                    f'"fold_axial_surface" dictionary.')
+
+        return True
+
+    # def check_knowledge_constraints(self):
+    #     """
+    #     Check the knowledge constraints dictionary format
+    #        The constraints dictionary should have the following structure:
+    #         {
+    #             'fold_limb_rotation_angle': {
+    #                 'tightness': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+    #                 'asymmetry': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+    #                 'fold_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+    #                 'axial_trace_1': {'mu':10, 'sigma':10},
+    #                 'axial_traces_2': {'mu':10, 'sigma':10},
+    #                 'axial_traces_3': {'mu':10, 'sigma':10},
+    #                 'axial_traces_4': {'mu':10, 'sigma':10},
+    #             },
+    #             'fold_axis_rotation_angle': {
+    #                 'hinge_angle': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+    #                 'fold_axis_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
+    #             },
+    #             'fold_axial_surface': {
+    #                 'axial_surface': {'lb':10, 'ub':10, 'mu':10, 'kappa':10, 'w':10}
+    #             }
+    #         }
+    #             To add more axial traces, use the following format: axial_trace_1, axial_trace_2 etc.
+    #     """
+    #     if self.knowledge_constraints is not None:
+    #         # check if the knowledge constraints is a dictionary
+    #         if not isinstance(self.knowledge_constraints, dict):
+    #             raise TypeError("Knowledge constraints must be a dictionary.")
+    #         # check if the knowledge constraints has one of the keys: tightness, asymmetry,
+    #         # fold_wavelength, axial_trace, axial_surface
+    #         if not any(key in self.knowledge_constraints for key in ['tightness', 'asymmetry', 'fold_wavelength',
+    #                                                                     'axial_trace', 'axial_surface']):
+    #             raise ValueError("Knowledge constraints must have one of the keys: tightness, asymmetry, "
+    #                              "fold_wavelength, axial_trace, axial_surface.")
+    #         # check if the knowledge constraints has the correct format for each key (mu, sigma, w)
+    #         if not all(key in self.knowledge_constraints for key in ['mu', 'sigma', 'w']):
+    #             raise ValueError("Knowledge constraints must have the following format for each key: "
+    #                              "mu, sigma, w.")
+    #         else:
+    #             for main_key in self.knowledge_constraints:
+    #                 if not all(key in self.knowledge_constraints[main_key] for key in ['mu', 'sigma', 'w']):
+    #                     raise ValueError("Knowledge constraints must have the following format for each key: "
+    #                                      "mu, sigma, w.")
 
     def check_bounding_box(self):
         """
@@ -97,6 +176,9 @@ class CheckInputData:
         # check if the bounding box is a numpy array or a list
         if not isinstance(self.bounding_box, (np.ndarray, list)):
             raise TypeError("Bounding box must be a numpy array or a list.")
+        # check if the bounding box is empty
+        if self.bounding_box.size == 0:
+            raise ValueError("bounding_box array is empty.")
         # check if the bounding box has the correct format
         if not len(self.bounding_box[0]) == 3 and not len(self.bounding_box[1]) == 3:
             raise ValueError("Bounding box must have the following format: [[minX, maxX, minY], [maxY, minZ, maxZ]]")
