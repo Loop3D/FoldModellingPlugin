@@ -138,7 +138,7 @@ class FoldModel(BaseFoldFrameBuilder):
         y_coord = make_dataset(y, self.points, name='s1', coord=1)
 
         # append the two datasets together
-        dataset = dataset.append(y_coord)
+        dataset = pd.concat([dataset, y_coord])
 
         return dataset
 
