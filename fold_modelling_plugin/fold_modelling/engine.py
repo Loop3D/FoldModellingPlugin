@@ -1,25 +1,29 @@
 # from knowledge_constraints._helper import *
-from typing import Union, Dict, Any, List, Optional
 
-from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
-from knowledge_constraints.splot_processor import SPlotProcessor
-from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
-from LoopStructural import GeologicalModel
-from LoopStructural.modelling.features.fold import FoldEvent
-from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
-from LoopStructural.modelling.features.fold import fourier_series
-from LoopStructural.utils.helper import *
-from geological_sampler.sampling_methods import *
-from uncertainty_quantification.fold_uncertainty import *
+
+# from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
+# from knowledge_constraints.splot_processor import SPlotProcessor
+
+# from LoopStructural.modelling.features.fold import FoldEvent
+# from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
+# from LoopStructural.modelling.features.fold import fourier_series
+# from LoopStructural.helper.helper import *
+# from geological_sampler.sampling_methods import *
+# from uncertainty_quantification.fold_uncertainty import *
+
+from typing import Union, Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
-from fold_modelling_plugin._helper import *
-from fold_modelling_plugin.input.input_data_processor import InputDataProcessor
-from from_loopstructural._fold import FoldEvent
-from from_loopstructural._fold_frame import FoldFrame
-from from_loopstructural._svariogram import SVariogram
-from base_fold_frame_builder import BaseFoldFrameBuilder
-from fold_modelling_pluging.optimisers.fourier_optimiser import FourierSeriesOptimiser
+from LoopStructural import GeologicalModel
+from ..helper._helper import *
+from ..helper.utils import *
+# from
+from ..input.input_data_processor import InputDataProcessor
+from ..from_loopstructural._fold import FoldEvent
+from ..from_loopstructural._fold_frame import FoldFrame
+# from from_loopstructural._svariogram import SVariogram
+from .base_fold_frame_builder import BaseFoldFrameBuilder
+from ..optimisers.fourier_optimiser import FourierSeriesOptimiser
 
 
 def fold_function(params):
@@ -134,7 +138,7 @@ class FoldModel(BaseFoldFrameBuilder):
         y_coord = make_dataset(y, self.points, name='s1', coord=1)
 
         # append the two datasets together
-        dataset = dataset.append(y_coord)
+        dataset = pd.concat([dataset, y_coord])
 
         return dataset
 

@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Union
-from utils import fourier_series, get_predicted_rotation_angle
+from ..helper.utils import get_predicted_rotation_angle
 from scipy.stats import vonmises
 
 

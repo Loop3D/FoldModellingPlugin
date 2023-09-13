@@ -1,18 +1,19 @@
 from typing import Tuple, Callable, Union, Any, Optional, Dict
 
-from modified_loopstructural.extra_utils import *
+# from modified_loopstructural.extra_utils import *
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, normalize
 import numpy as np
 from LoopStructural.modelling.features.fold import fourier_series
-from uncertainty_quantification.fold_uncertainty import *
+# from uncertainty_quantification.fold_uncertainty import *
 # from _helper import *
 from scipy.optimize import minimize, differential_evolution
-from fold_modelling_plugin.objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
-from knowledge_constraints.splot_processor import SPlotProcessor
-from knowledge_constraints._helper import *
-from fold_optimiser import FoldOptimiser
-from fold_modelling_plugin.objective_functions.gaussian import loglikelihood_fourier_series
-from fold_modelling_plugin.utils import calculate_semivariogram, fourier_series
+
+
+from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
+from .fold_optimiser import FoldOptimiser
+from ..objective_functions.gaussian import loglikelihood_fourier_series
+from ..helper.utils import calculate_semivariogram
+from ..helper._helper import *
 
 
 def scale(data):

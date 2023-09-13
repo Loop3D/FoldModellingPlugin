@@ -1,38 +1,36 @@
 from abc import ABC
 from typing import Dict, Any, Optional, Union, Tuple
 
-from scipy.optimize import minimize
+# from scipy.optimize import minimize
 # import knowledge_constraints
 # importlib.reload(knowledge_constraints)
 # from modified_loopstructural.modified_foldframe import FoldFrame
 # from modified_loopstructural.extra_utils import *
 # from knowledge_constraints._helper import *
-from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
-from knowledge_constraints.splot_processor import SPlotProcessor
-from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
-from LoopStructural import GeologicalModel
-from LoopStructural.modelling.features.fold import FoldEvent
-from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
-from LoopStructural.modelling.features.fold import fourier_series
-# from LoopStructural.utils.helper import *
+# from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
+# from knowledge_constraints.splot_processor import SPlotProcessor
+# from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
+# from LoopStructural import GeologicalModel
+# from LoopStructural.modelling.features.fold import FoldEvent
+# from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
+# from LoopStructural.modelling.features.fold import fourier_series
+# from LoopStructural.helper.helper import *
 # from geological_sampler.sampling_methods import *
 # from uncertainty_quantification.fold_uncertainty import *
 import numpy as np
 import pandas as pd
 # import mplstereonet
 # from sklearn.preprocessing import StandardScaler
-from scipy.optimize import minimize, differential_evolution
-from scipy.stats import vonmises_fisher, vonmises
-from fold_optimiser import FoldOptimiser
-from fold_modelling_plugin.objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
-from fold_modelling_plugin.input import CheckInputData
-from fold_modelling_plugin.utils import calculate_semivariogram, \
-    fourier_series, \
-    strike_dip_to_vector, normal_vector_to_strike_and_dip, \
-from fold_modelling_plugin.objective_functions.von_mises_fisher import VonMisesFisher
-from fold_modelling_plugin.objective_functions.axial_plane import is_axial_plane_compatible
-from fold_modelling_plugin.fold_model import FoldModel
-from fold_modelling_plugin.objective_functions.gaussian import loglikelihood_axial_surface
+# from scipy.optimize import minimize, differential_evolution
+# from scipy.stats import vonmises_fisher, vonmises
+from .fold_optimiser import FoldOptimiser
+from ..objective_functions import GeologicalKnowledgeFunctions
+from ..input import CheckInputData
+from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
+from ..objective_functions import VonMisesFisher
+from ..objective_functions import is_axial_plane_compatible
+# from ..fold_modelling import FoldModel
+from ..objective_functions import loglikelihood_axial_surface
 
 
 def calculate_intersection_lineation(axial_surface, folded_foliation):
@@ -69,11 +67,11 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 #     return -(value - mu)**2
 
 
-class AxialSurfaceOptimiser(FoldOptimiser, FoldModel, ABC):
+class AxialSurfaceOptimiser(FoldOptimiser):
     """
         Optimiser for Axial Surfaces.
 
-        This class inherits from FoldOptimiser, FoldModel and ABC. It is used to optimise the axial surfaces
+        This class inherits from FoldOptimiser, FoldModel. It is used to optimise the axial surfaces
         based on the provided data, bounding box, geological knowledge.
 
     """
@@ -110,7 +108,7 @@ class AxialSurfaceOptimiser(FoldOptimiser, FoldModel, ABC):
         check_input.check_input_data()
 
         FoldOptimiser.__init__(self, **kwargs)
-        FoldModel.__init__(self, data, bounding_box, geological_knowledge=geological_knowledge, **kwargs)
+        # FoldModel.__init__(data, bounding_box, geological_knowledge=geological_knowledge, **kwargs)
 
         self.data = data
         self.bounding_box = bounding_box
@@ -121,7 +119,6 @@ class AxialSurfaceOptimiser(FoldOptimiser, FoldModel, ABC):
         self.objective_function = None
         self.guess = None
         self.solver = None
-
 
     def loglikelihood(self, x, predicted_foliation: np.ndarray,
                       geological_knowledge: GeologicalKnowledgeFunctions) -> float:

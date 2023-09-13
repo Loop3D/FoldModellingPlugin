@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+from ..from_loopstructural._svariogram import SVariogram
 from typing import Union
 
 
@@ -82,6 +84,18 @@ def save_load_object(obj=None, file_path=None, mode='save'):
         return loaded_obj
     else:
         raise ValueError("Invalid mode. Must be either 'save' or 'load'.")
+
+
+def strike_dip_to_vectors(strike, dip):
+
+    vec = np.zeros((len(strike), 3))
+    s_r = np.deg2rad(strike)
+    d_r = np.deg2rad((dip))
+    vec[:, 0] = np.sin(d_r) * np.cos(s_r)
+    vec[:, 1] = -np.sin(d_r) * np.sin(s_r)
+    vec[:, 2] = np.cos(d_r)
+    vec /= np.linalg.norm(vec, axis=1)[:, None]
+    return vec
 
 
 def strike_dip_to_vector(strike, dip):

@@ -1,10 +1,11 @@
-import logging
+
 
 import numpy as np
+# TODO: add logger
+# import logging
+# from ....utils import getLogger
 
-from ....utils import getLogger
-
-logger = getLogger(__name__)
+# logger = getLogger(__name__)
 
 
 class FoldEvent:

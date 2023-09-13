@@ -1,7 +1,11 @@
 import unittest
 import pandas as pd
 import numpy as np
-from ....fold_modelling_plugin.fold_model.fold_modelling import FoldModel
+import sys
+
+# sys.path.append("/FoldModellingPlugin/fold_modelling_plugin/fold_modelling")
+from FoldModellingPlugin.fold_modelling_plugin.fold_modelling.engine import FoldModel
+
 
 class TestFoldModel(unittest.TestCase):
 
@@ -10,12 +14,13 @@ class TestFoldModel(unittest.TestCase):
             'X': [1, 2, 3],
             'Y': [4, 5, 6],
             'Z': [7, 8, 9],
+            'feature_name': ['s0', 's0', 's0'],
             'gx': [0.1, 0.2, 0.3],
             'gy': [0.4, 0.5, 0.6],
             'gz': [0.7, 0.8, 0.9]
         })
         self.bounding_box = np.array([[0, 0, 0], [10, 10, 10]])
-        self.fold_model = FoldModel(self.data, self.bounding_box)
+        self.fold_model = FoldModel(self.data, self.bounding_box, av_fold_axis=False)
 
     def test_initialise_model(self):
         self.fold_model.initialise_model()
@@ -23,19 +28,19 @@ class TestFoldModel(unittest.TestCase):
         self.assertIsNotNone(self.fold_model.scaled_points)
 
     def test_process_axial_surface_proposition(self):
-        axial_normal = np.array([1, 0, 0])
+        axial_normal = np.array([1., 0., 0.])
         dataset = self.fold_model.process_axial_surface_proposition(axial_normal)
         self.assertTrue(isinstance(dataset, pd.DataFrame))
         self.assertEqual(len(dataset), len(self.data) * 2)
 
     def test_build_fold_frame(self):
-        axial_normal = np.array([1, 0, 0])
+        axial_normal = np.array([1., 0., 0.])
         self.fold_model.initialise_model()
         self.fold_model.build_fold_frame(axial_normal)
         self.assertIsNotNone(self.fold_model.axial_surface)
 
     def test_create_and_build_fold_event(self):
-        axial_normal = np.array([1, 0, 0])
+        axial_normal = np.array([1., 0., 0.])
         self.fold_model.initialise_model()
         self.fold_model.build_fold_frame(axial_normal)
         fold_event = self.fold_model.create_and_build_fold_event()
@@ -62,6 +67,7 @@ class TestFoldModel(unittest.TestCase):
         folded_foliation_vectors = self.fold_model.calculate_folded_foliation_vectors()
         self.assertTrue(isinstance(folded_foliation_vectors, np.ndarray))
         self.assertEqual(len(folded_foliation_vectors), len(self.data))
+
 
 if __name__ == '__main__':
     unittest.main()
