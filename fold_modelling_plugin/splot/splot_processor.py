@@ -4,9 +4,9 @@ from LoopStructural.modelling.features.fold import fourier_series
 
 
 class SPlotProcessor:
-    def __init__(self, constraints):
+    def __init__(self):
         self.x = None
-        self.splot_cache = {}
+        # self.splot_cache = {}
         self.splot_function_map = {
             4: fourier_series,
             # 7: fourier_series_2
@@ -15,7 +15,7 @@ class SPlotProcessor:
             4: fourier_series_x_intercepts,
             # 8: other_intercept_function
         }
-        self.constraints = constraints
+        # self.constraints = constraints
 
     def find_amax_amin(self, theta, v='radians'):
         """
@@ -113,7 +113,7 @@ class SPlotProcessor:
 
         amax, amin, curve = self.find_amax_amin(theta, v='degrees')
         median = np.median(curve)
-        tightness_range = amax + amin
+        tightness_range = amax + np.abs(amin)
         asymmetry = median / tightness_range
 
         return asymmetry
