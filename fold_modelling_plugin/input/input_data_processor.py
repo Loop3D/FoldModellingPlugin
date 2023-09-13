@@ -29,13 +29,13 @@ class InputDataProcessor(CheckInputData):
         if 'strike' in self.data.columns and 'dip' in self.data.columns:
             strike = self.data['strike'].to_numpy()
             dip = self.data['dip'].to_numpy()
-            gradient = strike_dip_to_vector(strike, dip)
+            gradient = strike_dip_to_vectors(strike, dip)
             gradient /= np.linalg.norm(gradient, axis=1)[:, None]  # normalise the gradient vectors
             self.data['gx'], self.data['gy'], self.data['gz'] = gradient[:, 0], gradient[:, 1], gradient[:, 2]
 
             return self.data
 
-        if ['gx', 'gy', 'gz'] in self.data.columns:
+        if 'gx' in self.data.columns and 'gy' in self.data.columns and 'gz' in self.data.columns:
             gradient = self.data[['gx', 'gy', 'gz']].to_numpy()
             gradient /= np.linalg.norm(gradient, axis=1)[:, None]  # normalise the gradient vectors
             self.data['gx'], self.data['gy'], self.data['gz'] = gradient[:, 0], gradient[:, 1], gradient[:, 2]
