@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import sys
 
-# sys.path.append("/FoldModellingPlugin/fold_modelling_plugin/fold_modelling")
+# sys.path.append("/FoldModellingPlugin/FoldModellingPlugin/fold_modelling")
 from FoldModellingPlugin.fold_modelling_plugin.fold_modelling.engine import FoldModel
 
 

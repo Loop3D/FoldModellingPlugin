@@ -4,7 +4,7 @@ import pandas as pd
 # import dill
 import os
 
-# from FoldModellingPlugin.fold_modelling_plugin.from_loopstructural._svariogram import SVariogram
+# from FoldModellingPlugin.FoldModellingPlugin.from_loopstructural._svariogram import SVariogram
 from FoldModellingPlugin.fold_modelling_plugin.helper.utils import *
 
 
