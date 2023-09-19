@@ -34,6 +34,7 @@ class VonMisesFisher:
             raise ValueError("`kappa` should be a positive number.")
 
         # Initialise the Von Mises Fisher distribution
+        mu /= np.linalg.norm(mu)
         self.vmf = vonmises_fisher(mu, kappa)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:

@@ -143,9 +143,9 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         # Calculate the angle difference between the predicted and observed foliation
         angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
         # Calculate the loglikelihood of the axial surface
-        loglikelihood = loglikelihood_axial_surface(angle_difference) + geological_knowledge(x)
+        loglikelihood = -loglikelihood_axial_surface(angle_difference) + geological_knowledge(x)
 
-        return loglikelihood
+        return -loglikelihood
 
     def mle_optimisation(self, strike_dip: Tuple[float, float]):
         """
@@ -171,7 +171,7 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         axial_normal /= np.linalg.norm(axial_normal)
 
         predicted_foliation = self.get_predicted_foliation(strike_dip)
-        logpdf = -self.loglikelihood(axial_normal, predicted_foliation, self.geo_objective)
+        logpdf = self.loglikelihood(axial_normal, predicted_foliation, self.geo_objective)
         return logpdf
 
     def angle_optimisation(self, strike_dip: Tuple[float, float]):

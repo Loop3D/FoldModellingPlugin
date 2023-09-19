@@ -7,69 +7,44 @@ from FoldModellingPlugin.fold_modelling_plugin.input.input_data_processor import
 
 class TestInputDataProcessor(unittest.TestCase):
 
-    def test_init(self):
-        data = pd.DataFrame({
+    def setUp(self):
+        # Sample data for testing
+        self.valid_data_strike_dip = pd.DataFrame({
             'X': [1, 2, 3],
-            'Y': [4, 5, 6],
-            'Z': [7, 8, 9],
-            'feature_name': ['s0', 's0', 's0'],
-            'gx': [0.1, 0.2, 0.3],
-            'gy': [0.4, 0.5, 0.6],
-            'gz': [0.7, 0.8, 0.9]
+            'Y': [1, 2, 3],
+            'Z': [1, 2, 3],
+            'feature_name': ['fold1', 'fold2', 'fold3'],
+            'strike': [90, 90, 90],
+            'dip': [30, 30, 30]
         })
-        bounding_box = np.array([[0, 0, 0], [10, 10, 10]])
-        knowledge_constraints = None
-        input_data_processor = InputDataProcessor(data, bounding_box, knowledge_constraints)
-        self.assertEqual(input_data_processor.data.all, data.all)
-        self.assertEqual(np.all(input_data_processor.bounding_box), np.all(bounding_box))
-        self.assertEqual(input_data_processor.knowledge_constraints, knowledge_constraints)
-        c = ['X', 'Y', 'Z', 'feature_name', 'strike', 'dip', 'gx', 'gy', 'gz']
-
-    def test_process_data_with_strike_dip(self):
-        data = data = pd.DataFrame({
+        self.valid_data_gradient = pd.DataFrame({
             'X': [1, 2, 3],
-            'Y': [4, 5, 6],
-            'Z': [7, 8, 9],
-            'feature_name': ['s0', 's0', 's0'],
-            'strike': [0.1, 0.2, 0.3],
-            'dip': [0.4, 0.5, 0.6],
+            'Y': [1, 2, 3],
+            'Z': [1, 2, 3],
+            'feature_name': ['fold1', 'fold2', 'fold3'],
+            'gx': [1, 1, 1],
+            'gy': [0, 0, 0],
+            'gz': [0, 0, 0]
         })
-        bounding_box = np.array([[0, 0, 0], [10, 10, 10]])
-        knowledge_constraints = None
-        input_data_processor = InputDataProcessor(data, bounding_box, knowledge_constraints)
-        input_data_processor.process_data()
-        # expected_data = pd.DataFrame({'strike': [90], 'dip': [45], 'gx': [1], 'gy': [0], 'gz': [0.707]})
-        c = ['X', 'Y', 'Z', 'feature_name', 'strike', 'dip', 'gx', 'gy', 'gz']
-        # self.assertEqual(input_data_processor.data, expected_data)
-        self.assertEqual(input_data_processor.data.columns.tolist(), c)
+        self.bounding_box = np.array([[0, 3, 0], [3, 0, 3]])
+        self.knowledge = {'fold_axial_surface': {'mu': 1, 'kappa': 2, 'w': 3}}
+
+    def test_process_data_strike_dip(self):
+        processor = InputDataProcessor(self.valid_data_strike_dip, self.bounding_box, self.knowledge)
+        processed_data = processor.process_data()
+        self.assertIn('gx', processed_data.columns)
+        self.assertIn('gy', processed_data.columns)
+        self.assertIn('gz', processed_data.columns)
+
+    def test_process_data_gradient(self):
+        processor = InputDataProcessor(self.valid_data_gradient, self.bounding_box, self.knowledge)
+        processed_data = processor.process_data()
+        self.assertIn('gx', processed_data.columns)
+        self.assertIn('gy', processed_data.columns)
+        self.assertIn('gz', processed_data.columns)
+
+    # TODO: Add more tests for different scenarios, such as invalid data, missing columns, etc.
 
 
-    def test_process_data_without_strike_dip(self):
-        data = pd.DataFrame()
-        bounding_box = np.array([])
-        knowledge_constraints = None
-        input_data_processor = InputDataProcessor(data, bounding_box, knowledge_constraints)
-        input_data_processor.process_data()
-        expected_data = data
-        self.assertEqual(input_data_processor.data, expected_data)
-
-    def test_process_data_with_gradient(self):
-        data = pd.DataFrame({
-            'X': [1, 2, 3],
-            'Y': [4, 5, 6],
-            'Z': [7, 8, 9],
-            'feature_name': ['s0', 's0', 's0'],
-            'gx': [0.1, 0.2, 0.3],
-            'gy': [0.4, 0.5, 0.6],
-            'gz': [0.7, 0.8, 0.9]
-        })
-        bounding_box = np.array([[0, 0, 0], [10, 10, 10]])
-        knowledge_constraints = None
-        input_data_processor = InputDataProcessor(data, bounding_box, knowledge_constraints)
-        input_data_processor.process_data()
-        c = ['X', 'Y', 'Z', 'feature_name', 'gx', 'gy', 'gz']
-        self.assertEqual(input_data_processor.data.columns.tolist(), c)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

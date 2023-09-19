@@ -60,6 +60,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         """
         # Initialize the x values, constraints
+        SPlotProcessor.__init__(self)
         self.x = x
         self.constraints = constraints
 
@@ -75,7 +76,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         self.intercept_function = fourier_series_x_intercepts
         self.splot_function = fourier_series
 
-    def axial_surface_objective_function(self, x: np.ndarray) -> Union[int, float]:
+    def axial_surface_objective_function(self, x: np.ndarray) -> float:
         """
         Objective function for the axial surface.
         This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.
@@ -88,7 +89,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         Returns
         -------
-        Union[int, float]
+        float
             The logpdf value from the VonMisesFisher distribution.
 
          Raises
@@ -98,22 +99,23 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         """
         # Check if the required keys exist in the constraints dictionary
-        if 'axial_surface' not in self.constraints:
-            raise KeyError("'axial_surface' key not found in constraints dictionary.")
-        if 'mu' not in self.constraints['axial_surface']:
-            raise KeyError("'mu' key not found in 'axial_surface' dictionary.")
-        if 'kappa' not in self.constraints['axial_surface']:
-            raise KeyError("'kappa' key not found in 'axial_surface' dictionary.")
+        # if 'axial_surface' not in self.constraints:
+        #     raise KeyError("'axial_surface' key not found in constraints dictionary.")
+        # if 'mu' not in self.constraints['axial_surface']:
+        #     raise KeyError("'mu' key not found in 'axial_surface' dictionary.")
+        # if 'kappa' not in self.constraints['axial_surface']:
+        #     raise KeyError("'kappa' key not found in 'axial_surface' dictionary.")
 
         # Extract parameters for the VonMisesFisher distribution
         mu = self.constraints['axial_surface']['mu']
         kappa = self.constraints['axial_surface']['kappa']
+        w = self.constraints['axial_surface']['w']
 
         # Create a VonMisesFisher distribution with the given parameters
         vmf = VonMisesFisher(mu, kappa)
 
         # Calculate the logpdf of the input array
-        vmf_logpdf = vmf.logpdf(x)
+        vmf_logpdf = vmf.logpdf(x) * w
 
         return vmf_logpdf
 
@@ -138,7 +140,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Check if theta is an array and has at least 4 parameters
         # If not, an exception will be raised
-        self.check_fourier_parameters(theta)
+        check_fourier_parameters(theta)
 
         # Calculate the intercepts using the provided theta values and the x values of the class
         intercepts = self.intercept_function(self.x, theta)
@@ -188,7 +190,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Check if theta is an array and has at least 4 parameters
         # If not, an exception will be raised
-        self.check_fourier_parameters(theta)
+        check_fourier_parameters(theta)
 
         # Get the mu and sigma values from the constraints dictionary
         # These values represent the mean and standard deviation of the fold wavelength
@@ -234,7 +236,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Check if theta is an array and has at least 4 parameters
         # If not, an exception will be raised
-        self.check_fourier_parameters(theta)
+        check_fourier_parameters(theta)
 
         # Get the mu and sigma values from the constraints dictionary
         # These values represent the mean and standard deviation of the fold axis wavelength
@@ -280,7 +282,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Check if theta is an array and has at least 4 parameters
         # If not, an exception will be raised
-        self.check_fourier_parameters(theta)
+        check_fourier_parameters(theta)
 
         # Get the mu, sigma, and weight values from the constraints dictionary
         # These values represent the mean, standard deviation, and weight of the fold tightness
@@ -326,7 +328,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Check if theta is an array and has at least 4 parameters
         # If not, an exception will be raised
-        self.check_fourier_parameters(theta)
+        check_fourier_parameters(theta)
 
         # Get the mu, sigma, and weight values from the constraints dictionary
         # These values represent the mean, standard deviation, and weight of the fold hinge angle
@@ -372,7 +374,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Check if theta is an array and has at least 4 parameters
         # If not, an exception will be raised
-        self.check_fourier_parameters(theta)
+        check_fourier_parameters(theta)
 
         # Get the mu, sigma, and weight values from the constraints dictionary
         # These values represent the mean, standard deviation, and weight of the fold asymmetry degree
@@ -454,7 +456,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             # If the constraint is in the constraints dictionary
             if key in self.constraints:
                 # Add the objective function value for this constraint to the total
-                total_objective_value += self.constraint_function_map[key](theta)
+                total_objective_value += self.objective_functions_map[key](theta)
             else:
                 # If the constraint is not in the constraints dictionary, do nothing
                 pass
@@ -503,7 +505,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             # Calculate the negative Gaussian log likelihood for a range of values between the lower and upper bounds
             val = -gaussian_log_likelihood(np.linspace(lb, ub, 100), mu, sigma)
             # Create a NonlinearConstraint object for this constraint
-            nlc = NonlinearConstraint(self.constraint_function_map[constraint_name],
+            nlc = NonlinearConstraint(self.objective_functions_map[constraint_name],
                                       val.min(), val.max(),
                                       jac='2-point', hess=BFGS())
             # Add the NonlinearConstraint object to the list of constraints

@@ -8,7 +8,6 @@ from LoopStructural.modelling.features.fold import fourier_series
 # from _helper import *
 from scipy.optimize import minimize, differential_evolution
 
-
 from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 from .fold_optimiser import FoldOptimiser
 from ..objective_functions.gaussian import loglikelihood_fourier_series
@@ -36,7 +35,8 @@ def objective_wrapper(func1, func2):
 
     return objective_function
 
-
+#TODO: must implement all the methods from the base class FoldOptimiser
+# might neeed to change the base class to a more generic one
 class FourierSeriesOptimiser(FoldOptimiser):
     """
     A class used to represent a Fourier Series Optimiser.

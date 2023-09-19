@@ -23,15 +23,16 @@ class CheckInputData:
     -------
     check_foliation_data():
         Checks if the foliation data is a pandas dataframe and has the correct columns.
-    check_knowledge_constraints():
-        Checks if the knowledge constraints is a dictionary and has the correct format.
+    check_input_geological_knowledge():
+        Checks if the input geological knowledge constraints is a dictionary,
+        and has the correct format.
     check_bounding_box():
-        Checks if the bounding box is a numpy array or a list and has the correct format.
+        Checks if the bounding box is a numpy array and has the correct format.
     check_input_data():
         Checks all the input data for the optimisation.
     """
 
-    def __init__(self, folded_foliation_data, bounding_box, knowledge_constraints=None):
+    def __init__(self, folded_foliation_data, bounding_box, geological_knowledge=None):
         """
         Constructs all the necessary attributes for the CheckInputData object.
 
@@ -39,7 +40,7 @@ class CheckInputData:
 
         self.folded_foliation_data = folded_foliation_data
         self.bounding_box = bounding_box
-        self.knowledge_constraints = knowledge_constraints
+        self.geological_knowledge = geological_knowledge
 
     def check_foliation_data(self):
         """
@@ -59,127 +60,59 @@ class CheckInputData:
     # TODO : 1. rewrite check_knowledge_constraints
     #  2. then test it before
     #  3. implementing it in the geological knowledge class
-    def check_knowledge_constraints(self):
+
+    def check_input_geological_knowledge(self):
         """
-        Checks if the given nested dictionary is in the correct format.
+        verify the format of the provided nested dictionary.
+        TODO : add support for dict check for restricted mode of optimisation
 
-        Args:
-          nested_dict: The nested dictionary to check.
+        Parameters
+        ----------
 
-        Returns:
-          True if the nested dictionary is in the correct format, False otherwise.
+        Raises
+        ------
+        ValueError
+            If the dictionary format is not as expected.
+
+        Returns
+        -------
+        bool
+            True if the format is correct, otherwise raises an error.
         """
 
-        # Check if the nested dictionary has the correct keys.
-        required_keys = [
-            'fold_limb_rotation_angle',
-            'fold_axis_rotation_angle',
-            'fold_axial_surface'
-        ]
-        for key in required_keys:
-            if key not in nested_dict:
-                raise ValueError(f'The nested dictionary must have the key "{key}".')
+        # Define the expected keys for different types of inner dictionaries
+        general_keys = {'mu', 'sigma', 'w'}
+        # axial_trace_keys = ['mu', 'sigma', 'w']
+        axial_surface_keys = {'mu', 'kappa', 'w'}
 
-        # Check the format of the 'fold_limb_rotation_angle' dictionary.
-        fold_limb_rotation_angle_dict = nested_dict['fold_limb_rotation_angle']
-        required_keys_fold_limb_rotation_angle = [
-            'tightness',
-            'asymmetry',
-            'fold_wavelength',
-            'axial_traces'
-        ]
-        for key in required_keys_fold_limb_rotation_angle:
-            if key not in fold_limb_rotation_angle_dict:
-                raise ValueError(
-                    f'The nested dictionary must have the key "{key}" in the '
-                    f'"fold_limb_rotation_angle" dictionary.')
+        # Helper function to validate the format of the innermost dictionaries
+        def validate_inner_dict(d, expected_keys):
+            if not set(d.keys()) == set(expected_keys):
+                raise ValueError(f"Expected keys {expected_keys} but got {d.keys()}")
+            for key, value in d.items():
+                if not isinstance(value, (int, float, list)):
+                    raise ValueError(f"Expected {key} to have numeric value or a "
+                                     f"list but got {type(value)}")
 
-        # Check the format of the 'axial_traces' list.
-        axial_traces = fold_limb_rotation_angle_dict['axial_traces']
-        if not isinstance(axial_traces, list):
-            raise ValueError(
-                'The "axial_traces" value in the "fold_limb_rotation_angle" dictionary '
-                'must be a list.')
-
-        for axial_trace in axial_traces:
-            required_keys_axial_trace = ['mu', 'sigma']
-            for key in required_keys_axial_trace:
-                if key not in axial_trace:
-                    raise ValueError(
-                        f'The "axial_trace" list must have the key "{key}".')
-
-        # Check the format of the 'fold_axis_rotation_angle' dictionary.
-        fold_axis_rotation_angle_dict = nested_dict['fold_axis_rotation_angle']
-        required_keys_fold_axis_rotation_angle = ['hinge_angle', 'fold_axis_wavelength']
-        for key in required_keys_fold_axis_rotation_angle:
-            if key not in fold_axis_rotation_angle_dict:
-                raise ValueError(
-                    f'The nested dictionary must have the key "{key}" in the '
-                    f'"fold_axis_rotation_angle" dictionary.')
-
-        # Check the format of the 'fold_axial_surface' dictionary.
-        fold_axial_surface_dict = nested_dict['fold_axial_surface']
-        required_keys_fold_axial_surface = ['axial_surface']
-        for key in required_keys_fold_axial_surface:
-            if key not in fold_axial_surface_dict:
-                raise ValueError(
-                    f'The nested dictionary must have the key "{key}" in the '
-                    f'"fold_axial_surface" dictionary.')
+        for key, sub_dict in self.geological_knowledge.items():
+            if key == 'fold_axial_surface':
+                # for inner_key, values in sub_dict.items():
+                validate_inner_dict(sub_dict, axial_surface_keys)
+            elif key.startswith('axial_trace_'):
+                validate_inner_dict(sub_dict, general_keys)
+            else:
+                validate_inner_dict(sub_dict, general_keys)
 
         return True
 
-    # def check_knowledge_constraints(self):
-    #     """
-    #     Check the knowledge constraints dictionary format
-    #        The constraints dictionary should have the following structure:
-    #         {
-    #             'fold_limb_rotation_angle': {
-    #                 'tightness': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-    #                 'asymmetry': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-    #                 'fold_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-    #                 'axial_trace_1': {'mu':10, 'sigma':10},
-    #                 'axial_traces_2': {'mu':10, 'sigma':10},
-    #                 'axial_traces_3': {'mu':10, 'sigma':10},
-    #                 'axial_traces_4': {'mu':10, 'sigma':10},
-    #             },
-    #             'fold_axis_rotation_angle': {
-    #                 'hinge_angle': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-    #                 'fold_axis_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-    #             },
-    #             'fold_axial_surface': {
-    #                 'axial_surface': {'lb':10, 'ub':10, 'mu':10, 'kappa':10, 'w':10}
-    #             }
-    #         }
-    #             To add more axial traces, use the following format: axial_trace_1, axial_trace_2 etc.
-    #     """
-    #     if self.knowledge_constraints is not None:
-    #         # check if the knowledge constraints is a dictionary
-    #         if not isinstance(self.knowledge_constraints, dict):
-    #             raise TypeError("Knowledge constraints must be a dictionary.")
-    #         # check if the knowledge constraints has one of the keys: tightness, asymmetry,
-    #         # fold_wavelength, axial_trace, axial_surface
-    #         if not any(key in self.knowledge_constraints for key in ['tightness', 'asymmetry', 'fold_wavelength',
-    #                                                                     'axial_trace', 'axial_surface']):
-    #             raise ValueError("Knowledge constraints must have one of the keys: tightness, asymmetry, "
-    #                              "fold_wavelength, axial_trace, axial_surface.")
-    #         # check if the knowledge constraints has the correct format for each key (mu, sigma, w)
-    #         if not all(key in self.knowledge_constraints for key in ['mu', 'sigma', 'w']):
-    #             raise ValueError("Knowledge constraints must have the following format for each key: "
-    #                              "mu, sigma, w.")
-    #         else:
-    #             for main_key in self.knowledge_constraints:
-    #                 if not all(key in self.knowledge_constraints[main_key] for key in ['mu', 'sigma', 'w']):
-    #                     raise ValueError("Knowledge constraints must have the following format for each key: "
-    #                                      "mu, sigma, w.")
-
     def check_bounding_box(self):
         """
-        check if the bounding_box is an numpy array or a list following this format:
-        [[minX, maxX, minY], [maxY, minZ, maxZ]]
+        check if the bounding_box is an numpy array of the following format
+        [[minX, minY, minZ], [maxX, maxY, maxZ]]
         """
         # check if the bounding box is a numpy array or a list
-        if not isinstance(self.bounding_box, (np.ndarray, list)):
-            raise TypeError("Bounding box must be a numpy array or a list.")
+        if not isinstance(self.bounding_box, np.ndarray):
+            raise TypeError("Bounding box must be a numpy array.")
         # check if the bounding box is empty
         if self.bounding_box.size == 0:
             raise ValueError("bounding_box array is empty.")
@@ -194,8 +127,6 @@ class CheckInputData:
         """
         self.check_bounding_box()
         self.check_foliation_data()
-        if self.knowledge_constraints is not None:
-            self.check_knowledge_constraints()
+        if self.geological_knowledge is not None:
+            self.check_input_geological_knowledge()
 
-        else:
-            pass

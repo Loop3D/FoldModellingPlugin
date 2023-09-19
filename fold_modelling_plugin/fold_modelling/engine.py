@@ -213,7 +213,7 @@ class FoldModel(BaseFoldFrameBuilder):
                                                               axis=av_fold_axis)
 
             # fit a fourier series to the fold limb rotation
-            fitted_flr = self.fit_fourier_series(fld, flr, knowledge_type='fold_limb')
+            fitted_flr = self.fit_fourier_series(fld, flr, knowledge_type='fold_limb_rotation_angle')
 
             # create a fold function from the fitted fourier series
             fold_limb_rotation_function = fold_function(fitted_flr)
@@ -232,7 +232,7 @@ class FoldModel(BaseFoldFrameBuilder):
                                                               fold_axis=self.kwargs['fold_axis'])
 
             # fit a fourier series to the calculated fold axis rotation angle
-            fitted_far = self.fit_fourier_series(fad, far, knowledge_type='fold_axis')
+            fitted_far = self.fit_fourier_series(fad, far, knowledge_type='fold_axis_rotation_angle')
 
             # create a fold function from the fitted fourier series
             fold_axis_rotation_function = fold_function(fitted_far)
@@ -246,7 +246,7 @@ class FoldModel(BaseFoldFrameBuilder):
                                                               axis=fold.get_fold_axis_orientation)
 
             # fit a fourier series to the fold limb rotation
-            fitted_flr = self.fit_fourier_series(fld, flr, knowledge_type='fold_limb')
+            fitted_flr = self.fit_fourier_series(fld, flr, knowledge_type='fold_limb_rotation_angle')
 
             # create a fold function from the fitted fourier series
             fold_limb_rotation_function = fold_function(fitted_flr)

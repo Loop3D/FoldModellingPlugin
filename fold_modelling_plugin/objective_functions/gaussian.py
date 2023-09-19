@@ -43,7 +43,7 @@ def gaussian_log_likelihood(b: Union[int, float], mu: Union[int, float], sigma: 
 
 def loglikelihood(y, y_pred):
     sigma = 1e-2
-    likelihood = gaussian_log_likelihood(y, y_pred, sigma)
+    likelihood = -gaussian_log_likelihood(y, y_pred, sigma)
     return likelihood
 
 
@@ -65,14 +65,14 @@ def loglikelihood_axial_surface(x: float) -> Union[int, float]:
     # Define the mu and kappa of the VonMises distribution
     # mu = 0 because we want to minimises the angle between the observed and predicted folded foliation
     # kappa = 100 because we want to have a sharp distribution very close to the mean 0 (mu)
-    mu = 0
+    mu = 1e-10
     kappa = 100
 
     # Create a VonMises distribution with the given parameters
     vm = vonmises(mu, kappa)
 
     # Calculate the logpdf of the input array
-    vm_logpdf = vm.logpdf(x)
+    vm_logpdf = -vm.logpdf(x)
 
     return vm_logpdf
 

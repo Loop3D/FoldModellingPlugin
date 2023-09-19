@@ -5,7 +5,7 @@ from scipy.optimize import minimize, differential_evolution
 import functools
 from abc import ABC, abstractmethod
 
-
+# TODO: merge this class with FoldOptimiser
 class BaseOptimiser(ABC):
     """
     A base class that to represent an abstract Optimiser.

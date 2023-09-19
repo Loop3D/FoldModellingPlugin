@@ -55,7 +55,7 @@ class FoldOptimiser(BaseOptimiser):
         Generate an initial guess for the optimisation
         It generates a guess depending on the type of optimisation, if it's fourier series
         it will generate a guess of the wavelength, if it's axial surface it will generate a guess
-        using the methods of the Differential Evolution algorithm (Storn and Price, 1997) or uses the
+        using the methods of the Differential Evolution algorithm (Stern and Price, 1997) or uses the
         Von Mises Fisher distribution (Fisher, 1953).
         """
 
