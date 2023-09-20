@@ -35,8 +35,10 @@ def objective_wrapper(func1, func2):
 
     return objective_function
 
-#TODO: must implement all the methods from the base class FoldOptimiser
-# might neeed to change the base class to a more generic one
+
+# TODO: must implement all the methods from the base class FoldOptimiser
+# might need to change the base class to a more generic one
+
 class FourierSeriesOptimiser(FoldOptimiser):
     """
     A class used to represent a Fourier Series Optimiser.
@@ -150,7 +152,7 @@ class FourierSeriesOptimiser(FoldOptimiser):
 
             return guess
 
-    def setup_optimisation(self) -> Tuple[Callable,
+    def setup_optimisation(self, geological_knowledge=None) -> Tuple[Callable,
                                           Union[GeologicalKnowledgeFunctions, None], Callable, Any]:
         """
         Setup Fourier series optimisation.
@@ -161,17 +163,17 @@ class FourierSeriesOptimiser(FoldOptimiser):
             Returns a tuple containing the objective function, geological knowledge, solver, and initial guess.
         """
 
-        # Check if method is specified in kwargs and assign the appropriate solver
-        if 'method' in self.kwargs and self.kwargs['method'] == 'differential_evolution':
-            solver = self.optimise_with_differential_evolution
-        else:
-            solver = self.optimise_with_trust_region
+        # # Check if method is specified in kwargs and assign the appropriate solver
+        # if 'method' in self.kwargs and self.kwargs['method'] == 'differential_evolution':
+        #     solver = self.optimise_with_differential_evolution
+        # else:
+        #     solver = self.optimise_with_trust_region
 
         # Setup objective function
         objective_function = loglikelihood_fourier_series(self.rotation_angle, self.fold_frame_coordinate)
 
         # Prepare and setup knowledge constraints
-        geological_knowledge, solver = super().setup_optimisation()
+        geological_knowledge, solver = super().setup_optimisation(geological_knowledge)
 
         # Generate initial guess
         guess = self.generate_initial_guess()
