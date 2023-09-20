@@ -4,12 +4,12 @@ import numpy as np
 from ..input.input_data_checker import CheckInputData
 from ..helper._helper import *
 from ..helper.utils import *
-from .base_optimiser import BaseOptimiser
+# from .base_optimiser import BaseOptimiser
 from abc import ABC, abstractmethod
 from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 
 
-class FoldOptimiser(BaseOptimiser):
+class FoldOptimiser(ABC):
     """
     Base class for fold geometry optimisation.
     """
@@ -28,7 +28,7 @@ class FoldOptimiser(BaseOptimiser):
         self.kwargs = kwargs
 
     @abstractmethod
-    def prepare_and_setup_knowledge_constraints(self, geological_knowledge) ->\
+    def prepare_and_setup_knowledge_constraints(self, geological_knowledge) -> \
             Optional[Union[GeologicalKnowledgeFunctions, None]]:
         """
         Prepare the knowledge constraints data
@@ -82,6 +82,69 @@ class FoldOptimiser(BaseOptimiser):
         geological_knowledge = self.prepare_and_setup_knowledge_constraints(geological_knowledge)
 
         return geological_knowledge, solver
+
+    @abstractmethod
+    def optimise_with_trust_region(self, objective_function: Callable,
+                                   x0: np.ndarray, constraints=None) -> Dict:
+        """
+        Solves the optimization problem using the trust region method.
+
+        Parameters
+        ----------
+            x0 : np.ndarray
+                Initial guess of the parameters to be optimised.
+
+        Returns
+        -------
+            opt : Dict
+                The solution of the optimisation.
+        """
+
+        opt = minimize(objective_function, x0,
+                       method='trust-constr', jac='2-point',
+                       constraints=constraints, **self.kwargs)
+
+        return opt
+
+    @abstractmethod
+    def optimise_with_differential_evolution(self, objective_function: Callable, bounds: Tuple, init: str = 'halton',
+                                             maxiter: int = 5000, seed: int = 80,
+                                             polish: bool = True, strategy: str = 'best2exp',
+                                             mutation: Tuple[float, float] = (0.3, 0.99)) -> Dict:
+        """
+        Solves the optimization problem using the differential evolution method.
+        Check Scipy documentation for more info
+
+        Parameters
+        ----------
+            bounds : Tuple
+                Bounds for variables. ``(min, max)`` pairs for each element in ``x``,
+                defining the bounds on that parameter.
+            init : str
+                Specify how population initialisation is performed. Default is 'halton'.
+            maxiter : int
+                The maximum number of generations over which the entire population is evolved. Default is 5000.
+            seed : int
+                The seed for the pseudo-random number generator. Default is 80.
+            polish : bool
+                If True (default), then differential evolution is followed by a polishing phase.
+            strategy : str
+                The differential evolution strategy to use. Default is 'best2exp'.
+            mutation : Tuple[float, float]
+                The mutation constant. Default is (0.3, 0.99).
+
+        Returns
+        -------
+            opt : Dict
+                The solution of the optimization.
+                :param objective_function:
+        """
+
+        opt = differential_evolution(objective_function, bounds=bounds, init=init,
+                                     maxiter=maxiter, seed=seed, polish=polish,
+                                     strategy=strategy, mutation=mutation, **self.kwargs)
+
+        return opt
 
     @abstractmethod
     def optimise(self, *args, **kwargs):
