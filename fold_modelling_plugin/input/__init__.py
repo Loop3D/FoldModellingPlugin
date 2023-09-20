@@ -1,1 +1,0 @@
-from .input_data_checker import CheckInputData
