@@ -1,11 +1,13 @@
-from typing import Optional, Dict, Any, Union
-import pandas as pd
+from typing import Optional, Dict, Any, Union, Callable, Dict, Any, Tuple
+# import pandas as pd
 import numpy as np
-from ..input.input_data_checker import CheckInputData
-from ..helper._helper import *
+# from ..input.input_data_checker import CheckInputData
+# from ..helper._helper import *
 from ..helper.utils import *
 # from .base_optimiser import BaseOptimiser
 from abc import ABC, abstractmethod
+from scipy.optimize import minimize, differential_evolution
+
 from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 
 
@@ -20,8 +22,6 @@ class FoldOptimiser(ABC):
 
         Parameters
         ----------
-            knowledge_constraints : dict, optional
-                The knowledge constraints for the optimiser.
             kwargs : dict
                 Additional keyword arguments.
         """
@@ -61,29 +61,6 @@ class FoldOptimiser(ABC):
 
         pass
 
-    @abstractmethod
-    def setup_optimisation(self, geological_knowledge=None) -> tuple:
-        """
-        Setup optimisation.
-
-        Returns
-        -------
-        tuple
-            Returns a tuple containing the geological knowledge objective functions, a solver, and the initial guess.
-        """
-
-        # Check if method is specified in kwargs and assign the appropriate solver
-        if 'method' in self.kwargs and self.kwargs['method'] == 'differential_evolution':
-            solver = self.optimise_with_differential_evolution
-        else:
-            solver = self.optimise_with_trust_region
-
-        # Prepare and setup knowledge constraints
-        geological_knowledge = self.prepare_and_setup_knowledge_constraints(geological_knowledge)
-
-        return geological_knowledge, solver
-
-    @abstractmethod
     def optimise_with_trust_region(self, objective_function: Callable,
                                    x0: np.ndarray, constraints=None) -> Dict:
         """
@@ -98,6 +75,7 @@ class FoldOptimiser(ABC):
         -------
             opt : Dict
                 The solution of the optimisation.
+
         """
 
         opt = minimize(objective_function, x0,
@@ -106,7 +84,6 @@ class FoldOptimiser(ABC):
 
         return opt
 
-    @abstractmethod
     def optimise_with_differential_evolution(self, objective_function: Callable, bounds: Tuple, init: str = 'halton',
                                              maxiter: int = 5000, seed: int = 80,
                                              polish: bool = True, strategy: str = 'best2exp',
@@ -145,6 +122,28 @@ class FoldOptimiser(ABC):
                                      strategy=strategy, mutation=mutation, **self.kwargs)
 
         return opt
+
+    @abstractmethod
+    def setup_optimisation(self, geological_knowledge=None) -> tuple:
+        """
+        Setup optimisation.
+
+        Returns
+        -------
+        tuple
+            Returns a tuple containing the geological knowledge objective functions, a solver, and the initial guess.
+        """
+
+        # Check if method is specified in kwargs and assign the appropriate solver
+        if 'method' in self.kwargs and self.kwargs['method'] == 'differential_evolution':
+            solver = self.optimise_with_differential_evolution
+        else:
+            solver = self.optimise_with_trust_region
+
+        # Prepare and setup knowledge constraints
+        geological_knowledge = self.prepare_and_setup_knowledge_constraints(geological_knowledge)
+
+        return geological_knowledge, solver
 
     @abstractmethod
     def optimise(self, *args, **kwargs):
