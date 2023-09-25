@@ -11,33 +11,19 @@ from scipy.optimize import minimize, differential_evolution
 from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 from .fold_optimiser import FoldOptimiser
 from ..objective_functions.gaussian import loglikelihood_fourier_series
-from ..helper.utils import calculate_semivariogram
-from ..helper._helper import *
+from ..helper.utils import *
 
 
-def scale(data):
-    mms = MinMaxScaler()
-    mms.fit(data)
-    data_transformed = mms.transform(data)
+# from ..helper._helper import *
 
-    return data_transformed
+#
+# def scale(data):
+#     mms = MinMaxScaler()
+#     mms.fit(data)
+#     data_transformed = mms.transform(data)
+#
+#     return data_transformed
 
-
-def get_wavelength_guesses(guess, size):
-    np.random.seed(180)
-    mu, sigma = guess, guess / 3
-    return np.random.normal(mu, abs(sigma), size)
-
-
-def objective_wrapper(func1, func2):
-    def objective_function(x):
-        return func1(x) + func2(x)
-
-    return objective_function
-
-
-# TODO: must implement all the methods from the base class FoldOptimiser
-# might need to change the base class to a more generic one
 
 class FourierSeriesOptimiser(FoldOptimiser):
     """
@@ -106,7 +92,7 @@ class FourierSeriesOptimiser(FoldOptimiser):
         """
 
         # Check if knowledge constraints exist
-        if self.knowledge_constraints is not None:
+        if self.geological_knowledge is not None:
             _geological_knowledge = super().prepare_and_setup_knowledge_constraints(geological_knowledge)
             return _geological_knowledge
 
@@ -153,7 +139,9 @@ class FourierSeriesOptimiser(FoldOptimiser):
             return guess
 
     def setup_optimisation(self, geological_knowledge=None) -> Tuple[Callable,
-                                          Union[GeologicalKnowledgeFunctions, None], Callable, Any]:
+                                                                     Union[
+                                                                         GeologicalKnowledgeFunctions, None], Callable,
+                                                                     Any]:
         """
         Setup Fourier series optimisation.
 
@@ -199,6 +187,8 @@ class FourierSeriesOptimiser(FoldOptimiser):
             if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
                 opt = solver(objective_function, x0=guess, constraints=geological_knowledge)
             else:
+                # Wrap to produce an objective function that
+                # takes into account the geological knowledge functions
                 objective_function = objective_wrapper(objective_function, geological_knowledge)
                 opt = solver(objective_function, x0=guess, constraints=geological_knowledge.constraints)
         else:
