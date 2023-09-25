@@ -87,7 +87,6 @@ def save_load_object(obj=None, file_path=None, mode='save'):
 
 
 def strike_dip_to_vectors(strike, dip):
-
     vec = np.zeros((len(strike), 3))
     s_r = np.deg2rad(strike)
     d_r = np.deg2rad((dip))
@@ -303,3 +302,16 @@ def make_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: i
     dataset['coord'] = coord
 
     return dataset
+
+
+def get_wavelength_guesses(guess, size):
+    np.random.seed(180)
+    mu, sigma = guess, guess / 3
+    return np.random.normal(mu, abs(sigma), size)
+
+
+def objective_wrapper(func1, func2):
+    def objective_function(x):
+        return func1(x) + func2(x)
+
+    return objective_function
