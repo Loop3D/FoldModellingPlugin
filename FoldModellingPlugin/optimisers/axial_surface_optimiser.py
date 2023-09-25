@@ -26,10 +26,10 @@ import pandas as pd
 from .fold_optimiser import FoldOptimiser
 from ..objective_functions import GeologicalKnowledgeFunctions
 from ..input import CheckInputData
-from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
+from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip, get_predicted_rotation_angle
 from ..objective_functions import VonMisesFisher
 from ..objective_functions import is_axial_plane_compatible
-# from ..fold_modelling import FoldModel
+from ..fold_modelling import FoldModel
 from ..objective_functions import loglikelihood_axial_surface
 
 
@@ -67,7 +67,7 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 #     return -(value - mu)**2
 
 
-class AxialSurfaceOptimiser(FoldOptimiser):
+class AxialSurfaceOptimiser(FoldOptimiser, FoldModel):
     """
         Optimiser for Axial Surfaces.
 
@@ -104,11 +104,11 @@ class AxialSurfaceOptimiser(FoldOptimiser):
 
         # Check the input data
         check_input = CheckInputData(data, bounding_box,
-                                     knowledge_constraints=geological_knowledge, **kwargs)
+                                     geological_knowledge=geological_knowledge)
         check_input.check_input_data()
 
         FoldOptimiser.__init__(self, **kwargs)
-        # FoldModel.__init__(data, bounding_box, geological_knowledge=geological_knowledge, **kwargs)
+        FoldModel.__init__(data, bounding_box, geological_knowledge=geological_knowledge, **kwargs)
 
         self.data = data
         self.bounding_box = bounding_box
@@ -120,85 +120,7 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         self.guess = None
         self.solver = None
 
-    def loglikelihood(self, x, predicted_foliation: np.ndarray,
-                      geological_knowledge: GeologicalKnowledgeFunctions) -> float:
-        """
-         Calculate the maximum likelihood estimate of the axial surface and the geological knowledge.
 
-         Parameters
-         ----------
-         x : np.ndarray
-             The axial surface normal vector to be optimised.
-         predicted_foliation : np.ndarray
-             The predicted foliation data.
-         geological_knowledge : GeologicalKnowledgeFunctions
-             The geological knowledge functions.
-
-         Returns
-         -------
-         float
-             The calculated loglikelihood of the axial surface. Returns None if input is not valid.
-         """
-
-        # Calculate the angle difference between the predicted and observed foliation
-        angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
-        # Calculate the loglikelihood of the axial surface
-        loglikelihood = -loglikelihood_axial_surface(angle_difference) + geological_knowledge(x)
-
-        return -loglikelihood
-
-    def mle_optimisation(self, strike_dip: Tuple[float, float]):
-        """
-        Performs Maximum Likelihood Estimation (MLE) optimisation.
-
-        Parameters
-        ----------
-        strike_dip : tuple
-            A tuple containing strike and dip values of the estimated axial surface.
-
-        Returns
-        -------
-        logpdf : float
-            The log-likelihood of the MLE.
-
-        Notes
-        -----
-        This function performs MLE optimisation and used when geological knowledge constraints are provided.
-        The function returns the log-likelihood of the MLE that is optimised
-        """
-
-        axial_normal = strike_dip_to_vector(*strike_dip)
-        axial_normal /= np.linalg.norm(axial_normal)
-
-        predicted_foliation = self.get_predicted_foliation(strike_dip)
-        logpdf = self.loglikelihood(axial_normal, predicted_foliation, self.geo_objective)
-        return logpdf
-
-    def angle_optimisation(self, strike_dip: Tuple[float, float]):
-        """
-            Minimises the angle between the observed and predicted folded foliation.
-
-            Parameters
-            ----------
-            strike_dip : tuple
-                A tuple containing strike and dip values of the estimated axial surface.
-
-            Returns
-            -------
-            angle_difference : float
-                The difference between the predicted and actual angle.
-
-            Notes
-            -----
-            This function optimises the axial surface by minimising the angle between the predicted and observed folded
-            foliation. This function is used when there are no geological knowledge constraints provided.
-        """
-
-        axial_normal = strike_dip_to_vector(*strike_dip)
-        axial_normal /= np.linalg.norm(axial_normal)
-        predicted_foliation = self.get_predicted_foliation(axial_normal)
-        angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
-        return angle_difference
 
     def generate_initial_guess(self):
         """
@@ -236,6 +158,86 @@ class AxialSurfaceOptimiser(FoldOptimiser):
             # use the halton method to initialise the optimisation
             return 'halton'
 
+    def loglikelihood(self, x, predicted_foliation: np.ndarray,
+                      geological_knowledge: GeologicalKnowledgeFunctions) -> float:
+        """
+         Calculate the maximum likelihood estimate of the axial surface and the geological knowledge.
+
+         Parameters
+         ----------
+         x : np.ndarray
+             The axial surface normal vector to be optimised.
+         predicted_foliation : np.ndarray
+             The predicted foliation data.
+         geological_knowledge : GeologicalKnowledgeFunctions
+             The geological knowledge functions.
+
+         Returns
+         -------
+         float
+             The calculated loglikelihood of the axial surface. Returns None if input is not valid.
+         """
+
+        # Calculate the angle difference between the predicted and observed foliation
+        angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
+        # Calculate the loglikelihood of the axial surface
+        loglikelihood = loglikelihood_axial_surface(angle_difference) + geological_knowledge(x)
+
+        return loglikelihood
+
+    def mle_optimisation(self, strike_dip: Tuple[float, float]):
+        """
+        Performs Maximum Likelihood Estimation (MLE) optimisation.
+
+        Parameters
+        ----------
+        strike_dip : tuple
+            A tuple containing strike and dip values of the estimated axial surface.
+
+        Returns
+        -------
+        logpdf : float
+            The log-likelihood of the MLE.
+
+        Notes
+        -----
+        This function performs MLE optimisation and used when geological knowledge constraints are provided.
+        The function returns the log-likelihood of the MLE that is optimised
+        """
+
+        axial_normal = strike_dip_to_vector(*strike_dip)
+        axial_normal /= np.linalg.norm(axial_normal)
+
+        predicted_foliation = self.get_predicted_foliation(axial_normal)
+        logpdf = self.loglikelihood(axial_normal, predicted_foliation, self.geo_objective)
+        return logpdf
+
+    def angle_optimisation(self, strike_dip: Tuple[float, float]):
+        """
+            Minimises the angle between the observed and predicted folded foliation.
+
+            Parameters
+            ----------
+            strike_dip : tuple
+                A tuple containing strike and dip values of the estimated axial surface.
+
+            Returns
+            -------
+            angle_difference : float
+                The difference between the predicted and actual angle.
+
+            Notes
+            -----
+            This function optimises the axial surface by minimising the angle between the predicted and observed folded
+            foliation. This function is used when there are no geological knowledge constraints provided.
+        """
+
+        axial_normal = strike_dip_to_vector(*strike_dip)
+        axial_normal /= np.linalg.norm(axial_normal)
+        predicted_foliation = self.get_predicted_foliation(axial_normal)
+        angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
+        return angle_difference
+
     def setup_optimisation(self, geological_knowledge: Optional[Dict[str, Any]] = None):
         """
            Sets up the optimisation algorithm.
@@ -266,12 +268,12 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         if _geological_knowledge is not None:
             # if _geological_knowledge exists then use the negative logpdf of the Von Mises distribution
             # as the objective function to minimise
-            objective_function = self.mle_optimisation()
+            objective_function = self.mle_optimisation
 
         # if no geological knowledge is provided then use the angle difference between the predicted and observed
         # foliation as the objective function to minimise
         else:
-            objective_function = self.angle_optimisation()
+            objective_function = self.angle_optimisation
 
         return objective_function, _geological_knowledge, solver, guess
 
@@ -303,9 +305,8 @@ class AxialSurfaceOptimiser(FoldOptimiser):
             # Check if mode is restricted
             if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
                 opt = self.solver(self.objective_function, x0=self.guess, constraints=self.geo_objective)
-            else:
-                pass
+                return opt
         else:
             opt = self.solver(self.objective_function, x0=self.guess)
 
-        return opt
+            return opt
