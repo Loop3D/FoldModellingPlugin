@@ -4,7 +4,7 @@ from ..from_loopstructural._svariogram import SVariogram
 from typing import Union
 
 
-def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=60):
+def calculate_semivariogram(fold_frame, fold_rotation, lag=10, nlag=60):
     svario = SVariogram(fold_frame, fold_rotation)
     svario.calc_semivariogram(lag=lag, nlag=nlag)
     wv = svario.find_wavelengths()

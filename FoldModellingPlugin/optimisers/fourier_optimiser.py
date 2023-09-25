@@ -3,10 +3,10 @@ from typing import Tuple, Callable, Union, Any, Optional, Dict
 # from modified_loopstructural.extra_utils import *
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, normalize
 import numpy as np
-from LoopStructural.modelling.features.fold import fourier_series
+# from LoopStructural.modelling.features.fold import fourier_series
 # from uncertainty_quantification.fold_uncertainty import *
 # from _helper import *
-from scipy.optimize import minimize, differential_evolution
+# from scipy.optimize import minimize, differential_evolution
 
 from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 from .fold_optimiser import FoldOptimiser
@@ -49,7 +49,8 @@ class FourierSeriesOptimiser(FoldOptimiser):
     TODO: Add methods here.
     """
 
-    def __init__(self, fold_frame_coordinate: float, rotation_angle: float, x: np.ndarray,
+    def __init__(self, fold_frame_coordinate: Union[list, np.ndarray], rotation_angle: Union[list, np.ndarray],
+                 x: Union[list, np.ndarray],
                  geological_knowledge: Optional[Dict[str, Any]] = None,
                  **kwargs: Dict[str, Any]):
         """
@@ -61,10 +62,10 @@ class FourierSeriesOptimiser(FoldOptimiser):
                 The fold frame coordinate for the optimiser.
             rotation_angle : float
                 The rotation angle for the optimiser.
-            knowledge_constraints : dict, optional
+            geological_knowledge : dict, optional
                 The knowledge constraints for the optimiser.
             x : np.ndarray
-                The interpolated fold frame coordinate z or y np.linspace(z.min(), z.max(), 100).
+                The interpolated fold frame coordinate z or y: np.linspace(z.min(), z.max(), 100).
                 It's used to calculate the optimised Fourier series everywhere in the model space.
             **kwargs : dict
                 Additional keyword arguments.
@@ -161,14 +162,14 @@ class FourierSeriesOptimiser(FoldOptimiser):
         objective_function = loglikelihood_fourier_series(self.rotation_angle, self.fold_frame_coordinate)
 
         # Prepare and setup knowledge constraints
-        geological_knowledge, solver = super().setup_optimisation(geological_knowledge)
+        geological_knowledge, solver = super().setup_optimisation(geological_knowledge=geological_knowledge)
 
         # Generate initial guess
         guess = self.generate_initial_guess()
 
         return objective_function, geological_knowledge, solver, guess
 
-    def optimise(self) -> Dict[str, Any]:
+    def optimise(self, geological_knowledge=None) -> Dict[str, Any]:
         """
         Optimise the Fourier series.
 
@@ -179,7 +180,8 @@ class FourierSeriesOptimiser(FoldOptimiser):
         """
 
         # Setup optimisation
-        objective_function, geological_knowledge, solver, guess = self.setup_optimisation()
+        objective_function, geological_knowledge, solver, guess = self.setup_optimisation(
+            geological_knowledge=geological_knowledge)
 
         # Check if geological knowledge exists
         if geological_knowledge is not None:

@@ -6,7 +6,7 @@ import numpy as np
 from ..helper.utils import *
 # from .base_optimiser import BaseOptimiser
 from abc import ABC, abstractmethod
-from scipy.optimize import minimize, differential_evolution
+from scipy.optimize import minimize, differential_evolution, NonlinearConstraint
 
 from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 
@@ -28,8 +28,8 @@ class FoldOptimiser(ABC):
         self.kwargs = kwargs
 
     @abstractmethod
-    def prepare_and_setup_knowledge_constraints(self, geological_knowledge) -> \
-            Optional[Union[GeologicalKnowledgeFunctions, None]]:
+    def prepare_and_setup_knowledge_constraints(self, geological_knowledge=None) -> \
+            Union[list[NonlinearConstraint], GeologicalKnowledgeFunctions]:
         """
         Prepare the knowledge constraints data
         """
@@ -37,9 +37,10 @@ class FoldOptimiser(ABC):
         if geological_knowledge is not None:
             # TODO: Add a check if the knowledge constraints are in the correct format
             # Check if mode is restricted
+            # TODO: Update to use only restricted_mode as kwarg that takes a boolean True or False value
             if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
                 geological_knowledge = GeologicalKnowledgeFunctions(geological_knowledge)
-                ready_constraints = geological_knowledge.setup_objective_functions_for_restricted_mode(self)
+                ready_constraints = geological_knowledge.setup_objective_functions_for_restricted_mode()
 
                 return ready_constraints
             else:
@@ -141,7 +142,7 @@ class FoldOptimiser(ABC):
             solver = self.optimise_with_trust_region
 
         # Prepare and setup knowledge constraints
-        geological_knowledge = self.prepare_and_setup_knowledge_constraints(geological_knowledge)
+        geological_knowledge = self.prepare_and_setup_knowledge_constraints(geological_knowledge=geological_knowledge)
 
         return geological_knowledge, solver
 

@@ -29,7 +29,7 @@ from ..input import CheckInputData
 from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip, get_predicted_rotation_angle
 from ..objective_functions import VonMisesFisher
 from ..objective_functions import is_axial_plane_compatible
-from ..fold_modelling import FoldModel
+# from ..fold_modelling import FoldModel
 from ..objective_functions import loglikelihood_axial_surface
 
 
@@ -67,7 +67,7 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 #     return -(value - mu)**2
 
 
-class AxialSurfaceOptimiser(FoldOptimiser, FoldModel):
+class AxialSurfaceOptimiser(FoldOptimiser):
     """
         Optimiser for Axial Surfaces.
 
@@ -108,7 +108,9 @@ class AxialSurfaceOptimiser(FoldOptimiser, FoldModel):
         check_input.check_input_data()
 
         FoldOptimiser.__init__(self, **kwargs)
-        FoldModel.__init__(data, bounding_box, geological_knowledge=geological_knowledge, **kwargs)
+        self.fold_engine = FoldModel(data, bounding_box,
+                                     geological_knowledge=geological_knowledge,
+                                     **kwargs)
 
         self.data = data
         self.bounding_box = bounding_box
@@ -119,8 +121,6 @@ class AxialSurfaceOptimiser(FoldOptimiser, FoldModel):
         self.objective_function = None
         self.guess = None
         self.solver = None
-
-
 
     def generate_initial_guess(self):
         """
@@ -208,7 +208,7 @@ class AxialSurfaceOptimiser(FoldOptimiser, FoldModel):
         axial_normal = strike_dip_to_vector(*strike_dip)
         axial_normal /= np.linalg.norm(axial_normal)
 
-        predicted_foliation = self.get_predicted_foliation(axial_normal)
+        predicted_foliation = self.fold_engine.get_predicted_foliation(axial_normal)
         logpdf = self.loglikelihood(axial_normal, predicted_foliation, self.geo_objective)
         return logpdf
 
@@ -234,7 +234,7 @@ class AxialSurfaceOptimiser(FoldOptimiser, FoldModel):
 
         axial_normal = strike_dip_to_vector(*strike_dip)
         axial_normal /= np.linalg.norm(axial_normal)
-        predicted_foliation = self.get_predicted_foliation(axial_normal)
+        predicted_foliation = self.fold_engine.get_predicted_foliation(axial_normal)
         angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
         return angle_difference
 
