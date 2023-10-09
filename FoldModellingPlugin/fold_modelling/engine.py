@@ -371,15 +371,15 @@ class FoldModel(BaseFoldFrameBuilder):
         fold_direction[dot < 0] *= -1
 
         # Calculate predicted bedding and normalize it
-        predicted_bedding = np.cross(fold_axis, fold_direction)
-        predicted_bedding /= np.linalg.norm(predicted_bedding, axis=1)[:, None]
+        predicted_foliation = np.cross(fold_axis, fold_direction)
+        predicted_foliation /= np.linalg.norm(predicted_foliation, axis=1)[:, None]
 
         # TODO write function that free up memory
         # Free up memory
         del fold_direction, fold_axis, fold, dot, s1g
         gc.collect()
 
-        return predicted_bedding
+        return predicted_foliation
 
     def get_predicted_foliation(self, axial_normal: np.ndarray) -> np.ndarray:
         """
