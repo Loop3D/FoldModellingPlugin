@@ -22,7 +22,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
     """
 
-    def __init__(self, constraints: Dict[str, float], x=np.ndarray):
+    def __init__(self, constraints: Dict[str, float]):
 
         # TODO add attribute to use any custom function otherwise use gaussian likelihood
         """
@@ -61,7 +61,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         """
         # Initialize the x values, constraints
         SPlotProcessor.__init__(self)
-        self.x = x
+        self.x = None
         self.constraints = constraints
 
         # Define the constraint names
@@ -76,14 +76,14 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         self.intercept_function = fourier_series_x_intercepts
         self.splot_function = fourier_series
 
-    def axial_surface_objective_function(self, x: np.ndarray) -> float:
+    def axial_surface_objective_function(self, v: np.ndarray) -> float:
         """
         Objective function for the axial surface.
         This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.
 
         Parameters
         ----------
-        x : np.ndarray
+        v : np.ndarray
             the unit vector that represents the axial surface.
             This is evaluated every iteration in the optimisation process
 
@@ -115,7 +115,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         vmf = VonMisesFisher(mu, kappa)
 
         # Calculate the logpdf of the input array
-        vmf_logpdf = vmf.logpdf(x) * w
+        vmf_logpdf = vmf.logpdf(v) * w
 
         return vmf_logpdf
 
@@ -411,7 +411,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
             'fold_wavelength': self.wavelength_objective_function,
 
-            'fold_axis_wavelength': self.axis_wavelength_objective_function,
+            'fold_axis_wavelength': self.fold_axis_wavelength_objective_function,
 
             'axial_trace': self.axial_trace_objective_function,
 
