@@ -55,12 +55,12 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
         raise ValueError("Axial surface and folded foliation arrays must have the same shape.")
 
     # Calculate cross product of the axial surface and folded foliation normal vectors
-    intesection_lineation = np.cross(axial_surface, folded_foliation)
+    li = np.cross(axial_surface, folded_foliation)
 
     # Normalise the intersection lineation vector
-    intesection_lineation /= np.linalg.norm(intesection_lineation, axis=1)[:, None]
+    li /= np.linalg.norm(li, axis=1)[:, None]
 
-    return intesection_lineation
+    return li
 
 
 # def logp(value: TensorVariable, mu: TensorVariable) -> TensorVariable:

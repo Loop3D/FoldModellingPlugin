@@ -315,3 +315,33 @@ def objective_wrapper(func1, func2):
         return func1(x) + func2(x)
 
     return objective_function
+
+
+def calculate_intersection_lineation(axial_surface, folded_foliation):
+    """
+    Calculate the intersection lineation of the axial surface and the folded foliation.
+
+    Parameters:
+    axial_surface (np.ndarray): The normal vector of the axial surface.
+    folded_foliation (np.ndarray): The normal vector of the folded foliation.
+
+    Returns:
+    np.ndarray: The normalised intersection lineation vector.
+    """
+    # Check if the inputs are numpy arrays
+    if not isinstance(axial_surface, np.ndarray):
+        raise TypeError("Axial surface vector must be a numpy array.")
+    if not isinstance(folded_foliation, np.ndarray):
+        raise TypeError("Folded foliation vector must be a numpy array.")
+
+    # Check if the inputs have the same shape
+    if axial_surface.shape != folded_foliation.shape:
+        raise ValueError("Axial surface and folded foliation arrays must have the same shape.")
+
+    # Calculate cross product of the axial surface and folded foliation normal vectors
+    li = np.cross(axial_surface, folded_foliation)
+
+    # Normalise the intersection lineation vector
+    li /= np.linalg.norm(li, axis=1)[:, None]
+
+    return li

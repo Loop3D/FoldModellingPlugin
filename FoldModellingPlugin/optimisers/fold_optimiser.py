@@ -27,9 +27,8 @@ class FoldOptimiser(ABC):
         """
         self.kwargs = kwargs
 
-    @abstractmethod
     def prepare_and_setup_knowledge_constraints(self, geological_knowledge=None) -> \
-            Union[list[NonlinearConstraint], GeologicalKnowledgeFunctions]:
+            Union[list[NonlinearConstraint], GeologicalKnowledgeFunctions, None]:
         """
         Prepare the knowledge constraints data
         """
@@ -47,6 +46,11 @@ class FoldOptimiser(ABC):
                 geological_knowledge = GeologicalKnowledgeFunctions(geological_knowledge)
 
                 return geological_knowledge
+        if not geological_knowledge:
+            # If knowledge constraints do not exist, return None
+            if geological_knowledge is None:
+                return None
+
 
         # If knowledge constraints do not exist, return None
 
@@ -63,7 +67,7 @@ class FoldOptimiser(ABC):
         pass
 
     def optimise_with_trust_region(self, objective_function: Callable,
-                                   x0: np.ndarray, constraints=None) -> Dict:
+                                   x0: np.ndarray, constraints=None, **kwargs) -> Dict:
         """
         Solves the optimization problem using the trust region method.
 
@@ -81,14 +85,14 @@ class FoldOptimiser(ABC):
 
         opt = minimize(objective_function, x0,
                        method='trust-constr', jac='2-point',
-                       constraints=constraints, **self.kwargs)
+                       constraints=constraints, **kwargs)
 
         return opt
 
     def optimise_with_differential_evolution(self, objective_function: Callable, bounds: Tuple, init: str = 'halton',
                                              maxiter: int = 5000, seed: int = 80,
                                              polish: bool = True, strategy: str = 'best2exp',
-                                             mutation: Tuple[float, float] = (0.3, 0.99)) -> Dict:
+                                             mutation: Tuple[float, float] = (0.3, 0.99), **kwargs) -> Dict:
         """
         Solves the optimization problem using the differential evolution method.
         Check Scipy documentation for more info
@@ -120,7 +124,7 @@ class FoldOptimiser(ABC):
 
         opt = differential_evolution(objective_function, bounds=bounds, init=init,
                                      maxiter=maxiter, seed=seed, polish=polish,
-                                     strategy=strategy, mutation=mutation, **self.kwargs)
+                                     strategy=strategy, mutation=mutation, **kwargs)
 
         return opt
 

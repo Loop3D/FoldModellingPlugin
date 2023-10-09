@@ -61,7 +61,7 @@ class TestFourierSeriesOptimiser(unittest.TestCase):
         self.assertIsNotNone(geo_knowledge)  # As per the current setup, it should be None
 
     def test_optimise(self):
-        result = self.optimiser.optimise()
+        result = self.optimiser.optimise(geological_knowledge=self.geological_knowledge['fold_limb_rotation_angle'])
         self.assertIsInstance(result, dict)
 
 
