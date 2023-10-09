@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def is_axial_plane_compatible(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+def is_axial_plane_compatible(v1: np.ndarray, v2: np.ndarray) -> float:
     """
     Calculate the angle difference between the predicted bedding and the observed one.
 

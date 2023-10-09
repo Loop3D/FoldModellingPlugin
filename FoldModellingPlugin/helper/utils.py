@@ -4,7 +4,7 @@ from ..from_loopstructural._svariogram import SVariogram
 from typing import Union
 
 
-def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=60):
+def calculate_semivariogram(fold_frame, fold_rotation, lag=10, nlag=60):
     svario = SVariogram(fold_frame, fold_rotation)
     svario.calc_semivariogram(lag=lag, nlag=nlag)
     wv = svario.find_wavelengths()
@@ -87,7 +87,6 @@ def save_load_object(obj=None, file_path=None, mode='save'):
 
 
 def strike_dip_to_vectors(strike, dip):
-
     vec = np.zeros((len(strike), 3))
     s_r = np.deg2rad(strike)
     d_r = np.deg2rad((dip))
@@ -303,3 +302,46 @@ def make_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: i
     dataset['coord'] = coord
 
     return dataset
+
+
+def get_wavelength_guesses(guess, size):
+    np.random.seed(180)
+    mu, sigma = guess, guess / 3
+    return np.random.normal(mu, abs(sigma), size)
+
+
+def objective_wrapper(func1, func2):
+    def objective_function(x):
+        return func1(x) + func2(x)
+
+    return objective_function
+
+
+def calculate_intersection_lineation(axial_surface, folded_foliation):
+    """
+    Calculate the intersection lineation of the axial surface and the folded foliation.
+
+    Parameters:
+    axial_surface (np.ndarray): The normal vector of the axial surface.
+    folded_foliation (np.ndarray): The normal vector of the folded foliation.
+
+    Returns:
+    np.ndarray: The normalised intersection lineation vector.
+    """
+    # Check if the inputs are numpy arrays
+    if not isinstance(axial_surface, np.ndarray):
+        raise TypeError("Axial surface vector must be a numpy array.")
+    if not isinstance(folded_foliation, np.ndarray):
+        raise TypeError("Folded foliation vector must be a numpy array.")
+
+    # Check if the inputs have the same shape
+    if axial_surface.shape != folded_foliation.shape:
+        raise ValueError("Axial surface and folded foliation arrays must have the same shape.")
+
+    # Calculate cross product of the axial surface and folded foliation normal vectors
+    li = np.cross(axial_surface, folded_foliation)
+
+    # Normalise the intersection lineation vector
+    li /= np.linalg.norm(li, axis=1)[:, None]
+
+    return li

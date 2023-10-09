@@ -81,7 +81,7 @@ class FoldModel(BaseFoldFrameBuilder):
                 additional keyword arguments
         """
         data_processor = InputDataProcessor(data, bounding_box,
-                                            knowledge_constraints=geological_knowledge)
+                                            geological_knowledge=geological_knowledge)
         self.data = data_processor.process_data()
         self.bounding_box = bounding_box
         self.model = None
@@ -199,18 +199,17 @@ class FoldModel(BaseFoldFrameBuilder):
         s1g /= np.linalg.norm(s1g, axis=1)[:, None]
 
         # check if 'av_fold_axis' is in kwargs and if it's True
-        if 'av_fold_axis' in self.kwargs and self.kwargs['av_fold_axis']:
+        if 'av_fold_axis' in self.kwargs:
             # calculate intersection lineation l
-            il = calculate_intersection_lineation(s1g, self.gradient_data)
-
-            # calculate the mean of intersection lineation and normalise it
-            av_fold_axis = il.mean(0)
-            av_fold_axis /= np.linalg.norm(av_fold_axis)
+            # li = calculate_intersection_lineation(s1g, self.gradient_data)
+            #
+            # # calculate the mean of intersection lineation and normalise it
+            # av_fold_axis = li.mean(0)
+            # av_fold_axis /= np.linalg.norm(av_fold_axis)
 
             # calculate the fold limb rotation angle
             flr, fld = foldframe.calculate_fold_limb_rotation(self.scaled_points,
-                                                              self.gradient_data,
-                                                              axis=av_fold_axis)
+                                                              self.gradient_data)
 
             # fit a fourier series to the fold limb rotation
             fitted_flr = self.fit_fourier_series(fld, flr, knowledge_type='fold_limb_rotation_angle')
@@ -226,10 +225,9 @@ class FoldModel(BaseFoldFrameBuilder):
             return fold
 
         # check if 'av_fold_axis' is not in kwargs or if it's False
-        if 'av_fold_axis' not in self.kwargs or not self.kwargs['av_fold_axis']:
+        if 'av_fold_axis' not in self.kwargs:
             # calculate the fold axis rotation angle
-            far, fad = foldframe.calculate_fold_axis_rotation(self.scaled_points, s1g,
-                                                              fold_axis=self.kwargs['fold_axis'])
+            far, fad = foldframe.calculate_fold_axis_rotation(self.scaled_points, s1g)
 
             # fit a fourier series to the calculated fold axis rotation angle
             fitted_far = self.fit_fourier_series(fad, far, knowledge_type='fold_axis_rotation_angle')
@@ -310,7 +308,7 @@ class FoldModel(BaseFoldFrameBuilder):
         return theta
 
     def fit_fourier_series(self, fold_frame_coordinate: np.ndarray, rotation_angle: np.ndarray,
-                           knowledge_type: str = 'fold_limb') -> List[float]:
+                           knowledge_type: str = 'fold_limb_rotation_angle') -> List[float]:
         """
         Fit the Fourier series.
 
@@ -321,7 +319,8 @@ class FoldModel(BaseFoldFrameBuilder):
         rotation_angle :  np.ndarray
             The fold limb or axis rotation angle.
         knowledge_type : str, optional
-            The type of knowledge, use 'fold_limb' or 'fold_axis', by default 'fold_limb'.
+            The type of knowledge, use 'fold_limb_rotation_angle' or 'fold_axis_rotation_angle',
+            by default 'fold_limb_rotation_angle'.
 
         Returns
         -------
@@ -330,19 +329,19 @@ class FoldModel(BaseFoldFrameBuilder):
         """
 
         # Check the type of knowledge and generate x accordingly
-        if knowledge_type == 'fold_limb':
+        if knowledge_type == 'fold_limb_rotation_angle':
             x = np.linspace(self.axial_surface[0].min(), self.axial_surface[0].max(), 100)
-        if knowledge_type == 'fold_axis':
+        if knowledge_type == 'fold_axis_rotation_angle':
             x = np.linspace(self.axial_surface[1].min(), self.axial_surface[1].max(), 100)
-
-        self.geological_knowledge.x = x
+        else:
+            x = None
 
         # Create a FourierSeriesOptimiser instance
-        fourier_opt = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x,
-                                             knowledge_constraints=self.geological_knowledge[knowledge_type])
+        fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x,
+                                                   geological_knowledge=self.geological_knowledge[knowledge_type])
 
         # Optimise the Fourier series
-        opt = fourier_opt.optimise()
+        opt = fourier_optimiser.optimise()
 
         return opt.x
 
