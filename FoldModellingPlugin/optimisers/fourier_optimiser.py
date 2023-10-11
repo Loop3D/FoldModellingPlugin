@@ -52,7 +52,8 @@ class FourierSeriesOptimiser(FoldOptimiser):
 
     def __init__(self, fold_frame_coordinate: Union[list, np.ndarray], rotation_angle: Union[list, np.ndarray],
                  x: Union[list, np.ndarray],
-                 geological_knowledge: Optional[Dict[str, Any]] = None,
+                 # geological_knowledge: Optional[Dict[str, Any]] = None,
+                 method='differential_evolution',
                  **kwargs: Dict[str, Any]):
         """
         Constructs all the necessary attributes for the Fourier Series Optimiser object.
@@ -71,12 +72,12 @@ class FourierSeriesOptimiser(FoldOptimiser):
             **kwargs : dict
                 Additional keyword arguments.
         """
-        FoldOptimiser.__init__(self, **kwargs)
+        FoldOptimiser.__init__(self, method=method, **kwargs)
         self.objective_value = 0
         self.fold_frame_coordinate = fold_frame_coordinate
         self.rotation_angle = np.tan(np.deg2rad(rotation_angle))
         # TODO: Add a check if the knowledge constraints are in the correct format
-        self.geological_knowledge = geological_knowledge
+        self.method = method
         # TODO: check how to initialise self.x = x in self.geological_knowledge
         self.x = x
         self.kwargs = kwargs
@@ -117,18 +118,18 @@ class FourierSeriesOptimiser(FoldOptimiser):
         """
 
         # Check if method is specified in kwargs
-        if 'method' in self.kwargs:
-            if self.kwargs['method'] == 'differential_evolution':
-                if 'wl_guess' in self.kwargs:
-                    wl = get_wavelength_guesses(self.kwargs['wl_guess'], 1000)
-                    bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
-                    return bounds
-                else:
-                    # Calculate semivariogram and get the wavelength guess
-                    guess, lags, variogram = calculate_semivariogram(self.rotation_angle, self.fold_frame_coordinate)
-                    wl = get_wavelength_guesses(guess[3], 1000)
-                    bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
-                    return bounds
+        if self.method == 'differential_evolution':
+            if 'wl_guess' in self.kwargs:
+                wl = get_wavelength_guesses(self.kwargs['wl_guess'], 1000)
+                # bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
+                bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
+                return bounds
+            else:
+                # Calculate semivariogram and get the wavelength guess
+                guess, lags, variogram = calculate_semivariogram(self.rotation_angle, self.fold_frame_coordinate)
+                wl = get_wavelength_guesses(guess[3], 1000)
+                bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
+                return bounds
 
         # Check if wl_guess is specified in kwargs
         if 'wl_guess' in self.kwargs:
