@@ -7,4 +7,4 @@ from .objective_functions import GeologicalKnowledgeFunctions, VonMisesFisher, L
 from .optimisers import FourierSeriesOptimiser, AxialSurfaceOptimiser
 from .splot import SPlotProcessor
 from .ipywidgets_interface import create_value_widgets, on_add_button_click, on_constraint_change, \
-    on_sub_constraint_change
+    on_sub_constraint_change, display_dict_selection
