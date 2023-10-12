@@ -1,13 +1,6 @@
 import ipywidgets as widgets
 from IPython.display import display, clear_output
 
-# Initial dictionary structure
-dict_structure = {
-    'fold_limb_rotation_angle': {},
-    'fold_axis_rotation_angle': {},
-    'fold_axial_surface': {}
-}
-
 
 def create_mu_widgets():
     mu_widgets = [
@@ -16,7 +9,7 @@ def create_mu_widgets():
     return widgets.HBox(mu_widgets)
 
 
-def create_value_widgets():
+def create_value_widgets(constraint_dropdown, sub_constraint_dropdown):
     selected_constraint = constraint_dropdown.value
     selected_sub_constraint = sub_constraint_dropdown.value
     if selected_constraint == 'fold_axial_surface' and selected_sub_constraint == 'axial_surface':
@@ -35,7 +28,7 @@ def create_value_widgets():
     }
 
 
-def on_add_button_click(button):
+def on_add_button_click(constraint_dropdown, sub_constraint_dropdown):
     selected_constraint = constraint_dropdown.value
     selected_sub_constraint = sub_constraint_dropdown.value
     values = {}
@@ -51,7 +44,7 @@ def on_add_button_click(button):
         print(dict_structure)
 
 
-def on_constraint_change(change):
+def on_constraint_change(change, sub_constraint_dropdown):
     new_value = change.get('new', None)
     sub_constraint_dropdown.options = sub_constraints.get(new_value, [])
     # Only call on_sub_constraint_change if form is defined
@@ -59,22 +52,13 @@ def on_constraint_change(change):
         on_sub_constraint_change({'new': sub_constraint_dropdown.value})
 
 
-def on_sub_constraint_change(change):
+def on_sub_constraint_change(constraint_dropdown, sub_constraint_dropdown):
     global value_widgets
     value_widgets = create_value_widgets()
     form.children = [constraint_dropdown, sub_constraint_dropdown] + list(value_widgets.values()) + [add_button, output]
 
 
-# Mapping of Major Constraints to their sub-constraints
-sub_constraints = {
-    'fold_limb_rotation_angle': ['tightness', 'asymmetry', 'fold_wavelength', 'axial_trace_1', 'axial_traces_2',
-                                 'axial_traces_3', 'axial_traces_4'],
-    'fold_axis_rotation_angle': ['hinge_angle', 'fold_axis_wavelength'],
-    'fold_axial_surface': ['axial_surface'],
-}
-
-
-def display_dict_selection():
+def display_dict_selection(sub_constraints):
     # Dropdown for constraints
     constraint_dropdown = widgets.Dropdown(options=list(sub_constraints.keys()), description='Major Constraint:')
     constraint_dropdown.observe(on_constraint_change, names='value')
@@ -91,7 +75,7 @@ def display_dict_selection():
     output = widgets.Output()
 
     # Initial value widgets
-    value_widgets = create_value_widgets()
+    value_widgets = create_value_widgets(constraint_dropdown, sub_constraint_dropdown)
 
     # Form to hold all the widgets
     form = widgets.VBox(
