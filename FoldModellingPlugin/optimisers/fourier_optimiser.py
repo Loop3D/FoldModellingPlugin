@@ -126,9 +126,9 @@ class FourierSeriesOptimiser(FoldOptimiser):
                 return bounds
             else:
                 # Calculate semivariogram and get the wavelength guess
-                guess, lags, variogram = calculate_semivariogram(self.rotation_angle, self.fold_frame_coordinate)
+                guess, lags, variogram = calculate_semivariogram(self.fold_frame_coordinate, self.rotation_angle)
                 wl = get_wavelength_guesses(guess[3], 1000)
-                bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
+                bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max()/3)], dtype=object)
                 return bounds
 
         # Check if wl_guess is specified in kwargs
@@ -137,7 +137,7 @@ class FourierSeriesOptimiser(FoldOptimiser):
             return guess
         else:
             # Calculate semivariogram and get the wavelength guess
-            guess, lags, variogram = calculate_semivariogram(self.rotation_angle, self.fold_frame_coordinate)
+            guess, lags, variogram = calculate_semivariogram(self.fold_frame_coordinate, self.rotation_angle)
 
             return guess
 
