@@ -258,7 +258,7 @@ def create_gradient_dict(x=None, y=None, z=None,
 
 def create_fold_frame_dataset(model, strike=0, dip=0):
     s1_ori = np.array([strike, dip])
-    xyz = model.regular_grid(nsteps=[10, 10, 10]) * model.scale_factor
+    xyz = model.regular_grid(nsteps=[10, 10, 10])
     s1_orientation = np.tile(s1_ori, (len(xyz), 1))
     s1_dict = create_dict(x=xyz[:, 0][0:10:2],
                           y=xyz[:, 1][0:10:2],
@@ -284,7 +284,7 @@ def create_fold_frame_dataset(model, strike=0, dip=0):
     return dataset, xyz
 
 
-def make_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: int = 0) -> pd.DataFrame:
+def create_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: int = 0) -> pd.DataFrame:
     """
 
     Make a dataset from one unit vector and xyz points of the folded feature data.

@@ -128,14 +128,14 @@ class FoldModel(BaseFoldFrameBuilder):
         # normalise axial surface normal
         axial_normal /= np.linalg.norm(axial_normal)
         # create a dataset from the axial surface normal
-        dataset = make_dataset(axial_normal, self.points, name='s1', coord=0)
+        dataset = create_dataset(axial_normal, self.points, name='s1', coord=0)
 
         assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
 
         # rotate the axial normal by 90 degrees to create the Y axis of the fold frame
         y = rotate_vector(axial_normal, np.pi / 2, dimension=3)
         # create a dataset from the Y axis of the fold frame
-        y_coord = make_dataset(y, self.points, name='s1', coord=1)
+        y_coord = create_dataset(y, self.points, name='s1', coord=1)
 
         # append the two datasets together
         dataset = pd.concat([dataset, y_coord])
