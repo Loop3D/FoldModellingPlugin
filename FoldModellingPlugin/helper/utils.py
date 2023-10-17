@@ -361,3 +361,11 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
     li /= np.linalg.norm(li, axis=1)[:, None]
 
     return li
+
+
+def clean_knowledge_dict(geological_knowledge):
+    keys_to_delete = [key for key, value in geological_knowledge.items() if not value]
+    for key in keys_to_delete:
+        del geological_knowledge[key]
+
+    return geological_knowledge
