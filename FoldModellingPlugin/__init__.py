@@ -1,4 +1,4 @@
-from .fold_modelling import FoldModel, BaseFoldFrameBuilder
+# from .fold_modelling import FoldModel, BaseFoldFrameBuilder
 from .helper import _helper, utils
 from .input import CheckInputData, InputDataProcessor
 from .objective_functions import GeologicalKnowledgeFunctions, VonMisesFisher, LeastSquaresFunctions, \
