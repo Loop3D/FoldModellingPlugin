@@ -1,16 +1,3 @@
-# from knowledge_constraints._helper import *
-
-
-# from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
-# from knowledge_constraints.splot_processor import SPlotProcessor
-
-# from LoopStructural.modelling.features.fold import FoldEvent
-# from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
-# from LoopStructural.modelling.features.fold import fourier_series
-# from LoopStructural.helper.helper import *
-# from geological_sampler.sampling_methods import *
-# from uncertainty_quantification.fold_uncertainty import *
-
 from typing import Union, Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
@@ -337,11 +324,10 @@ class FoldModel(BaseFoldFrameBuilder):
             x = None
 
         # Create a FourierSeriesOptimiser instance
-        fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x,
-                                                   geological_knowledge=self.geological_knowledge[knowledge_type])
+        fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x)
 
         # Optimise the Fourier series
-        opt = fourier_optimiser.optimise()
+        opt = fourier_optimiser.optimise(geological_knowledge=self.geological_knowledge[knowledge_type])
 
         return opt.x
 
