@@ -1,22 +1,5 @@
 from abc import ABC
 from typing import Dict, Any, Optional, Union, Tuple
-
-# from scipy.optimize import minimize
-# import knowledge_constraints
-# importlib.reload(knowledge_constraints)
-# from modified_loopstructural.modified_foldframe import FoldFrame
-# from modified_loopstructural.extra_utils import *
-# from knowledge_constraints._helper import *
-# from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
-# from knowledge_constraints.splot_processor import SPlotProcessor
-# from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
-# from LoopStructural import GeologicalModel
-# from LoopStructural.modelling.features.fold import FoldEvent
-# from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
-# from LoopStructural.modelling.features.fold import fourier_series
-# from LoopStructural.helper.helper import *
-# from geological_sampler.sampling_methods import *
-# from uncertainty_quantification.fold_uncertainty import *
 import numpy as np
 import pandas as pd
 # import mplstereonet
@@ -29,7 +12,7 @@ from ..input import CheckInputData
 from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip, get_predicted_rotation_angle
 from ..objective_functions import VonMisesFisher
 from ..objective_functions import is_axial_plane_compatible
-# from ..fold_modelling import FoldModel
+from ..fold_modelling import FoldModel
 from ..objective_functions import loglikelihood_axial_surface
 
 
@@ -96,7 +79,7 @@ class AxialSurfaceOptimiser(FoldOptimiser):
                     Other optional parameters for optimisation. Can include scipy optimisation parameters for
                     differential evolution and trust-constr methods.
                     mode : str, optional, optimisation mode, can be 'restricted' or 'unrestricted',
-                    by default 'unrestricted'.
+                    by default 'unrestricted'. only unrestricted mode is supported for now.
                     method : str, optional, optimisation method, can be 'differential_evolution' or 'trust-region',
                     by default 'differential_evolution'.
 
@@ -297,8 +280,14 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         checking if geological knowledge exists, and running the solver.
         """
         # Setup optimisation
-        self.objective_function, self.geo_objective, self.solver, self.guess = \
-            self.setup_optimisation(geological_knowledge['fold_axial_surface'])
+        if len(geological_knowledge['fold_axial_surface']) == 0:
+            self.objective_function, self.geo_objective, self.solver, self.guess = \
+                self.setup_optimisation()
+
+        if len(geological_knowledge['fold_axial_surface']) != 0:
+            self.objective_function, self.geo_objective, self.solver, self.guess = \
+                self.setup_optimisation(geological_knowledge['fold_axial_surface'])
+
 
         # Check if geological knowledge exists
         if geological_knowledge is not None:
