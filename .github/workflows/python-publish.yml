@@ -10,7 +10,7 @@ name: FoldOptLib
 
 on:
   release:
-    types: [published]
+    types: [edited, created, published]
 
 permissions:
   contents: read
