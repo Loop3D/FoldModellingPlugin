@@ -30,7 +30,7 @@ setup(
     author="Rabii Chaarani",
     author_email="rabii.chaarani@monash.edu",
     license=("MIT"),
-    url="https://loop3d.github.io/LoopStructural/",
+    url="https://github.com/Loop3D/FoldOptLib",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -43,30 +43,24 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Multimedia :: Graphics :: 3D Modeling",
         "Topic :: Scientific/Engineering",
-        "Topic :: Scientific/Engineering :: GIS",
+        "Topic :: Scientific/Engineering :: Nonlinear Optimisation",
     ],
     version=version,
     packages=find_packages(),
-    ext_modules=cythonize(
-        "LoopStructural/interpolators/_cython/*.pyx",
-        compiler_directives={"language_level": "3"},
-    ),
-    include_dirs=[numpy.get_include()],
-    include_package_data=True,
-    package_data={
-        "LoopStructural": [
-            "datasets/data/fault_trace/*",
-            "datasets/data/*.csv",
-            "datasets/data/*.txt",
-            "datasets/data/geological_map_data/*.csv",
-            "datasets/data/geological_map_data/*.txt",
-        ]
-    },
+    # ext_modules=
+    # ),
+    # include_dirs=[numpy.get_include()],
+    # include_package_data=True,
+    # package_data={
+    #     "FoldOptLib": [
+    #     ]
+    # },
     keywords=[
         "earth sciences",
         "geology",
         "3-D modelling",
         "structural geology",
         "uncertainty",
+        "fold geometry",
     ],
 )
