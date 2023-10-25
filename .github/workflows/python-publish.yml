@@ -9,7 +9,7 @@
 name:FoldOptLib
 
 on:
-  release: 0.1.0-beta
+  release:
     types: [published]
 
 permissions:
