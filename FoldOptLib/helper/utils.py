@@ -215,7 +215,7 @@ def get_fold_curves(geological_feature, fold_frame=0):
     x = np.linspace(geological_feature.fold.foldframe[coordinate_to_use].min(),
                     geological_feature.fold.foldframe[coordinate_to_use].max(), 200)
     curve = geological_feature.fold.fold_axis_rotation(
-        x) if fold_frame is 1 else geological_feature.fold.fold_limb_rotation(x)
+        x) if fold_frame == 1 else geological_feature.fold.fold_limb_rotation(x)
 
     return x, curve
 
