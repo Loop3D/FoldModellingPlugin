@@ -11,12 +11,12 @@ from ..from_loopstructural._fold_frame import FoldFrame
 # from from_loopstructural._svariogram import SVariogram
 from .base_fold_frame_builder import BaseFoldFrameBuilder
 from ..optimisers.fourier_optimiser import FourierSeriesOptimiser
-
+import gc
 
 def fold_function(params):
     def rot_func(x):
         return np.rad2deg(
-            np.arctan(fourier_series(x, *params.x)))
+            np.arctan(fourier_series(x, *params)))
 
     return rot_func
 
@@ -187,12 +187,12 @@ class FoldModel(BaseFoldFrameBuilder):
 
         # check if 'av_fold_axis' is in kwargs and if it's True
         if 'av_fold_axis' in self.kwargs:
-            # calculate intersection lineation l
-            # li = calculate_intersection_lineation(s1g, self.gradient_data)
-            #
-            # # calculate the mean of intersection lineation and normalise it
-            # av_fold_axis = li.mean(0)
-            # av_fold_axis /= np.linalg.norm(av_fold_axis)
+            # calculate intersection lineation li
+            li = calculate_intersection_lineation(s1g, self.gradient_data)
+
+            # calculate the mean of intersection lineation li and normalise it
+            av_fold_axis = li.mean(0)
+            av_fold_axis /= np.linalg.norm(av_fold_axis)
 
             # calculate the fold limb rotation angle
             flr, fld = foldframe.calculate_fold_limb_rotation(self.scaled_points,
@@ -206,8 +206,7 @@ class FoldModel(BaseFoldFrameBuilder):
 
             # create a fold event with the axial surface, fold limb rotation function and fold axis
             fold = FoldEvent(self.axial_surface,
-                             fold_limb_rotation=fold_limb_rotation_function,
-                             fold_axis=av_fold_axis)
+                             fold_limb_rotation=fold_limb_rotation_function, fold_axis=av_fold_axis)
 
             return fold
 
@@ -316,20 +315,26 @@ class FoldModel(BaseFoldFrameBuilder):
         """
 
         # Check the type of knowledge and generate x accordingly
-        if knowledge_type == 'fold_limb_rotation_angle':
-            x = np.linspace(self.axial_surface[0].min(), self.axial_surface[0].max(), 100)
         if knowledge_type == 'fold_axis_rotation_angle':
             x = np.linspace(self.axial_surface[1].min(), self.axial_surface[1].max(), 100)
         else:
-            x = None
+            x = np.linspace(self.axial_surface[0].min(), self.axial_surface[0].max(), 100)
 
         # Create a FourierSeriesOptimiser instance
         fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x)
 
-        # Optimise the Fourier series
-        opt = fourier_optimiser.optimise(geological_knowledge=self.geological_knowledge[knowledge_type])
+        if self.geological_knowledge is not None:
 
-        return opt.x
+            opt = fourier_optimiser.optimise(geological_knowledge=self.geological_knowledge[knowledge_type])
+
+            return opt.x
+
+        else:
+
+            # Optimise the Fourier series
+            opt = fourier_optimiser.optimise()
+
+            return opt.x
 
     def calculate_folded_foliation_vectors(self) -> np.ndarray:
         """
@@ -352,7 +357,7 @@ class FoldModel(BaseFoldFrameBuilder):
         fold_direction, fold_axis, gz = fold.get_deformed_orientation(self.scaled_points)
         fold_direction /= np.linalg.norm(fold_direction, axis=1)[:, None]
 
-        # Correct any vector to be consistent with the axial surface orientation
+        # Correct any fold_direction vector to be consistent with the axial surface orientation
         dot = np.einsum('ij,ij->i', s1g, fold_direction)
         fold_direction[dot < 0] *= -1
 
@@ -381,6 +386,7 @@ class FoldModel(BaseFoldFrameBuilder):
         np.ndarray
             Returns the normal vectors to the predicted foliation.
         """
+        self.initialise_model()
 
         # Build the fold frame
         self.build_fold_frame(axial_normal)
