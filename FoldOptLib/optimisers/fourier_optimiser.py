@@ -184,19 +184,29 @@ class FourierSeriesOptimiser(FoldOptimiser):
         # Setup optimisation
         objective_function, geological_knowledge, solver, guess = self.setup_optimisation(
             geological_knowledge=geological_knowledge)
+        if self.method == 'differential_evolution':
 
-        # Check if geological knowledge exists
-        if geological_knowledge is not None:
-            # Check if mode is restricted
-            if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
-                opt = solver(objective_function, x0=guess, constraints=geological_knowledge)
+            # Check if geological knowledge exists
+            if geological_knowledge is not None:
+                # Check if mode is restricted
+                if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
+                    opt = solver(objective_function, x0=guess, constraints=geological_knowledge)
+
+                    return opt
+                else:
+                    # Wrap to produce an objective function that
+                    # takes into account the geological knowledge functions
+                    objective_function = objective_wrapper(objective_function, geological_knowledge)
+                    # bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (guess[3] / 2, guess[3] * 2)], dtype=object)
+                    opt = solver(objective_function, bounds=guess)
+
+                    return opt
             else:
-                # Wrap to produce an objective function that
-                # takes into account the geological knowledge functions
-                objective_function = objective_wrapper(objective_function, geological_knowledge)
-                # bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (guess[3] / 2, guess[3] * 2)], dtype=object)
                 opt = solver(objective_function, bounds=guess)
+
+                return opt
+
         else:
-            opt = solver(objective_function, x0=guess)
+            opt = solver(objective_function, guess)
 
         return opt
