@@ -1,20 +1,11 @@
-# setup cython code
-import sys
 import codecs
-
-try:
-    from setuptools import setup, find_packages
-except:
-    raise RuntimeError("Cannot import setuptools \n" "python -m pip install setuptools")
-    sys.exit(1)
-
-import numpy
+from setuptools import setup, find_packages
 import os
 
 package_root = os.path.abspath(os.path.dirname(__file__))
 
 version = {}
-with open(os.path.join(package_root, "FoldOptLib/version.py")) as fp:
+with open(os.path.join(package_root, "FoldOptLib/FoldOptLib/version.py")) as fp:
     exec(fp.read(), version)
 version = version["__version__"]
 
@@ -32,7 +23,7 @@ setup(
     license=("MIT"),
     url="https://github.com/Loop3D/FoldOptLib",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Other Audience",
         "Intended Audience :: Science/Research",
