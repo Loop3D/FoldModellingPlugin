@@ -74,6 +74,10 @@ def loglikelihood_axial_surface(x: float) -> Union[int, float]:
     # Calculate the logpdf of the input array
     vm_logpdf = -vm.logpdf(x)
 
+    if isinstance(vm_logpdf, np.ndarray):
+        vm_logpdf = vm_logpdf.sum()
+    else:
+        pass
     return vm_logpdf
 
 
