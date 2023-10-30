@@ -4,7 +4,7 @@ from ..from_loopstructural._svariogram import SVariogram
 from typing import Union
 
 
-def calculate_semivariogram(fold_frame, fold_rotation, lag=10, nlag=60):
+def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=None):
     svario = SVariogram(fold_frame, fold_rotation)
     svario.calc_semivariogram(lag=lag, nlag=nlag)
     wv = svario.find_wavelengths()
@@ -17,8 +17,10 @@ def calculate_semivariogram(fold_frame, fold_rotation, lag=10, nlag=60):
 
 
 def get_predicted_rotation_angle(theta, fold_frame_coordinate):
-    y_pred = np.tan(np.deg2rad(fourier_series(
-        fold_frame_coordinate, *theta)))
+    # y_pred = np.tan(np.deg2rad(fourier_series(
+    #     fold_frame_coordinate, *theta)))
+    y_pred = fourier_series(
+        fold_frame_coordinate, *theta)
 
     return y_pred
 
@@ -213,40 +215,26 @@ def get_fold_curves(geological_feature, fold_frame=0):
     x = np.linspace(geological_feature.fold.foldframe[coordinate_to_use].min(),
                     geological_feature.fold.foldframe[coordinate_to_use].max(), 200)
     curve = geological_feature.fold.fold_axis_rotation(
-        x) if fold_frame is 1 else geological_feature.fold.fold_limb_rotation(x)
+        x) if fold_frame == 1 else geological_feature.fold.fold_limb_rotation(x)
 
     return x, curve
 
 
 def create_dict(x=None, y=None, z=None, strike=None, dip=None, feature_name=None,
-                coord=None, data_type=None, **kwargs):
-    if data_type == 'foliation':
-        fn = np.empty(len(x)).astype(str)
-        fn.fill(feature_name)
-        c = np.empty((len(x))).astype(int)
-        c.fill(coord)
-        dictionary = {'X': x,
-                      'Y': y,
-                      'Z': z,
-                      'strike': strike,
-                      'dip': dip,
-                      'feature_name': fn,
-                      'coord': c}
-        return dictionary
+                coord=None, **kwargs):
+    fn = np.empty(len(x)).astype(str)
+    fn.fill(feature_name)
+    c = np.empty((len(x))).astype(int)
+    c.fill(coord)
+    dictionary = {'X': x,
+                  'Y': y,
+                  'Z': z,
+                  'strike': strike,
+                  'dip': dip,
+                  'feature_name': fn,
+                  'coord': c}
 
-    if data_type == 'fold_axis':
-        fn = np.empty(len(x)).astype(str)
-        fn.fill(feature_name)
-        c = np.empty((len(x))).astype(int)
-        c.fill(coord)
-        dictionary = {'X': x,
-                      'Y': y,
-                      'Z': z,
-                      'plunge_dir': strike,
-                      'plunge': dip,
-                      'feature_name': fn,
-                      'coord': c}
-        return dictionary
+    return dictionary
 
 
 def create_gradient_dict(x=None, y=None, z=None,
@@ -268,7 +256,35 @@ def create_gradient_dict(x=None, y=None, z=None,
     return dictionary
 
 
-def make_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: int = 0) -> pd.DataFrame:
+def create_fold_frame_dataset(model, strike=0, dip=0):
+    s1_ori = np.array([strike, dip])
+    xyz = model.regular_grid(nsteps=[10, 10, 10])
+    s1_orientation = np.tile(s1_ori, (len(xyz), 1))
+    s1_dict = create_dict(x=xyz[:, 0][0:10:2],
+                          y=xyz[:, 1][0:10:2],
+                          z=xyz[:, 2][0:10:2],
+                          strike=s1_orientation[:, 0][0:10:2],
+                          dip=s1_orientation[:, 1][0:10:2],
+                          feature_name='s1',
+                          coord=0)
+    # Generate a dataset using s1 dictionary
+    dataset = pd.DataFrame(s1_dict, columns=['X', 'Y', 'Z', 'strike', 'dip', 'feature_name', 'coord'])
+    # Add y coordinate axis orientation. Y coordinate axis always perpendicular
+    # to the axial surface and roughly parallel to the fold axis
+    s2y = dataset.copy()
+    s2s = s2y[['strike', 'dip']].to_numpy()
+    s2s[:, 0] += 90
+    s2s[:, 1] = dip
+    s2y['strike'] = s2s[:, 0]
+    s2y['dip'] = s2s[:, 1]
+    s2y['coord'] = 1
+    # Add y coordinate dictionary to s1 dataframe
+    dataset = pd.concat([dataset, s2y])
+
+    return dataset, xyz
+
+
+def create_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: int = 0) -> pd.DataFrame:
     """
 
     Make a dataset from one unit vector and xyz points of the folded feature data.
@@ -345,3 +361,11 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
     li /= np.linalg.norm(li, axis=1)[:, None]
 
     return li
+
+
+def clean_knowledge_dict(geological_knowledge):
+    keys_to_delete = [key for key, value in geological_knowledge.items() if not value]
+    for key in keys_to_delete:
+        del geological_knowledge[key]
+
+    return geological_knowledge

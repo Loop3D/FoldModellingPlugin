@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from FoldModellingPlugin.FoldModellingPlugin.optimisers.fold_optimiser import FoldOptimiser
+from FoldOptLib.FoldModellingPlugin.optimisers.fold_optimiser import FoldOptimiser
 
 
 class TestFoldOptimiser(unittest.TestCase):

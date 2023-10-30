@@ -5,7 +5,7 @@ import pandas as pd
 import os
 
 # from FoldModellingPlugin.FoldModellingPlugin.from_loopstructural._svariogram import SVariogram
-from FoldModellingPlugin.fold_modelling_plugin.helper.utils import *
+from FoldOptLib.fold_modelling_plugin.helper.utils import *
 
 
 class TestGeologicalFunctions(unittest.TestCase):

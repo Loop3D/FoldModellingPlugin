@@ -1,16 +1,3 @@
-# from knowledge_constraints._helper import *
-
-
-# from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
-# from knowledge_constraints.splot_processor import SPlotProcessor
-
-# from LoopStructural.modelling.features.fold import FoldEvent
-# from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
-# from LoopStructural.modelling.features.fold import fourier_series
-# from LoopStructural.helper.helper import *
-# from geological_sampler.sampling_methods import *
-# from uncertainty_quantification.fold_uncertainty import *
-
 from typing import Union, Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
@@ -24,12 +11,12 @@ from ..from_loopstructural._fold_frame import FoldFrame
 # from from_loopstructural._svariogram import SVariogram
 from .base_fold_frame_builder import BaseFoldFrameBuilder
 from ..optimisers.fourier_optimiser import FourierSeriesOptimiser
-
+import gc
 
 def fold_function(params):
     def rot_func(x):
         return np.rad2deg(
-            np.arctan(fourier_series(x, *params.x)))
+            np.arctan(fourier_series(x, *params)))
 
     return rot_func
 
@@ -128,14 +115,14 @@ class FoldModel(BaseFoldFrameBuilder):
         # normalise axial surface normal
         axial_normal /= np.linalg.norm(axial_normal)
         # create a dataset from the axial surface normal
-        dataset = make_dataset(axial_normal, self.points, name='s1', coord=0)
+        dataset = create_dataset(axial_normal, self.points, name='s1', coord=0)
 
         assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
 
         # rotate the axial normal by 90 degrees to create the Y axis of the fold frame
         y = rotate_vector(axial_normal, np.pi / 2, dimension=3)
         # create a dataset from the Y axis of the fold frame
-        y_coord = make_dataset(y, self.points, name='s1', coord=1)
+        y_coord = create_dataset(y, self.points, name='s1', coord=1)
 
         # append the two datasets together
         dataset = pd.concat([dataset, y_coord])
@@ -200,12 +187,12 @@ class FoldModel(BaseFoldFrameBuilder):
 
         # check if 'av_fold_axis' is in kwargs and if it's True
         if 'av_fold_axis' in self.kwargs:
-            # calculate intersection lineation l
-            # li = calculate_intersection_lineation(s1g, self.gradient_data)
-            #
-            # # calculate the mean of intersection lineation and normalise it
-            # av_fold_axis = li.mean(0)
-            # av_fold_axis /= np.linalg.norm(av_fold_axis)
+            # calculate intersection lineation li
+            li = calculate_intersection_lineation(s1g, self.gradient_data)
+
+            # calculate the mean of intersection lineation li and normalise it
+            av_fold_axis = li.mean(0)
+            av_fold_axis /= np.linalg.norm(av_fold_axis)
 
             # calculate the fold limb rotation angle
             flr, fld = foldframe.calculate_fold_limb_rotation(self.scaled_points,
@@ -219,8 +206,7 @@ class FoldModel(BaseFoldFrameBuilder):
 
             # create a fold event with the axial surface, fold limb rotation function and fold axis
             fold = FoldEvent(self.axial_surface,
-                             fold_limb_rotation=fold_limb_rotation_function,
-                             fold_axis=av_fold_axis)
+                             fold_limb_rotation=fold_limb_rotation_function, fold_axis=av_fold_axis)
 
             return fold
 
@@ -329,21 +315,26 @@ class FoldModel(BaseFoldFrameBuilder):
         """
 
         # Check the type of knowledge and generate x accordingly
-        if knowledge_type == 'fold_limb_rotation_angle':
-            x = np.linspace(self.axial_surface[0].min(), self.axial_surface[0].max(), 100)
         if knowledge_type == 'fold_axis_rotation_angle':
             x = np.linspace(self.axial_surface[1].min(), self.axial_surface[1].max(), 100)
         else:
-            x = None
+            x = np.linspace(self.axial_surface[0].min(), self.axial_surface[0].max(), 100)
 
         # Create a FourierSeriesOptimiser instance
-        fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x,
-                                                   geological_knowledge=self.geological_knowledge[knowledge_type])
+        fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x)
 
-        # Optimise the Fourier series
-        opt = fourier_optimiser.optimise()
+        if self.geological_knowledge is not None:
 
-        return opt.x
+            opt = fourier_optimiser.optimise(geological_knowledge=self.geological_knowledge[knowledge_type])
+
+            return opt.x
+
+        else:
+
+            # Optimise the Fourier series
+            opt = fourier_optimiser.optimise()
+
+            return opt.x
 
     def calculate_folded_foliation_vectors(self) -> np.ndarray:
         """
@@ -366,20 +357,20 @@ class FoldModel(BaseFoldFrameBuilder):
         fold_direction, fold_axis, gz = fold.get_deformed_orientation(self.scaled_points)
         fold_direction /= np.linalg.norm(fold_direction, axis=1)[:, None]
 
-        # Correct any vector to be consistent with the axial surface orientation
+        # Correct any fold_direction vector to be consistent with the axial surface orientation
         dot = np.einsum('ij,ij->i', s1g, fold_direction)
         fold_direction[dot < 0] *= -1
 
         # Calculate predicted bedding and normalize it
-        predicted_bedding = np.cross(fold_axis, fold_direction)
-        predicted_bedding /= np.linalg.norm(predicted_bedding, axis=1)[:, None]
+        predicted_foliation = np.cross(fold_axis, fold_direction)
+        predicted_foliation /= np.linalg.norm(predicted_foliation, axis=1)[:, None]
 
         # TODO write function that free up memory
         # Free up memory
         del fold_direction, fold_axis, fold, dot, s1g
         gc.collect()
 
-        return predicted_bedding
+        return predicted_foliation
 
     def get_predicted_foliation(self, axial_normal: np.ndarray) -> np.ndarray:
         """
@@ -395,6 +386,7 @@ class FoldModel(BaseFoldFrameBuilder):
         np.ndarray
             Returns the normal vectors to the predicted foliation.
         """
+        self.initialise_model()
 
         # Build the fold frame
         self.build_fold_frame(axial_normal)

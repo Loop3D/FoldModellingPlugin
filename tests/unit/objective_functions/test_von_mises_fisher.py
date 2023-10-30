@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from typing import List
-from FoldModellingPlugin.fold_modelling_plugin.objective_functions import VonMisesFisher
+from FoldOptLib.fold_modelling_plugin.objective_functions import VonMisesFisher
 
 
 class TestVonMisesFisher(unittest.TestCase):

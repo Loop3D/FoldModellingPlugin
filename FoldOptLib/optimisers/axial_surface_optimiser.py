@@ -1,22 +1,5 @@
 from abc import ABC
 from typing import Dict, Any, Optional, Union, Tuple
-
-# from scipy.optimize import minimize
-# import knowledge_constraints
-# importlib.reload(knowledge_constraints)
-# from modified_loopstructural.modified_foldframe import FoldFrame
-# from modified_loopstructural.extra_utils import *
-# from knowledge_constraints._helper import *
-# from knowledge_constraints.knowledge_constraints import GeologicalKnowledgeConstraints
-# from knowledge_constraints.splot_processor import SPlotProcessor
-# from knowledge_constraints.fourier_optimiser import FourierSeriesOptimiser
-# from LoopStructural import GeologicalModel
-# from LoopStructural.modelling.features.fold import FoldEvent
-# from LoopStructural.modelling.features.fold import FoldRotationAngle, SVariogram
-# from LoopStructural.modelling.features.fold import fourier_series
-# from LoopStructural.helper.helper import *
-# from geological_sampler.sampling_methods import *
-# from uncertainty_quantification.fold_uncertainty import *
 import numpy as np
 import pandas as pd
 # import mplstereonet
@@ -29,7 +12,7 @@ from ..input import CheckInputData
 from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip, get_predicted_rotation_angle
 from ..objective_functions import VonMisesFisher
 from ..objective_functions import is_axial_plane_compatible
-# from ..fold_modelling import FoldModel
+from ..fold_modelling import FoldModel
 from ..objective_functions import loglikelihood_axial_surface
 
 
@@ -96,7 +79,7 @@ class AxialSurfaceOptimiser(FoldOptimiser):
                     Other optional parameters for optimisation. Can include scipy optimisation parameters for
                     differential evolution and trust-constr methods.
                     mode : str, optional, optimisation mode, can be 'restricted' or 'unrestricted',
-                    by default 'unrestricted'.
+                    by default 'unrestricted'. only unrestricted mode is supported for now.
                     method : str, optional, optimisation method, can be 'differential_evolution' or 'trust-region',
                     by default 'differential_evolution'.
 
@@ -232,7 +215,7 @@ class AxialSurfaceOptimiser(FoldOptimiser):
             foliation. This function is used when there are no geological knowledge constraints provided.
         """
 
-        axial_normal = strike_dip_to_vector(*strike_dip)
+        axial_normal = strike_dip_to_vector(strike_dip[0], strike_dip[1])
         axial_normal /= np.linalg.norm(axial_normal)
         predicted_foliation = self.fold_engine.get_predicted_foliation(axial_normal)
         angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
@@ -296,17 +279,53 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         This function runs the optimisation by setting up the optimisation problem,
         checking if geological knowledge exists, and running the solver.
         """
-        # Setup optimisation
-        self.objective_function, self.geo_objective, self.solver, self.guess = \
-            self.setup_optimisation(geological_knowledge['fold_axial_surface'])
+
+        bounds = [(0, 360), (0, 90)]
+        if geological_knowledge is None:
+            self.objective_function, self.geo_objective, self.solver, self.guess = \
+                self.setup_optimisation()
+            if self.method == 'differential_evolution':
+                opt = self.solver(self.objective_function, bounds, init=self.guess)
+
+            else:
+                opt = self.solver(self.objective_function, bounds, init=self.guess)
+
+            return opt
 
         # Check if geological knowledge exists
         if geological_knowledge is not None:
-            # Check if mode is restricted
-            if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
-                opt = self.solver(self.objective_function, x0=self.guess, constraints=self.geo_objective)
-                return opt
-        else:
-            opt = self.solver(self.objective_function, x0=self.guess)
+            # Setup optimisation
+            if len(geological_knowledge['fold_axial_surface']) == 0:
+                self.objective_function, self.geo_objective, self.solver, self.guess = \
+                    self.setup_optimisation(geological_knowledge=geological_knowledge)
+                if self.method == 'differential_evolution':
+                    if 'axial_surface_guess' in self.kwargs:
+                        opt = self.solver(self.objective_function, bounds, init=self.guess)
 
-            return opt
+                        return opt
+
+                else:
+                    opt = self.solver(self.objective_function, x0=self.guess)
+
+                return opt
+
+            if len(geological_knowledge['fold_axial_surface']) != 0:
+                self.objective_function, self.geo_objective, self.solver, self.guess = \
+                    self.setup_optimisation(geological_knowledge['fold_axial_surface'])
+
+                if self.method == 'differential_evolution':
+                    opt = self.solver(self.objective_function, bounds, init=self.guess)
+
+                else:
+                    opt = self.solver(self.objective_function, x0=self.guess)
+
+                return opt
+
+            # TODO: add support for restricted optimisation mode
+            # Check if mode is restricted
+            # if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
+            #     opt = self.solver(self.objective_function, x0=self.guess, constraints=self.geo_objective)
+            #     return opt
+            # else:
+
+            # return opt

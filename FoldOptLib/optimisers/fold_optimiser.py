@@ -16,7 +16,7 @@ class FoldOptimiser(ABC):
     Base class for fold geometry optimisation.
     """
 
-    def __init__(self, **kwargs: Dict[str, Any]):
+    def __init__(self, method='differential_evolution', **kwargs: Dict[str, Any]):
         """
         Constructs all the necessary attributes for the Fold Optimiser object.
 
@@ -25,6 +25,7 @@ class FoldOptimiser(ABC):
             kwargs : dict
                 Additional keyword arguments.
         """
+        self.method = method
         self.kwargs = kwargs
 
     def prepare_and_setup_knowledge_constraints(self, geological_knowledge=None) -> \
@@ -91,7 +92,7 @@ class FoldOptimiser(ABC):
 
     def optimise_with_differential_evolution(self, objective_function: Callable, bounds: Tuple, init: str = 'halton',
                                              maxiter: int = 5000, seed: int = 80,
-                                             polish: bool = True, strategy: str = 'best2exp',
+                                             polish: bool = False, strategy: str = 'best2exp',
                                              mutation: Tuple[float, float] = (0.3, 0.99), **kwargs) -> Dict:
         """
         Solves the optimization problem using the differential evolution method.
@@ -113,7 +114,8 @@ class FoldOptimiser(ABC):
             strategy : str
                 The differential evolution strategy to use. Default is 'best2exp'.
             mutation : Tuple[float, float]
-                The mutation constant. Default is (0.3, 0.99).
+                The mutation constant. Default is (0.3, 0.99) and it was tested and have proven to explore the parameter
+                space efficiently.
 
         Returns
         -------
@@ -140,7 +142,7 @@ class FoldOptimiser(ABC):
         """
 
         # Check if method is specified in kwargs and assign the appropriate solver
-        if 'method' in self.kwargs and self.kwargs['method'] == 'differential_evolution':
+        if self.method == 'differential_evolution':
             solver = self.optimise_with_differential_evolution
         else:
             solver = self.optimise_with_trust_region
