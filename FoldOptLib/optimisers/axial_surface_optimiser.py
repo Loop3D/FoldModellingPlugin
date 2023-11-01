@@ -303,6 +303,8 @@ class AxialSurfaceOptimiser(FoldOptimiser):
                         opt = self.solver(self.objective_function, bounds, init=self.guess)
 
                         return opt
+                    if 'axial_surface_guess' not in self.kwargs:
+                        opt = self.solver(self.objective_function, bounds, init='halton')
 
                 else:
                     opt = self.solver(self.objective_function, x0=self.guess)
