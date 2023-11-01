@@ -5,16 +5,17 @@ import os
 package_root = os.path.abspath(os.path.dirname(__file__))
 
 version = {}
-with open(os.path.join(package_root, "FoldOptLib/FoldOptLib/version.py")) as fp:
+with open(os.path.join(package_root, "FoldOptLib/version.py")) as fp:
     exec(fp.read(), version)
 version = version["__version__"]
 
 setup(
-    name="FoldModellingPlugin",
+    name="FoldOptLib",
     install_requires=[
         "loopstructural>=1.4.10",
         "scipy>=1.2.2",  # 1.2.2 is required to use vonmises_fisher() in scipy.stats
         "ipywidgets",
+        "mplstereonet",
     ],
     description="Open source Fold Geometry Optimisers for LoopStructural and Map2Loop",
     long_description=codecs.open("README.md", "r", "utf-8").read(),
