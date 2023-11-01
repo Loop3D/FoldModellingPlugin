@@ -309,7 +309,7 @@ class AxialSurfaceOptimiser(FoldOptimiser):
                 else:
                     opt = self.solver(self.objective_function, x0=self.guess)
 
-                return opt
+                    return opt
 
             if len(geological_knowledge['fold_axial_surface']) != 0:
                 self.objective_function, self.geo_objective, self.solver, self.guess = \
