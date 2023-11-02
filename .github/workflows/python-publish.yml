@@ -27,5 +27,5 @@ jobs:
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
-        user: __token__
-        password: pypi-c884d0f3-063f-42cf-b3d0-c9584460bfef
+        user: ${{ secrets.PYPI_FOLDOPTLIB_USERNAME}}
+        password: ${{ secrets.PYPI_FOLDOPTLIB_PASSWORD}}
