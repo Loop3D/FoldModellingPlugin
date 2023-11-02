@@ -29,6 +29,4 @@ jobs:
       with:
         TWINE_USERNAME: ${{ secrets.PYPI_FOLDOPTLIB_USERNAME }}
         TWINE_PASSWORD: ${{ PYPI_FOLDOPTLIB_PASSWORD }}
-      run: |
-        pip install twine  
         
