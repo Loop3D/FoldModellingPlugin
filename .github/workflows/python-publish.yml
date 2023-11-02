@@ -27,5 +27,8 @@ jobs:
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
-        user: ${{ secrets.PYPI_FOLDOPTLIB_USERNAME}}
-        password: ${{ secrets.PYPI_FOLDOPTLIB_PASSWORD}}
+        TWINE_USERNAME: ${{ secrets.PYPI_FOLDOPTLIB_USERNAME }}
+        TWINE_PASSWORD: ${{ PYPI_FOLDOPTLIB_PASSWORD }}
+      run: |
+        pip install twine  
+        
