@@ -5,7 +5,10 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+import os
+import sys
 
+sys.path.insert(0, os.path.abspath('../..'))
 project = 'FoldOptLib'
 copyright = '2023, Rabii Chaarani'
 author = 'Rabii Chaarani'
@@ -18,12 +21,11 @@ extensions = [
     'sphinx.ext.autodoc',  # Include documentation from docstrings
     'sphinx.ext.viewcode',  # Add links to highlighted source code
     'sphinx.ext.napoleon',  # Support for Google and NumPy style docstrings
-    # ...other extensions
+    'sphinx.ext.autosummary',  # Generate autodoc summaries
 ]
 
-
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = []
 
 
 
