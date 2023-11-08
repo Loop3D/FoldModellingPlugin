@@ -8,7 +8,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../../'))
 project = 'FoldOptLib'
 copyright = '2023, Rabii Chaarani'
 author = 'Rabii Chaarani'
@@ -19,9 +19,10 @@ release = '0.1.0'
 
 extensions = [
     'sphinx.ext.autodoc',  # Include documentation from docstrings
+    'sphinx.ext.autosummary',  # Generate autodoc summaries
     'sphinx.ext.viewcode',  # Add links to highlighted source code
     'sphinx.ext.napoleon',  # Support for Google and NumPy style docstrings
-    'sphinx.ext.autosummary',  # Generate autodoc summaries
+
 ]
 
 templates_path = ['_templates']

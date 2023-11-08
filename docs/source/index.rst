@@ -10,6 +10,9 @@ Welcome to FoldOptLib's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   API
+   modules
+
 
 
 Indices and tables
