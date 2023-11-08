@@ -24,7 +24,7 @@ setup(
     license=("MIT"),
     url="https://github.com/Loop3D/FoldOptLib",
     classifiers=[
-        "Development Status :: Beta",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Other Audience",
         "Intended Audience :: Science/Research",
@@ -35,7 +35,6 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Multimedia :: Graphics :: 3D Modeling",
         "Topic :: Scientific/Engineering",
-        "Topic :: Scientific/Engineering :: Nonlinear Optimisation",
     ],
     version=version,
     packages=find_packages(),
