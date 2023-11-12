@@ -1,4 +1,4 @@
-name: Upload Python Package
+name: Upload FoldOptLib to PyPI
 
 on:
   release:
