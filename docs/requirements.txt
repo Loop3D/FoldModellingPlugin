@@ -2,6 +2,7 @@ pip
 sphinx
 numpy
 joblib
+loopstructural==1.4.10
 scipy>=1.2.2
 ipywidgets
 mplstereonet
