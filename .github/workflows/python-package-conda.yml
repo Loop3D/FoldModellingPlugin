@@ -2,7 +2,7 @@ name: Publish FoldOptLib to Anaconda
 
 on:
   release:
-    types: [edited, created]
+    types: [edited, created, published]
 jobs:
   conda-deploy:
     name: Uploading to Loop3d for python ${{ matrix.os }})
