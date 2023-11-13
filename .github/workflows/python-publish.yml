@@ -11,14 +11,14 @@ jobs:
   build-and-test:
     strategy:
       matrix:
-        os: [windows-2022, ubuntu-22.04, macos-12]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: [3.9, 3.10, 3.11]
         include:
-          - os: windows-2022
+          - os: windows-latest
             compiler: "msvc"
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             compiler: "gcc"
-          - os: macos-12
+          - os: macos-latest
             compiler: "gcc"
     runs-on: ${{ matrix.os }}
     steps:
