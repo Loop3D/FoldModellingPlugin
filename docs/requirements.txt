@@ -1,7 +1,7 @@
 sphinx
 numpy
-scipy>=1.2.2
 joblib
 loopstructural>=1.4.10
 ipywidgets
 mplstereonet
+scipy>=1.2.2
