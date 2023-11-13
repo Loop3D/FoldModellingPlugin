@@ -1,6 +1,6 @@
 # from modified_loopstructural.extra_utils import *
 import numpy as np
-import joblib as jb
+# import joblib as jb
 from LoopStructural.modelling.features.fold import fourier_series
 # from uncertainty_quantification.fold_uncertainty import *
 # import dill
@@ -28,10 +28,10 @@ def fourier_series_2(x, theta):
     return np.rad2deg(np.arctan(v))
 
 
-def parallel(function, array, jobs=1):
-    results = jb.Parallel(n_jobs=jobs, verbose=1, prefer='threads')(jb.delayed(function)(i) for i in array)
-    results = np.asarray(results, dtype='object')
-    return results
+# def parallel(function, array, jobs=1):
+#     results = jb.Parallel(n_jobs=jobs, verbose=1, prefer='threads')(jb.delayed(function)(i) for i in array)
+#     results = np.asarray(results, dtype='object')
+#     return results
 
 
 
