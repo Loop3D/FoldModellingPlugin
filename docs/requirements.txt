@@ -1,6 +1,5 @@
 sphinx
 numpy
-joblib
 loopstructural>=1.4.10
 ipywidgets
 mplstereonet
