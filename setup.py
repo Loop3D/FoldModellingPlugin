@@ -13,7 +13,7 @@ setup(
     name="FoldOptLib",
     install_requires=[
         "loopstructural>=1.4.10",
-        "scipy>=1.2.2",  # 1.2.2 is required to use vonmises_fisher() in scipy.stats
+        "scipy==1.2.2",  # 1.2.2 is required to use vonmises_fisher() in scipy.stats
         "ipywidgets",
         "mplstereonet",
     ],
