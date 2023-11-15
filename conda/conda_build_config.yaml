@@ -1,4 +1,2 @@
 scipy:
-  - 1.2.2
-loopstructural:
-  - 1.4.10
+  - 1.11.3
