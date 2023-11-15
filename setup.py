@@ -15,8 +15,9 @@ setup(
         "loopstructural>=1.4.10",
         "ipywidgets",
         "mplstereonet",
-        "scipy>=1.11.3",  # 1.2.2 is required to use vonmises_fisher() in scipy.stats
+        "scipy>=1.11.3",  # 1.11.3 is required to use vonmises_fisher() in scipy.stats
     ],
+    python_requires='>=3.9, <3.12',
     description="Open source Fold Geometry Optimisers for LoopStructural and Map2Loop",
     long_description=codecs.open("README.md", "r", "utf-8").read(),
     author="Rabii Chaarani",
