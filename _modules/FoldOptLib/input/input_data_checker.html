@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoldOptLib.input.input_data_checker &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FoldOptLib.input.input_data_checker</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
+
+
+<div class="viewcode-block" id="CheckInputData">
+<a class="viewcode-back" href="../../../FoldOptLib.input.html#FoldOptLib.input.input_data_checker.CheckInputData">[docs]</a>
+<span class="k">class</span> <span class="nc">CheckInputData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class used to check the input data for the optimisation.</span>
+
+<span class="sd">    ...</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    folded_foliation_data : pd.DataFrame</span>
+<span class="sd">        The data related to a folded foliation or bedding</span>
+<span class="sd">    bounding_box : nd.array</span>
+<span class="sd">        The bounding box of the model area</span>
+<span class="sd">    knowledge_constraints : dict</span>
+<span class="sd">        The knowledge constraints data (default is None)</span>
+
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    check_foliation_data():</span>
+<span class="sd">        Checks if the foliation data is a pandas dataframe and has the correct columns.</span>
+<span class="sd">    check_input_geological_knowledge():</span>
+<span class="sd">        Checks if the input geological knowledge constraints is a dictionary,</span>
+<span class="sd">        and has the correct format.</span>
+<span class="sd">    check_bounding_box():</span>
+<span class="sd">        Checks if the bounding box is a numpy array and has the correct format.</span>
+<span class="sd">    check_input_data():</span>
+<span class="sd">        Checks all the input data for the optimisation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folded_foliation_data</span><span class="p">,</span> <span class="n">bounding_box</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs all the necessary attributes for the CheckInputData object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">folded_foliation_data</span> <span class="o">=</span> <span class="n">folded_foliation_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span> <span class="o">=</span> <span class="n">bounding_box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geological_knowledge</span> <span class="o">=</span> <span class="n">geological_knowledge</span>
+
+<div class="viewcode-block" id="CheckInputData.check_foliation_data">
+<a class="viewcode-back" href="../../../FoldOptLib.input.html#FoldOptLib.input.input_data_checker.CheckInputData.check_foliation_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_foliation_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the foliation data is a pandas dataframe and has the correct columns: X, Y, Z, feature_name and</span>
+<span class="sd">        either strike, dip, or gx, gy, gz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># # check if the foliation data is a pandas dataframe</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folded_foliation_data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Foliation data must be a pandas DataFrame.&quot;</span><span class="p">)</span>
+        <span class="n">required_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">folded_foliation_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">required_columns</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Foliation data must have the columns: X, Y, Z, feature_name.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">folded_foliation_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;strike&#39;</span><span class="p">,</span> <span class="s1">&#39;dip&#39;</span><span class="p">])</span> <span class="ow">or</span>
+                <span class="nb">all</span><span class="p">(</span><span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">folded_foliation_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gx&#39;</span><span class="p">,</span> <span class="s1">&#39;gy&#39;</span><span class="p">,</span> <span class="s1">&#39;gz&#39;</span><span class="p">])):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Foliation data must have either strike, dip or gx, gy, gz columns.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="c1"># TODO : 1. rewrite check_knowledge_constraints</span>
+    <span class="c1">#  2. then test it before</span>
+    <span class="c1">#  3. implementing it in the geological knowledge class</span>
+
+<div class="viewcode-block" id="CheckInputData.check_input_geological_knowledge">
+<a class="viewcode-back" href="../../../FoldOptLib.input.html#FoldOptLib.input.input_data_checker.CheckInputData.check_input_geological_knowledge">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_input_geological_knowledge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        verify the format of the provided nested dictionary.</span>
+<span class="sd">        TODO : add support for dict check for restricted mode of optimisation</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the dictionary format is not as expected.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if the format is correct, otherwise raises an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Define the expected keys for different types of inner dictionaries</span>
+        <span class="n">general_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">}</span>
+        <span class="c1"># axial_trace_keys = [&#39;mu&#39;, &#39;sigma&#39;, &#39;w&#39;]</span>
+        <span class="n">axial_surface_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="s1">&#39;kappa&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">}</span>
+
+        <span class="c1"># Helper function to validate the format of the innermost dictionaries</span>
+        <span class="k">def</span> <span class="nf">validate_inner_dict</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">expected_keys</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">expected_keys</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected keys </span><span class="si">{</span><span class="n">expected_keys</span><span class="si">}</span><span class="s2"> but got </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to have numeric value or a &quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot;list but got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">sub_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">geological_knowledge</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;fold_axial_surface&#39;</span><span class="p">:</span>
+                <span class="c1"># for inner_key, values in sub_dict.items():</span>
+                <span class="n">validate_inner_dict</span><span class="p">(</span><span class="n">sub_dict</span><span class="p">,</span> <span class="n">axial_surface_keys</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;axial_trace_&#39;</span><span class="p">):</span>
+                <span class="n">validate_inner_dict</span><span class="p">(</span><span class="n">sub_dict</span><span class="p">,</span> <span class="n">general_keys</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">validate_inner_dict</span><span class="p">(</span><span class="n">sub_dict</span><span class="p">,</span> <span class="n">general_keys</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="CheckInputData.check_bounding_box">
+<a class="viewcode-back" href="../../../FoldOptLib.input.html#FoldOptLib.input.input_data_checker.CheckInputData.check_bounding_box">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check if the bounding_box is an numpy array of the following format</span>
+<span class="sd">        [[minX, minY, minZ], [maxX, maxY, maxZ]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check if the bounding box is a numpy array or a list</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Bounding box must be a numpy array.&quot;</span><span class="p">)</span>
+        <span class="c1"># check if the bounding box is empty</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;bounding_box array is empty.&quot;</span><span class="p">)</span>
+        <span class="c1"># check if the bounding box has the correct format</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bounding box must have the following format: [[minX, maxX, minY], [maxY, minZ, maxZ]]&quot;</span><span class="p">)</span></div>
+
+
+    <span class="c1"># write a function that checks all the input data</span>
+<div class="viewcode-block" id="CheckInputData.check_input_data">
+<a class="viewcode-back" href="../../../FoldOptLib.input.html#FoldOptLib.input.input_data_checker.CheckInputData.check_input_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_input_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the input data for the optimisation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_bounding_box</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_foliation_data</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geological_knowledge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_input_geological_knowledge</span><span class="p">()</span></div>
+</div>
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">FoldOptLib</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

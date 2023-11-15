@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoldOptLib.splot.splot_processor &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FoldOptLib.splot.splot_processor</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">..helper.utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">LoopStructural.modelling.features.fold</span> <span class="kn">import</span> <span class="n">fourier_series</span>
+
+
+<div class="viewcode-block" id="SPlotProcessor">
+<a class="viewcode-back" href="../../../FoldOptLib.splot.html#FoldOptLib.splot.splot_processor.SPlotProcessor">[docs]</a>
+<span class="k">class</span> <span class="nc">SPlotProcessor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># self.splot_cache = {}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splot_function_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="n">fourier_series</span><span class="p">,</span>
+            <span class="c1"># 7: fourier_series_2</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept_function_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="n">fourier_series_x_intercepts</span><span class="p">,</span>
+            <span class="c1"># 8: other_intercept_function</span>
+        <span class="p">}</span>
+        <span class="c1"># self.constraints = constraints</span>
+
+<div class="viewcode-block" id="SPlotProcessor.find_amax_amin">
+<a class="viewcode-back" href="../../../FoldOptLib.splot.html#FoldOptLib.splot.splot_processor.SPlotProcessor.find_amax_amin">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_amax_amin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="s1">&#39;radians&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Helper method to find the amax and amin values of a fold rotation angle curve</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            theta : float</span>
+<span class="sd">                The fourier parameters</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            amax : float</span>
+<span class="sd">                The maximum value of the curve in radians</span>
+<span class="sd">            amin : float</span>
+<span class="sd">                The minimum value of the curve in radians</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+        <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_splot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;radians&#39;</span><span class="p">:</span>
+            <span class="n">amax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">curve</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+            <span class="n">amin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">curve</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span>
+
+            <span class="k">return</span> <span class="n">amax</span><span class="p">,</span> <span class="n">amin</span>
+
+        <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;degrees&#39;</span><span class="p">:</span>
+            <span class="n">amax</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">amin</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">amax</span><span class="p">,</span> <span class="n">amin</span><span class="p">,</span> <span class="n">curve</span></div>
+
+
+<div class="viewcode-block" id="SPlotProcessor.calculate_splot">
+<a class="viewcode-back" href="../../../FoldOptLib.splot.html#FoldOptLib.splot.splot_processor.SPlotProcessor.calculate_splot">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_splot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold_frame</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculates the curve using the passed ref_fold_frame and theta values, it uses</span>
+<span class="sd">            the passed coeff value to determine the specific function to use.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            fold_frame : array</span>
+<span class="sd">                The fold frame coordinates of the fold rotation angles</span>
+<span class="sd">            theta : float</span>
+<span class="sd">                The fourier parameters</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            curve : array</span>
+<span class="sd">                The calculated curve.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="n">coeff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="c1"># key = str(theta)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">coeff</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">splot_function_map</span><span class="p">[</span><span class="n">coeff</span><span class="p">](</span><span class="n">fold_frame</span><span class="p">,</span> <span class="o">*</span><span class="n">theta</span><span class="p">)</span>
+        <span class="c1"># TODO: implement fourier series with variable number of coefficients</span>
+        <span class="c1"># if coeff == 7:</span>
+        <span class="c1">#     result = self.splot_function_map[coeff](fold_frame, theta)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="SPlotProcessor.calculate_tightness">
+<a class="viewcode-back" href="../../../FoldOptLib.splot.html#FoldOptLib.splot.splot_processor.SPlotProcessor.calculate_tightness">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_tightness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculates the tightness metric of the curve using the passed theta value</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            theta : float</span>
+<span class="sd">                The parameter that is used to calculate the curve</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            tightness : float</span>
+<span class="sd">                The tightness metric of the curve</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="n">amax</span><span class="p">,</span> <span class="n">amin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_amax_amin</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="s1">&#39;radians&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">((</span><span class="n">amax</span> <span class="o">-</span> <span class="n">amin</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SPlotProcessor.calculate_asymmetry">
+<a class="viewcode-back" href="../../../FoldOptLib.splot.html#FoldOptLib.splot.splot_processor.SPlotProcessor.calculate_asymmetry">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_asymmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculates the fold asymmetry for a given set of fourier parameters.</span>
+<span class="sd">            The asymmetry of a curve is a measure of how much it deviates from symmetry.</span>
+
+<span class="sd">            Parameters:</span>
+<span class="sd">            -----------</span>
+<span class="sd">            theta : float</span>
+<span class="sd">                The parameter used to calculate the curve</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">            --------</span>
+<span class="sd">            asymmetry: float</span>
+<span class="sd">                The asymmetry of the curve measured in degrees.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+
+        <span class="n">amax</span><span class="p">,</span> <span class="n">amin</span><span class="p">,</span> <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_amax_amin</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="s1">&#39;degrees&#39;</span><span class="p">)</span>
+        <span class="n">median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">curve</span><span class="p">)</span>
+        <span class="n">tightness_range</span> <span class="o">=</span> <span class="n">amax</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">amin</span><span class="p">)</span>
+        <span class="n">asymmetry</span> <span class="o">=</span> <span class="n">median</span> <span class="o">/</span> <span class="n">tightness_range</span>
+
+        <span class="k">return</span> <span class="n">asymmetry</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">FoldOptLib</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FoldOptLib.optimisers package &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="FoldOptLib.splot package" href="FoldOptLib.splot.html" />
+    <link rel="prev" title="FoldOptLib.objective_functions package" href="FoldOptLib.objective_functions.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="foldoptlib-optimisers-package">
+<h1>FoldOptLib.optimisers package<a class="headerlink" href="#foldoptlib-optimisers-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-FoldOptLib.optimisers.axial_surface_optimiser">
+<span id="foldoptlib-optimisers-axial-surface-optimiser-module"></span><h2>FoldOptLib.optimisers.axial_surface_optimiser module<a class="headerlink" href="#module-FoldOptLib.optimisers.axial_surface_optimiser" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.optimisers.axial_surface_optimiser.</span></span><span class="sig-name descname"><span class="pre">AxialSurfaceOptimiser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#AxialSurfaceOptimiser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser" title="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoldOptimiser</span></code></a></p>
+<p>Optimiser for Axial Surfaces.</p>
+<p>This class inherits from FoldOptimiser, FoldModel. It is used to optimise the axial surfaces
+based on the provided data, bounding box, geological knowledge.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.angle_optimisation">
+<span class="sig-name descname"><span class="pre">angle_optimisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strike_dip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#AxialSurfaceOptimiser.angle_optimisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.angle_optimisation" title="Link to this definition">¶</a></dt>
+<dd><p>Minimises the angle between the observed and predicted folded foliation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>strike_dip</strong> (<em>tuple</em>) – A tuple containing strike and dip values of the estimated axial surface.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>angle_difference</strong> – The difference between the predicted and actual angle.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function optimises the axial surface by minimising the angle between the predicted and observed folded
+foliation. This function is used when there are no geological knowledge constraints provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.generate_initial_guess">
+<span class="sig-name descname"><span class="pre">generate_initial_guess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#AxialSurfaceOptimiser.generate_initial_guess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.generate_initial_guess" title="Link to this definition">¶</a></dt>
+<dd><p>Generate the initial guess for the optimisation for differential evolution algorithm.
+The initial guess is generated using the Von Mises Fisher distribution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.loglikelihood">
+<span class="sig-name descname"><span class="pre">loglikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicted_foliation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions" title="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions"><span class="pre">GeologicalKnowledgeFunctions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#AxialSurfaceOptimiser.loglikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.loglikelihood" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the maximum likelihood estimate of the axial surface and the geological knowledge.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – The axial surface normal vector to be optimised.</p></li>
+<li><p><strong>predicted_foliation</strong> (<em>np.ndarray</em>) – The predicted foliation data.</p></li>
+<li><p><strong>geological_knowledge</strong> (<a class="reference internal" href="FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions" title="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions"><em>GeologicalKnowledgeFunctions</em></a>) – The geological knowledge functions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated loglikelihood of the axial surface. Returns None if input is not valid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.mle_optimisation">
+<span class="sig-name descname"><span class="pre">mle_optimisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strike_dip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#AxialSurfaceOptimiser.mle_optimisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.mle_optimisation" title="Link to this definition">¶</a></dt>
+<dd><p>Performs Maximum Likelihood Estimation (MLE) optimisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>strike_dip</strong> (<em>tuple</em>) – A tuple containing strike and dip values of the estimated axial surface.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>logpdf</strong> – The log-likelihood of the MLE.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function performs MLE optimisation and used when geological knowledge constraints are provided.
+The function returns the log-likelihood of the MLE that is optimised</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.optimise">
+<span class="sig-name descname"><span class="pre">optimise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#AxialSurfaceOptimiser.optimise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.optimise" title="Link to this definition">¶</a></dt>
+<dd><p>Runs the optimisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>geological_knowledge</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary containing geological knowledge. Default is None.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opt</strong> – The result of the optimisation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function runs the optimisation by setting up the optimisation problem,
+checking if geological knowledge exists, and running the solver.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.setup_optimisation">
+<span class="sig-name descname"><span class="pre">setup_optimisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#AxialSurfaceOptimiser.setup_optimisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.setup_optimisation" title="Link to this definition">¶</a></dt>
+<dd><p>Sets up the optimisation algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>geological_knowledge</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary containing geological knowledge. Default is None.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>objective_function</strong> (<em>callable</em>) – The objective function to be minimised.</p></li>
+<li><p><strong>_geological_knowledge</strong> (<em>dict or None</em>) – The geological knowledge objective functions.</p></li>
+<li><p><strong>solver</strong> (<em>BaseOptimiser</em>) – The solver from BaseOptimiser to be used for optimisation.</p></li>
+<li><p><strong>guess</strong> (<em>Union[np.ndarray, str]</em>) – The initial guess for the optimisation.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.axial_surface_optimiser.calculate_intersection_lineation">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.optimisers.axial_surface_optimiser.</span></span><span class="sig-name descname"><span class="pre">calculate_intersection_lineation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axial_surface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folded_foliation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/axial_surface_optimiser.html#calculate_intersection_lineation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.axial_surface_optimiser.calculate_intersection_lineation" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the intersection lineation of the axial surface and the folded foliation.</p>
+<p>Parameters:
+axial_surface (np.ndarray): The normal vector of the axial surface.
+folded_foliation (np.ndarray): The normal vector of the folded foliation.</p>
+<p>Returns:
+np.ndarray: The normalised intersection lineation vector.</p>
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.optimisers.base_optimiser">
+<span id="foldoptlib-optimisers-base-optimiser-module"></span><h2>FoldOptLib.optimisers.base_optimiser module<a class="headerlink" href="#module-FoldOptLib.optimisers.base_optimiser" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-FoldOptLib.optimisers.fold_optimiser">
+<span id="foldoptlib-optimisers-fold-optimiser-module"></span><h2>FoldOptLib.optimisers.fold_optimiser module<a class="headerlink" href="#module-FoldOptLib.optimisers.fold_optimiser" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.optimisers.fold_optimiser.</span></span><span class="sig-name descname"><span class="pre">FoldOptimiser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'differential_evolution'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fold_optimiser.html#FoldOptimiser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for fold geometry optimisation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.generate_initial_guess">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_initial_guess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fold_optimiser.html#FoldOptimiser.generate_initial_guess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.generate_initial_guess" title="Link to this definition">¶</a></dt>
+<dd><p>Generate an initial guess for the optimisation
+It generates a guess depending on the type of optimisation, if it’s fourier series
+it will generate a guess of the wavelength, if it’s axial surface it will generate a guess
+using the methods of the Differential Evolution algorithm (Stern and Price, 1997) or uses the
+Von Mises Fisher distribution (Fisher, 1953).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.optimise">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fold_optimiser.html#FoldOptimiser.optimise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.optimise" title="Link to this definition">¶</a></dt>
+<dd><p>Run the optimisation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.optimise_with_differential_evolution">
+<span class="sig-name descname"><span class="pre">optimise_with_differential_evolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objective_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'halton'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polish</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'best2exp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.3,</span> <span class="pre">0.99)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fold_optimiser.html#FoldOptimiser.optimise_with_differential_evolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.optimise_with_differential_evolution" title="Link to this definition">¶</a></dt>
+<dd><p>Solves the optimization problem using the differential evolution method.
+Check Scipy documentation for more info</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bounds</strong> (<em>Tuple</em>) – Bounds for variables. <code class="docutils literal notranslate"><span class="pre">(min,</span> <span class="pre">max)</span></code> pairs for each element in <code class="docutils literal notranslate"><span class="pre">x</span></code>,
+defining the bounds on that parameter.</p></li>
+<li><p><strong>init</strong> (<em>str</em>) – Specify how population initialisation is performed. Default is ‘halton’.</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em>) – The maximum number of generations over which the entire population is evolved. Default is 5000.</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – The seed for the pseudo-random number generator. Default is 80.</p></li>
+<li><p><strong>polish</strong> (<em>bool</em>) – If True (default), then differential evolution is followed by a polishing phase.</p></li>
+<li><p><strong>strategy</strong> (<em>str</em>) – The differential evolution strategy to use. Default is ‘best2exp’.</p></li>
+<li><p><strong>mutation</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – The mutation constant. Default is (0.3, 0.99) and it was tested and have proven to explore the parameter
+space efficiently.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opt</strong> – The solution of the optimization.
+:param objective_function:</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.optimise_with_trust_region">
+<span class="sig-name descname"><span class="pre">optimise_with_trust_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objective_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fold_optimiser.html#FoldOptimiser.optimise_with_trust_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.optimise_with_trust_region" title="Link to this definition">¶</a></dt>
+<dd><p>Solves the optimization problem using the trust region method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x0</strong> (<em>np.ndarray</em>) – Initial guess of the parameters to be optimised.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opt</strong> – The solution of the optimisation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.prepare_and_setup_knowledge_constraints">
+<span class="sig-name descname"><span class="pre">prepare_and_setup_knowledge_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">NonlinearConstraint</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions" title="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions"><span class="pre">GeologicalKnowledgeFunctions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fold_optimiser.html#FoldOptimiser.prepare_and_setup_knowledge_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.prepare_and_setup_knowledge_constraints" title="Link to this definition">¶</a></dt>
+<dd><p>Prepare the knowledge constraints data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.setup_optimisation">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup_optimisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fold_optimiser.html#FoldOptimiser.setup_optimisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser.setup_optimisation" title="Link to this definition">¶</a></dt>
+<dd><p>Setup optimisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns a tuple containing the geological knowledge objective functions, a solver, and the initial guess.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.optimisers.fourier_optimiser">
+<span id="foldoptlib-optimisers-fourier-optimiser-module"></span><h2>FoldOptLib.optimisers.fourier_optimiser module<a class="headerlink" href="#module-FoldOptLib.optimisers.fourier_optimiser" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.optimisers.fourier_optimiser.</span></span><span class="sig-name descname"><span class="pre">FourierSeriesOptimiser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fold_frame_coordinate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'differential_evolution'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fourier_optimiser.html#FourierSeriesOptimiser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FoldOptLib.optimisers.fold_optimiser.FoldOptimiser" title="FoldOptLib.optimisers.fold_optimiser.FoldOptimiser"><code class="xref py py-class docutils literal notranslate"><span class="pre">FoldOptimiser</span></code></a></p>
+<p>A class used to represent a Fourier Series Optimiser.</p>
+<p>…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.fold_frame_coordinate">
+<span class="sig-name descname"><span class="pre">fold_frame_coordinate</span></span><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.fold_frame_coordinate" title="Link to this definition">¶</a></dt>
+<dd><p>The fold frame coordinate for the optimiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.rotation_angle">
+<span class="sig-name descname"><span class="pre">rotation_angle</span></span><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.rotation_angle" title="Link to this definition">¶</a></dt>
+<dd><p>The rotation angle for the optimiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.knowledge_constraints">
+<span class="sig-name descname"><span class="pre">knowledge_constraints</span></span><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.knowledge_constraints" title="Link to this definition">¶</a></dt>
+<dd><p>The knowledge constraints for the optimiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.x">
+<span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.x" title="Link to this definition">¶</a></dt>
+<dd><p>The interpolated fold frame coordinate z or y: np.linspace(z.min(), z.max(), 100).
+It’s used to calculate the optimised Fourier series everywhere in the model space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.kwargs">
+<span class="sig-name descname"><span class="pre">kwargs</span></span><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.kwargs" title="Link to this definition">¶</a></dt>
+<dd><p>Additional keyword arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">TODO:</span> <span class="pre">Add</span> <span class="pre">methods</span> <span class="pre">here.</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.generate_initial_guess">
+<span class="sig-name descname"><span class="pre">generate_initial_guess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fourier_optimiser.html#FourierSeriesOptimiser.generate_initial_guess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.generate_initial_guess" title="Link to this definition">¶</a></dt>
+<dd><p>Generate an initial guess for the optimisation.
+It generates a guess of the wavelength for the Fourier series. The format of the guess depends
+on the method of optimisation - differential evolution or trust region. If it’s differential evolution,
+it will generate the bounds for the optimisation. If it’s trust region, it will generate the initial guess of
+the wavelength.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns the initial guess or bounds for the optimisation.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray or Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.optimise">
+<span class="sig-name descname"><span class="pre">optimise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fourier_optimiser.html#FourierSeriesOptimiser.optimise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.optimise" title="Link to this definition">¶</a></dt>
+<dd><p>Optimise the Fourier series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns the result of the optimisation.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.setup_optimisation">
+<span class="sig-name descname"><span class="pre">setup_optimisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions" title="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions"><span class="pre">GeologicalKnowledgeFunctions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/FoldOptLib/optimisers/fourier_optimiser.html#FourierSeriesOptimiser.setup_optimisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.setup_optimisation" title="Link to this definition">¶</a></dt>
+<dd><p>Setup Fourier series optimisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns a tuple containing the objective function, geological knowledge, solver, and initial guess.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.optimisers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-FoldOptLib.optimisers" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="API.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">FoldOptLib</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="FoldOptLib.html">FoldOptLib package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">FoldOptLib</a><ul>
+  <li><a href="FoldOptLib.html">FoldOptLib package</a><ul>
+      <li>Previous: <a href="FoldOptLib.objective_functions.html" title="previous chapter">FoldOptLib.objective_functions package</a></li>
+      <li>Next: <a href="FoldOptLib.splot.html" title="next chapter">FoldOptLib.splot package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/FoldOptLib.optimisers.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

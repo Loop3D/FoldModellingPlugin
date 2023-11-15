@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoldOptLib.objective_functions.geological_knowledge &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FoldOptLib.objective_functions.geological_knowledge</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">NonlinearConstraint</span><span class="p">,</span> <span class="n">BFGS</span>
+<span class="c1"># from LoopStructural.modelling.features.fold import fourier_series</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">..helper._helper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..helper.utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..splot.splot_processor</span> <span class="kn">import</span> <span class="n">SPlotProcessor</span>
+<span class="kn">from</span> <span class="nn">.von_mises_fisher</span> <span class="kn">import</span> <span class="n">VonMisesFisher</span>
+<span class="kn">from</span> <span class="nn">.gaussian</span> <span class="kn">import</span> <span class="n">gaussian_log_likelihood</span>
+
+
+<div class="viewcode-block" id="check_fourier_parameters">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.check_fourier_parameters">[docs]</a>
+<span class="k">def</span> <span class="nf">check_fourier_parameters</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`theta` should be a numpy array.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`theta` should have at least 4 Fourier series parameters.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions">[docs]</a>
+<span class="k">class</span> <span class="nc">GeologicalKnowledgeFunctions</span><span class="p">(</span><span class="n">SPlotProcessor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for geological knowledge objective functions</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+
+        <span class="c1"># TODO add attribute to use any custom function otherwise use gaussian likelihood</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the GeologicalKnowledgeConstraints class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : np.ndarray</span>
+<span class="sd">            The values of the fold frame coordinates (0 or 1) used to calculate the fitted fold rotation angle curve.</span>
+
+<span class="sd">        constraints : Dict[str, float]</span>
+<span class="sd">            The constraints for the geological knowledge.</span>
+<span class="sd">            The constraints dictionary should have the following structure:</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;fold_limb_rotation_angle&#39;: {</span>
+<span class="sd">                    &#39;tightness&#39;: {&#39;lb&#39;:10, &#39;ub&#39;:10, &#39;mu&#39;:10, &#39;sigma&#39;:10, &#39;w&#39;:10},</span>
+<span class="sd">                    &#39;asymmetry&#39;: {&#39;lb&#39;:10, &#39;ub&#39;:10, &#39;mu&#39;:10, &#39;sigma&#39;:10, &#39;w&#39;:10},</span>
+<span class="sd">                    &#39;fold_wavelength&#39;: {&#39;lb&#39;:10, &#39;ub&#39;:10, &#39;mu&#39;:10, &#39;sigma&#39;:10, &#39;w&#39;:10},</span>
+<span class="sd">                    &#39;axial_trace_1&#39;: {&#39;mu&#39;:10, &#39;sigma&#39;:10},</span>
+<span class="sd">                    &#39;axial_traces_2&#39;: {&#39;mu&#39;:10, &#39;sigma&#39;:10},</span>
+<span class="sd">                    &#39;axial_traces_3&#39;: {&#39;mu&#39;:10, &#39;sigma&#39;:10},</span>
+<span class="sd">                    &#39;axial_traces_4&#39;: {&#39;mu&#39;:10, &#39;sigma&#39;:10},</span>
+<span class="sd">                },</span>
+<span class="sd">                &#39;fold_axis_rotation_angle&#39;: {</span>
+<span class="sd">                    &#39;hinge_angle&#39;: {&#39;lb&#39;:10, &#39;ub&#39;:10, &#39;mu&#39;:10, &#39;sigma&#39;:10, &#39;w&#39;:10},</span>
+<span class="sd">                    &#39;fold_axis_wavelength&#39;: {&#39;lb&#39;:10, &#39;ub&#39;:10, &#39;mu&#39;:10, &#39;sigma&#39;:10, &#39;w&#39;:10},</span>
+<span class="sd">                },</span>
+<span class="sd">                &#39;fold_axial_surface&#39;: {</span>
+<span class="sd">                    &#39;axial_surface&#39;: {&#39;lb&#39;:10, &#39;ub&#39;:10, &#39;mu&#39;:10, &#39;kappa&#39;:10, &#39;w&#39;:10}</span>
+<span class="sd">                }</span>
+<span class="sd">            }</span>
+<span class="sd">                lb and ub are the lower and the upper bounds of the constraints and are used only for a restricted</span>
+<span class="sd">                optimisation mode.</span>
+<span class="sd">                #TODO Add initialisation check for dictionary</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialize the x values, constraints</span>
+        <span class="n">SPlotProcessor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">constraints</span>
+
+        <span class="c1"># Define the constraint names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;asymmetry&#39;</span><span class="p">,</span> <span class="s1">&#39;tightness&#39;</span><span class="p">,</span> <span class="s1">&#39;fold_wavelength&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;axial_trace&#39;</span><span class="p">,</span> <span class="s1">&#39;hinge_angle&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;fold_axis_wavelength&#39;</span><span class="p">,</span> <span class="s1">&#39;axial_surface&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Initialize the constraint function map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objective_functions_map</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Define the intercept function and splot function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept_function</span> <span class="o">=</span> <span class="n">fourier_series_x_intercepts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splot_function</span> <span class="o">=</span> <span class="n">fourier_series</span>
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.axial_surface_objective_function">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.axial_surface_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">axial_surface_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Objective function for the axial surface.</span>
+<span class="sd">        This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        v : np.ndarray</span>
+<span class="sd">            the unit vector that represents the axial surface.</span>
+<span class="sd">            This is evaluated every iteration in the optimisation process</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The logpdf value from the VonMisesFisher distribution.</span>
+
+<span class="sd">         Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">        If the required keys are not found in the constraints dictionary.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if the required keys exist in the constraints dictionary</span>
+        <span class="c1"># if &#39;axial_surface&#39; not in self.constraints:</span>
+        <span class="c1">#     raise KeyError(&quot;&#39;axial_surface&#39; key not found in constraints dictionary.&quot;)</span>
+        <span class="c1"># if &#39;mu&#39; not in self.constraints[&#39;axial_surface&#39;]:</span>
+        <span class="c1">#     raise KeyError(&quot;&#39;mu&#39; key not found in &#39;axial_surface&#39; dictionary.&quot;)</span>
+        <span class="c1"># if &#39;kappa&#39; not in self.constraints[&#39;axial_surface&#39;]:</span>
+        <span class="c1">#     raise KeyError(&quot;&#39;kappa&#39; key not found in &#39;axial_surface&#39; dictionary.&quot;)</span>
+
+        <span class="c1"># Extract parameters for the VonMisesFisher distribution</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;axial_surface&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+        <span class="n">kappa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;axial_surface&#39;</span><span class="p">][</span><span class="s1">&#39;kappa&#39;</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;axial_surface&#39;</span><span class="p">][</span><span class="s1">&#39;w&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Create a VonMisesFisher distribution with the given parameters</span>
+        <span class="n">vmf</span> <span class="o">=</span> <span class="n">VonMisesFisher</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">kappa</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the logpdf of the input array</span>
+        <span class="n">vmf_logpdf</span> <span class="o">=</span> <span class="n">vmf</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span>
+
+        <span class="k">return</span> <span class="n">vmf_logpdf</span></div>
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.axial_trace_objective_function">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.axial_trace_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">axial_trace_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the objective function for the &#39;axial_trace&#39; constraint.</span>
+
+<span class="sd">        This function calculates the negative likelihood of the axial trace(s) given the provided knowledge constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The Fourier series parameters. These are the parameters of the Fourier series used to calculate</span>
+<span class="sd">            the axial traces.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[int, float]</span>
+<span class="sd">            The calculated objective function value. This is the likelihood of the axial trace(s).</span>
+<span class="sd">            If there are no axial traces, the function returns a predefined constant value (999) that</span>
+<span class="sd">             penalise the minimisation algorithm.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if theta is an array and has at least 4 parameters</span>
+        <span class="c1"># If not, an exception will be raised</span>
+        <span class="n">check_fourier_parameters</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the intercepts using the provided theta values and the x values of the class</span>
+        <span class="n">intercepts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intercepts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># If there are no intercepts, return the predefined constant value</span>
+            <span class="k">return</span> <span class="mi">999</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Initialize the likelihood to 0</span>
+            <span class="n">likelihood</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># Iterate over the knowledge constraints dictionary that have &quot;axial_trace&quot; in their key</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">trace</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="s2">&quot;axial_trace&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                <span class="c1"># Get the mu, sigma, and weight values of a given axial trace</span>
+                <span class="c1"># These values represent the mean and standard deviation of the location of a given axial trace</span>
+                <span class="n">mu</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s1">&#39;w&#39;</span><span class="p">]</span>
+                <span class="c1"># Calculate the distance between mu and the axial trace</span>
+                <span class="n">dist</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">intercepts</span>
+                <span class="c1"># Update the likelihood using the Gaussian log likelihood function</span>
+                <span class="n">likelihood</span> <span class="o">+=</span> <span class="o">-</span><span class="n">gaussian_log_likelihood</span><span class="p">(</span><span class="n">intercepts</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">dist</span><span class="p">)],</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span>
+
+        <span class="k">return</span> <span class="n">likelihood</span></div>
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.wavelength_objective_function">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.wavelength_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">wavelength_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the objective function for the fold wavelength constraint.</span>
+
+<span class="sd">        This function calculates the negative likelihood of the fold wavelength given the knowledge constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The Fourier series parameters. These are the parameters of the Fourier series used to</span>
+<span class="sd">            calculate the fold limb rotation angle curve.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The calculated objective function value. This is the likelihood of the fold wavelength.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `theta` is not a numpy array.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `theta` does not have at least 4 parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if theta is an array and has at least 4 parameters</span>
+        <span class="c1"># If not, an exception will be raised</span>
+        <span class="n">check_fourier_parameters</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Get the mu and sigma values from the constraints dictionary</span>
+        <span class="c1"># These values represent the mean and standard deviation of the fold wavelength</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;fold_wavelength&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;fold_wavelength&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Calculate the likelihood of the fold wavelength</span>
+        <span class="c1"># The likelihood is calculated using the Gaussian log likelihood function</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="o">-</span><span class="n">gaussian_log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+        <span class="c1"># Get the weight of the constraint</span>
+        <span class="c1"># The weight is used to adjust the influence of this constraint on the overall objective function</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;fold_wavelength&#39;</span><span class="p">][</span><span class="s1">&#39;w&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Multiply the likelihood by the weight to get the final objective function value</span>
+        <span class="n">likelihood</span> <span class="o">*=</span> <span class="n">w</span>
+
+        <span class="k">return</span> <span class="n">likelihood</span></div>
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.fold_axis_wavelength_objective_function">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.fold_axis_wavelength_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">fold_axis_wavelength_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the objective function for the fold axis wavelength constraint.</span>
+
+<span class="sd">        This function calculates the negative likelihood of the fold axis wavelength given the constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The Fourier series parameters. These are the parameters of the Fourier series used to</span>
+<span class="sd">            calculate the fold axis rotation angle curve.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The calculated objective function value. This is the likelihood of the fold axis wavelength.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `theta` is not a numpy array.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `theta` does not have at least 4 parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if theta is an array and has at least 4 parameters</span>
+        <span class="c1"># If not, an exception will be raised</span>
+        <span class="n">check_fourier_parameters</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Get the mu and sigma values from the constraints dictionary</span>
+        <span class="c1"># These values represent the mean and standard deviation of the fold axis wavelength</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;axis_wavelength&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;axis_wavelength&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Calculate the likelihood of the fold axis rotation angle wavelength</span>
+        <span class="c1"># The likelihood is calculated using the negative Gaussian log likelihood function</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="o">-</span><span class="n">gaussian_log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+        <span class="c1"># Get the weight of the constraint</span>
+        <span class="c1"># The weight is used to adjust the influence of this constraint on the overall objective function</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;axis_wavelength&#39;</span><span class="p">][</span><span class="s1">&#39;w&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Multiply the likelihood by the weight to get the final objective function value</span>
+        <span class="n">likelihood</span> <span class="o">*=</span> <span class="n">w</span>
+
+        <span class="k">return</span> <span class="n">likelihood</span></div>
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.tightness_objective_function">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.tightness_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">tightness_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the objective function for the &#39;tightness&#39; constraint.</span>
+
+<span class="sd">        This function calculates the likelihood of the fold tightness given the constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The Fourier series parameters. These are the parameters of the Fourier series used to</span>
+<span class="sd">            calculate the fold limb rotation angle curve.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The calculated objective function value. This is the likelihood of the fold tightness.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `theta` is not a numpy array.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `theta` does not have at least 4 parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if theta is an array and has at least 4 parameters</span>
+        <span class="c1"># If not, an exception will be raised</span>
+        <span class="n">check_fourier_parameters</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Get the mu, sigma, and weight values from the constraints dictionary</span>
+        <span class="c1"># These values represent the mean, standard deviation, and weight of the fold tightness</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;tightness&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;tightness&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;tightness&#39;</span><span class="p">][</span><span class="s1">&#39;w&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Calculate the tightness of the fold</span>
+        <span class="n">tightness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_tightness</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the likelihood of the fold tightness</span>
+        <span class="c1"># The likelihood is calculated using the negative Gaussian log likelihood function</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="o">-</span><span class="n">gaussian_log_likelihood</span><span class="p">(</span><span class="n">tightness</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+        <span class="c1"># Multiply the likelihood by the weight to get the final objective function value</span>
+        <span class="n">likelihood</span> <span class="o">*=</span> <span class="n">w</span>
+
+        <span class="k">return</span> <span class="n">likelihood</span></div>
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.hinge_angle_objective_function">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.hinge_angle_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">hinge_angle_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the objective function for the &#39;hinge_angle&#39; constraint.</span>
+
+<span class="sd">        This function calculates the likelihood of the fold hinge angle given the constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The Fourier series parameters. These are the parameters of the Fourier series used</span>
+<span class="sd">            to calculate the fold axis rotation angle curve.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The calculated objective function value. This is the likelihood of the fold hinge angle.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `theta` is not a numpy array.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `theta` does not have at least 4 parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if theta is an array and has at least 4 parameters</span>
+        <span class="c1"># If not, an exception will be raised</span>
+        <span class="n">check_fourier_parameters</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Get the mu, sigma, and weight values from the constraints dictionary</span>
+        <span class="c1"># These values represent the mean, standard deviation, and weight of the fold hinge angle</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;hinge_angle&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;hinge_angle&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;hinge_angle&#39;</span><span class="p">][</span><span class="s1">&#39;w&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Calculate the hinge angle of the fold</span>
+        <span class="n">hinge_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_tightness</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the likelihood of the fold hinge angle</span>
+        <span class="c1"># The likelihood is calculated using the negative Gaussian log likelihood function</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="o">-</span><span class="n">gaussian_log_likelihood</span><span class="p">(</span><span class="n">hinge_angle</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+        <span class="c1"># Multiply the likelihood by the weight to get the final objective function value</span>
+        <span class="n">likelihood</span> <span class="o">*=</span> <span class="n">w</span>
+
+        <span class="k">return</span> <span class="n">likelihood</span></div>
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.asymmetry_objective_function">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.asymmetry_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">asymmetry_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the objective function for the &#39;asymmetry&#39; constraint.</span>
+
+<span class="sd">        This function calculates the likelihood of the fold asymmetry degree given the constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The Fourier series parameters. These are the parameters of the Fourier series used to</span>
+<span class="sd">            calculate the fold limb rotation angle curve.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The calculated objective function value. This is the likelihood of the fold asymmetry degree.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `theta` is not a numpy array.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `theta` does not have at least 4 parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if theta is an array and has at least 4 parameters</span>
+        <span class="c1"># If not, an exception will be raised</span>
+        <span class="n">check_fourier_parameters</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Get the mu, sigma, and weight values from the constraints dictionary</span>
+        <span class="c1"># These values represent the mean, standard deviation, and weight of the fold asymmetry degree</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;asymmetry&#39;</span><span class="p">][</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;asymmetry&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[</span><span class="s1">&#39;asymmetry&#39;</span><span class="p">][</span><span class="s1">&#39;w&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Calculate the asymmetry of the fold</span>
+        <span class="n">asymmetry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_asymmetry</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the likelihood of the fold asymmetry</span>
+        <span class="c1"># The likelihood is calculated using the negative Gaussian log likelihood function</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="o">-</span><span class="n">gaussian_log_likelihood</span><span class="p">(</span><span class="n">asymmetry</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+
+        <span class="c1"># Multiply the likelihood by the weight to get the final objective function value</span>
+        <span class="n">likelihood</span> <span class="o">*=</span> <span class="n">w</span>
+
+        <span class="k">return</span> <span class="n">likelihood</span></div>
+
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.setup_objective_functions">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.setup_objective_functions">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_objective_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup the mapping between constraint names and their corresponding objective function methods.</span>
+
+<span class="sd">        This function creates a dictionary where the keys are the names of the constraints and the values are the</span>
+<span class="sd">        corresponding objective function methods. This mapping is used to dynamically call the correct objective</span>
+<span class="sd">        function based on the constraint name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create a dictionary to map the constraint names to their corresponding objective function methods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objective_functions_map</span> <span class="o">=</span> <span class="p">{</span>
+
+            <span class="s1">&#39;asymmetry&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">asymmetry_objective_function</span><span class="p">,</span>
+
+            <span class="s1">&#39;tightness&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tightness_objective_function</span><span class="p">,</span>
+
+            <span class="s1">&#39;fold_wavelength&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength_objective_function</span><span class="p">,</span>
+
+            <span class="s1">&#39;fold_axis_wavelength&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold_axis_wavelength_objective_function</span><span class="p">,</span>
+
+            <span class="s1">&#39;axial_trace&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">axial_trace_objective_function</span><span class="p">,</span>
+
+            <span class="s1">&#39;hinge_angle&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hinge_angle_objective_function</span><span class="p">,</span>
+
+            <span class="s1">&#39;axial_surface&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface_objective_function</span>
+        <span class="p">}</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the total geological knowledge objective function value for all constraints by summing up the</span>
+<span class="sd">        objective function values for all constraints. This objective function represent only the</span>
+<span class="sd">        knowledge constraints and it is minimised with the main objective function that calculates the residuals.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The Fourier series parameters. These are the parameters of the Fourier series used to</span>
+<span class="sd">            calculate the fold limb and axis rotation angle curve.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The total objective function value.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `theta` is not a numpy array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if theta is an array and has at least 4 parameters</span>
+        <span class="c1"># If not, an exception will be raised</span>
+        <span class="c1"># self.check_fourier_parameters(theta)</span>
+
+        <span class="c1"># Setup the constraint objective functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_objective_functions</span><span class="p">()</span>
+
+        <span class="c1"># Initialize the total objective function value to 0</span>
+        <span class="n">total_objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Iterate over all constraint names</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraint_names</span><span class="p">:</span>
+            <span class="c1"># If the constraint is in the constraints dictionary</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+                <span class="c1"># Add the objective function value for this constraint to the total</span>
+                <span class="n">total_objective_value</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective_functions_map</span><span class="p">[</span><span class="n">key</span><span class="p">](</span><span class="n">theta</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If the constraint is not in the constraints dictionary, do nothing</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># Return the total objective function value</span>
+        <span class="k">return</span> <span class="n">total_objective_value</span>
+
+<div class="viewcode-block" id="GeologicalKnowledgeFunctions.setup_objective_functions_for_restricted_mode">
+<a class="viewcode-back" href="../../../FoldOptLib.objective_functions.html#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.setup_objective_functions_for_restricted_mode">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_objective_functions_for_restricted_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NonlinearConstraint</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        This function prepares the constraints by calculating the lower and upper bounds for each constraint and</span>
+<span class="sd">        setting up the NonlinearConstraint objects from scipy.optimize. It also sets up the constraint functions.</span>
+
+<span class="sd">        This function is used only when the optimisation is in a restricted mode. The restricted mode means that the</span>
+<span class="sd">        optimisation algorithm cannot leave the parameter space defined by the geological knowledge constraints.</span>
+<span class="sd">        The drawback of fitting a fold rotation angle model in this mode is that if the constraints provided are not</span>
+<span class="sd">        representative of the studied fold geometry, the fitted model will be as well not representative.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[NonlinearConstraint]</span>
+<span class="sd">            A list of NonlinearConstraint objects for each constraint.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If the constraint info is not a dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Setup the constraint functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_objective_functions</span><span class="p">()</span>
+
+        <span class="c1"># Initialize the list of constraints</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Iterate over all constraints</span>
+        <span class="k">for</span> <span class="n">constraint_name</span><span class="p">,</span> <span class="n">constraint_info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Check if constraint_info is a dictionary</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`constraint_info` should be a dictionary.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Get the lower and upper bounds, mu, and sigma values from the constraint info</span>
+            <span class="n">lb</span> <span class="o">=</span> <span class="n">constraint_info</span><span class="p">[</span><span class="s1">&#39;lb&#39;</span><span class="p">]</span>
+            <span class="n">ub</span> <span class="o">=</span> <span class="n">constraint_info</span><span class="p">[</span><span class="s1">&#39;ub&#39;</span><span class="p">]</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">constraint_info</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">constraint_info</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Calculate the negative Gaussian log likelihood for a range of values between the lower and upper bounds</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="o">-</span><span class="n">gaussian_log_likelihood</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+            <span class="c1"># Create a NonlinearConstraint object for this constraint</span>
+            <span class="n">nlc</span> <span class="o">=</span> <span class="n">NonlinearConstraint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_functions_map</span><span class="p">[</span><span class="n">constraint_name</span><span class="p">],</span>
+                                      <span class="n">val</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">val</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+                                      <span class="n">jac</span><span class="o">=</span><span class="s1">&#39;2-point&#39;</span><span class="p">,</span> <span class="n">hess</span><span class="o">=</span><span class="n">BFGS</span><span class="p">())</span>
+            <span class="c1"># Add the NonlinearConstraint object to the list of constraints</span>
+            <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nlc</span><span class="p">)</span>
+
+        <span class="c1"># Return the list of constraints</span>
+        <span class="k">return</span> <span class="n">constraints</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">FoldOptLib</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoldOptLib.optimisers.fourier_optimiser &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FoldOptLib.optimisers.fourier_optimiser</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="c1"># from modified_loopstructural.extra_utils import *</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">MinMaxScaler</span><span class="p">,</span> <span class="n">MaxAbsScaler</span><span class="p">,</span> <span class="n">normalize</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1"># from LoopStructural.modelling.features.fold import fourier_series</span>
+<span class="c1"># from uncertainty_quantification.fold_uncertainty import *</span>
+<span class="c1"># from _helper import *</span>
+<span class="c1"># from scipy.optimize import minimize, differential_evolution</span>
+
+<span class="kn">from</span> <span class="nn">..objective_functions.geological_knowledge</span> <span class="kn">import</span> <span class="n">GeologicalKnowledgeFunctions</span>
+<span class="kn">from</span> <span class="nn">.fold_optimiser</span> <span class="kn">import</span> <span class="n">FoldOptimiser</span>
+<span class="kn">from</span> <span class="nn">..objective_functions.gaussian</span> <span class="kn">import</span> <span class="n">loglikelihood_fourier_series</span>
+<span class="kn">from</span> <span class="nn">..helper.utils</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="c1"># from ..helper._helper import *</span>
+
+<span class="c1">#</span>
+<span class="c1"># def scale(data):</span>
+<span class="c1">#     mms = MinMaxScaler()</span>
+<span class="c1">#     mms.fit(data)</span>
+<span class="c1">#     data_transformed = mms.transform(data)</span>
+<span class="c1">#</span>
+<span class="c1">#     return data_transformed</span>
+
+
+<div class="viewcode-block" id="FourierSeriesOptimiser">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser">[docs]</a>
+<span class="k">class</span> <span class="nc">FourierSeriesOptimiser</span><span class="p">(</span><span class="n">FoldOptimiser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class used to represent a Fourier Series Optimiser.</span>
+
+<span class="sd">    ...</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fold_frame_coordinate : float</span>
+<span class="sd">        The fold frame coordinate for the optimiser.</span>
+<span class="sd">    rotation_angle : float</span>
+<span class="sd">        The rotation angle for the optimiser.</span>
+<span class="sd">    knowledge_constraints : dict, optional</span>
+<span class="sd">        The knowledge constraints for the optimiser.</span>
+<span class="sd">    x : float</span>
+<span class="sd">        The interpolated fold frame coordinate z or y: np.linspace(z.min(), z.max(), 100).</span>
+<span class="sd">        It&#39;s used to calculate the optimised Fourier series everywhere in the model space.</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        Additional keyword arguments.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    TODO: Add methods here.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold_frame_coordinate</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">rotation_angle</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                 <span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                 <span class="c1"># geological_knowledge: Optional[Dict[str, Any]] = None,</span>
+                 <span class="n">method</span><span class="o">=</span><span class="s1">&#39;differential_evolution&#39;</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs all the necessary attributes for the Fourier Series Optimiser object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            fold_frame_coordinate : float</span>
+<span class="sd">                The fold frame coordinate for the optimiser.</span>
+<span class="sd">            rotation_angle : float</span>
+<span class="sd">                The rotation angle for the optimiser.</span>
+<span class="sd">            geological_knowledge : dict, optional</span>
+<span class="sd">                The knowledge constraints for the optimiser.</span>
+<span class="sd">            x : np.ndarray</span>
+<span class="sd">                The interpolated fold frame coordinate z or y: np.linspace(z.min(), z.max(), 100).</span>
+<span class="sd">                It&#39;s used to calculate the optimised Fourier series everywhere in the model space.</span>
+<span class="sd">            **kwargs : dict</span>
+<span class="sd">                Additional keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">FoldOptimiser</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objective_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fold_frame_coordinate</span> <span class="o">=</span> <span class="n">fold_frame_coordinate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rotation_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">rotation_angle</span><span class="p">))</span>
+        <span class="c1"># TODO: Add a check if the knowledge constraints are in the correct format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="c1"># TODO: check how to initialise self.x = x in self.geological_knowledge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+    <span class="c1"># def prepare_and_setup_knowledge_constraints(self, geological_knowledge: Optional[Dict[str, Any]] = None) -&gt; \</span>
+    <span class="c1">#         Optional[Union[GeologicalKnowledgeFunctions, None]]:</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Prepare the geological knowledge constraints and objective functions.</span>
+    <span class="c1">#</span>
+    <span class="c1">#     Returns</span>
+    <span class="c1">#     -------</span>
+    <span class="c1">#     GeologicalKnowledgeFunctions or None</span>
+    <span class="c1">#         Returns the geological knowledge constraints and objective functions if they exist,</span>
+    <span class="c1">#         otherwise returns None.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1">#     # Check if knowledge constraints exist</span>
+    <span class="c1">#     if geological_knowledge is not None:</span>
+    <span class="c1">#         _geological_knowledge = super().prepare_and_setup_knowledge_constraints(geological_knowledge)</span>
+    <span class="c1">#         return _geological_knowledge</span>
+    <span class="c1">#</span>
+    <span class="c1">#     # If knowledge constraints do not exist, return None</span>
+    <span class="c1">#     if geological_knowledge is None:</span>
+    <span class="c1">#         return None</span>
+
+<div class="viewcode-block" id="FourierSeriesOptimiser.generate_initial_guess">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.generate_initial_guess">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_initial_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate an initial guess for the optimisation.</span>
+<span class="sd">        It generates a guess of the wavelength for the Fourier series. The format of the guess depends</span>
+<span class="sd">        on the method of optimisation - differential evolution or trust region. If it&#39;s differential evolution,</span>
+<span class="sd">        it will generate the bounds for the optimisation. If it&#39;s trust region, it will generate the initial guess of</span>
+<span class="sd">        the wavelength.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray or Any</span>
+<span class="sd">            Returns the initial guess or bounds for the optimisation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if method is specified in kwargs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;differential_evolution&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;wl_guess&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">wl</span> <span class="o">=</span> <span class="n">get_wavelength_guesses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;wl_guess&#39;</span><span class="p">],</span> <span class="mi">1000</span><span class="p">)</span>
+                <span class="c1"># bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl &gt; 0].min() / 2, wl.max())], dtype=object)</span>
+                <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="n">wl</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">wl</span><span class="o">.</span><span class="n">max</span><span class="p">())],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">bounds</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Calculate semivariogram and get the wavelength guess</span>
+                <span class="n">guess</span><span class="p">,</span> <span class="n">lags</span><span class="p">,</span> <span class="n">variogram</span> <span class="o">=</span> <span class="n">calculate_semivariogram</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fold_frame_coordinate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_angle</span><span class="p">)</span>
+                <span class="n">wl</span> <span class="o">=</span> <span class="n">get_wavelength_guesses</span><span class="p">(</span><span class="n">guess</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1000</span><span class="p">)</span>
+                <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="n">wl</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">wl</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="mi">3</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">bounds</span>
+
+        <span class="c1"># Check if wl_guess is specified in kwargs</span>
+        <span class="k">if</span> <span class="s1">&#39;wl_guess&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">guess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;wl_guess&#39;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">guess</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Calculate semivariogram and get the wavelength guess</span>
+            <span class="n">guess</span><span class="p">,</span> <span class="n">lags</span><span class="p">,</span> <span class="n">variogram</span> <span class="o">=</span> <span class="n">calculate_semivariogram</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fold_frame_coordinate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_angle</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">guess</span></div>
+
+
+<div class="viewcode-block" id="FourierSeriesOptimiser.setup_optimisation">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.setup_optimisation">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_optimisation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span>
+                                                                     <span class="n">Union</span><span class="p">[</span>
+                                                                         <span class="n">GeologicalKnowledgeFunctions</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Callable</span><span class="p">,</span>
+                                                                     <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup Fourier series optimisation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Returns a tuple containing the objective function, geological knowledge, solver, and initial guess.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># # Check if method is specified in kwargs and assign the appropriate solver</span>
+        <span class="c1"># if &#39;method&#39; in self.kwargs and self.kwargs[&#39;method&#39;] == &#39;differential_evolution&#39;:</span>
+        <span class="c1">#     solver = self.optimise_with_differential_evolution</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     solver = self.optimise_with_trust_region</span>
+
+        <span class="c1"># Setup objective function</span>
+        <span class="n">objective_function</span> <span class="o">=</span> <span class="n">loglikelihood_fourier_series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation_angle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold_frame_coordinate</span><span class="p">)</span>
+
+        <span class="c1"># Prepare and setup knowledge constraints</span>
+        <span class="n">geological_knowledge</span><span class="p">,</span> <span class="n">solver</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup_optimisation</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="o">=</span><span class="n">geological_knowledge</span><span class="p">)</span>
+
+        <span class="c1"># Generate initial guess</span>
+        <span class="n">guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_initial_guess</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">objective_function</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">guess</span></div>
+
+
+<div class="viewcode-block" id="FourierSeriesOptimiser.optimise">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.fourier_optimiser.FourierSeriesOptimiser.optimise">[docs]</a>
+    <span class="k">def</span> <span class="nf">optimise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optimise the Fourier series.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Dict[str, Any]</span>
+<span class="sd">            Returns the result of the optimisation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Setup optimisation</span>
+        <span class="n">objective_function</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_optimisation</span><span class="p">(</span>
+            <span class="n">geological_knowledge</span><span class="o">=</span><span class="n">geological_knowledge</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;differential_evolution&#39;</span><span class="p">:</span>
+
+            <span class="c1"># Check if geological knowledge exists</span>
+            <span class="k">if</span> <span class="n">geological_knowledge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Check if mode is restricted</span>
+                <span class="k">if</span> <span class="s1">&#39;mode&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;restricted&#39;</span><span class="p">:</span>
+                    <span class="n">opt</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">guess</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">geological_knowledge</span><span class="p">)</span>
+
+                    <span class="k">return</span> <span class="n">opt</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Wrap to produce an objective function that</span>
+                    <span class="c1"># takes into account the geological knowledge functions</span>
+                    <span class="n">objective_function</span> <span class="o">=</span> <span class="n">objective_wrapper</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="p">)</span>
+                    <span class="c1"># bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (guess[3] / 2, guess[3] * 2)], dtype=object)</span>
+                    <span class="n">opt</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">guess</span><span class="p">)</span>
+
+                    <span class="k">return</span> <span class="n">opt</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">opt</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">guess</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">opt</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">opt</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">guess</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">opt</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">FoldOptLib</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FoldOptLib.objective_functions package &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="FoldOptLib.optimisers package" href="FoldOptLib.optimisers.html" />
+    <link rel="prev" title="FoldOptLib.ipywidgets_interface package" href="FoldOptLib.ipywidgets_interface.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="foldoptlib-objective-functions-package">
+<h1>FoldOptLib.objective_functions package<a class="headerlink" href="#foldoptlib-objective-functions-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-FoldOptLib.objective_functions.axial_plane">
+<span id="foldoptlib-objective-functions-axial-plane-module"></span><h2>FoldOptLib.objective_functions.axial_plane module<a class="headerlink" href="#module-FoldOptLib.objective_functions.axial_plane" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.axial_plane.is_axial_plane_compatible">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.axial_plane.</span></span><span class="sig-name descname"><span class="pre">is_axial_plane_compatible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/axial_plane.html#is_axial_plane_compatible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.axial_plane.is_axial_plane_compatible" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the angle difference between the predicted bedding and the observed one.</p>
+<p>This is an objective function that verifies if the predicted and observed bedding or folded foliation are
+geometrically compatible. If the sum of the calculated angles is close to 0 degrees, the axial plane of the
+predicted folded foliation is representative of the axial surface of observed folded foliation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v1</strong> (<em>np.ndarray</em>) – The first vector representing the predicted bedding.</p></li>
+<li><p><strong>v2</strong> (<em>np.ndarray</em>) – The second vector representing the observed bedding.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The angle difference between the predicted and observed bedding.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If <cite>v1</cite> and <cite>v2</cite> are not numpy arrays of the same shape.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.objective_functions.gaussian">
+<span id="foldoptlib-objective-functions-gaussian-module"></span><h2>FoldOptLib.objective_functions.gaussian module<a class="headerlink" href="#module-FoldOptLib.objective_functions.gaussian" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.gaussian.gaussian_log_likelihood">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.gaussian.</span></span><span class="sig-name descname"><span class="pre">gaussian_log_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/gaussian.html#gaussian_log_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.gaussian.gaussian_log_likelihood" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the log-likelihood of a Gaussian distribution.</p>
+<p>This function calculates the log-likelihood of a Gaussian distribution for a given observed value, mean,
+and standard deviation. The formula used is the standard formula for the log-likelihood of a Gaussian distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>b</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>]</em>) – The observed value.</p></li>
+<li><p><strong>mu</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>]</em>) – The mean of the Gaussian distribution.</p></li>
+<li><p><strong>sigma</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>]</em>) – The standard deviation of the Gaussian distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated log-likelihood.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If <cite>sigma</cite> is less than or equal to 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.gaussian.loglikelihood">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.gaussian.</span></span><span class="sig-name descname"><span class="pre">loglikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/gaussian.html#loglikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.gaussian.loglikelihood" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.gaussian.loglikelihood_axial_surface">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.gaussian.</span></span><span class="sig-name descname"><span class="pre">loglikelihood_axial_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/gaussian.html#loglikelihood_axial_surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.gaussian.loglikelihood_axial_surface" title="Link to this definition">¶</a></dt>
+<dd><p>Objective function for the axial surface.
+This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>float</em>) – represents the angle between the observed folded foliation and the predicted one.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The logpdf value from the VonMises distribution.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[int, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.gaussian.loglikelihood_fourier_series">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.gaussian.</span></span><span class="sig-name descname"><span class="pre">loglikelihood_fourier_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold_frame_coordinate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/gaussian.html#loglikelihood_fourier_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.gaussian.loglikelihood_fourier_series" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-FoldOptLib.objective_functions.geological_knowledge">
+<span id="foldoptlib-objective-functions-geological-knowledge-module"></span><h2>FoldOptLib.objective_functions.geological_knowledge module<a class="headerlink" href="#module-FoldOptLib.objective_functions.geological_knowledge" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.geological_knowledge.</span></span><span class="sig-name descname"><span class="pre">GeologicalKnowledgeFunctions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="FoldOptLib.splot.html#FoldOptLib.splot.splot_processor.SPlotProcessor" title="FoldOptLib.splot.splot_processor.SPlotProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">SPlotProcessor</span></code></a></p>
+<p>Base class for geological knowledge objective functions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.asymmetry_objective_function">
+<span class="sig-name descname"><span class="pre">asymmetry_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.asymmetry_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.asymmetry_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the objective function for the ‘asymmetry’ constraint.</p>
+<p>This function calculates the likelihood of the fold asymmetry degree given the constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>np.ndarray</em>) – The Fourier series parameters. These are the parameters of the Fourier series used to
+calculate the fold limb rotation angle curve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated objective function value. This is the likelihood of the fold asymmetry degree.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If <cite>theta</cite> is not a numpy array.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>theta</cite> does not have at least 4 parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.axial_surface_objective_function">
+<span class="sig-name descname"><span class="pre">axial_surface_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.axial_surface_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.axial_surface_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>Objective function for the axial surface.
+This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>v</strong> (<em>np.ndarray</em>) – the unit vector that represents the axial surface.
+This is evaluated every iteration in the optimisation process</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul>
+<li><p><em>float</em> –    The logpdf value from the VonMisesFisher distribution.</p>
+<p>Raises</p>
+</li>
+<li><p><em>——</em></p></li>
+<li><p><em>KeyError</em></p></li>
+<li><p><em>If the required keys are not found in the constraints dictionary.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.axial_trace_objective_function">
+<span class="sig-name descname"><span class="pre">axial_trace_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.axial_trace_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.axial_trace_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the objective function for the ‘axial_trace’ constraint.</p>
+<p>This function calculates the negative likelihood of the axial trace(s) given the provided knowledge constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>np.ndarray</em>) – The Fourier series parameters. These are the parameters of the Fourier series used to calculate
+the axial traces.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The calculated objective function value. This is the likelihood of the axial trace(s).
+If there are no axial traces, the function returns a predefined constant value (999) that</p>
+<blockquote>
+<div><p>penalise the minimisation algorithm.</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[int, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.fold_axis_wavelength_objective_function">
+<span class="sig-name descname"><span class="pre">fold_axis_wavelength_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.fold_axis_wavelength_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.fold_axis_wavelength_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the objective function for the fold axis wavelength constraint.</p>
+<p>This function calculates the negative likelihood of the fold axis wavelength given the constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>np.ndarray</em>) – The Fourier series parameters. These are the parameters of the Fourier series used to
+calculate the fold axis rotation angle curve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated objective function value. This is the likelihood of the fold axis wavelength.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If <cite>theta</cite> is not a numpy array.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>theta</cite> does not have at least 4 parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.hinge_angle_objective_function">
+<span class="sig-name descname"><span class="pre">hinge_angle_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.hinge_angle_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.hinge_angle_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the objective function for the ‘hinge_angle’ constraint.</p>
+<p>This function calculates the likelihood of the fold hinge angle given the constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>np.ndarray</em>) – The Fourier series parameters. These are the parameters of the Fourier series used
+to calculate the fold axis rotation angle curve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated objective function value. This is the likelihood of the fold hinge angle.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If <cite>theta</cite> is not a numpy array.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>theta</cite> does not have at least 4 parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.setup_objective_functions">
+<span class="sig-name descname"><span class="pre">setup_objective_functions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.setup_objective_functions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.setup_objective_functions" title="Link to this definition">¶</a></dt>
+<dd><p>Setup the mapping between constraint names and their corresponding objective function methods.</p>
+<p>This function creates a dictionary where the keys are the names of the constraints and the values are the
+corresponding objective function methods. This mapping is used to dynamically call the correct objective
+function based on the constraint name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.setup_objective_functions_for_restricted_mode">
+<span class="sig-name descname"><span class="pre">setup_objective_functions_for_restricted_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NonlinearConstraint</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.setup_objective_functions_for_restricted_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.setup_objective_functions_for_restricted_mode" title="Link to this definition">¶</a></dt>
+<dd><p>This function prepares the constraints by calculating the lower and upper bounds for each constraint and
+setting up the NonlinearConstraint objects from scipy.optimize. It also sets up the constraint functions.</p>
+<p>This function is used only when the optimisation is in a restricted mode. The restricted mode means that the
+optimisation algorithm cannot leave the parameter space defined by the geological knowledge constraints.
+The drawback of fitting a fold rotation angle model in this mode is that if the constraints provided are not
+representative of the studied fold geometry, the fitted model will be as well not representative.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of NonlinearConstraint objects for each constraint.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[NonlinearConstraint]</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the constraint info is not a dictionary.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.tightness_objective_function">
+<span class="sig-name descname"><span class="pre">tightness_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.tightness_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.tightness_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the objective function for the ‘tightness’ constraint.</p>
+<p>This function calculates the likelihood of the fold tightness given the constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>np.ndarray</em>) – The Fourier series parameters. These are the parameters of the Fourier series used to
+calculate the fold limb rotation angle curve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated objective function value. This is the likelihood of the fold tightness.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If <cite>theta</cite> is not a numpy array.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>theta</cite> does not have at least 4 parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.wavelength_objective_function">
+<span class="sig-name descname"><span class="pre">wavelength_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#GeologicalKnowledgeFunctions.wavelength_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.GeologicalKnowledgeFunctions.wavelength_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the objective function for the fold wavelength constraint.</p>
+<p>This function calculates the negative likelihood of the fold wavelength given the knowledge constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>np.ndarray</em>) – The Fourier series parameters. These are the parameters of the Fourier series used to
+calculate the fold limb rotation angle curve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated objective function value. This is the likelihood of the fold wavelength.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If <cite>theta</cite> is not a numpy array.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>theta</cite> does not have at least 4 parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.geological_knowledge.check_fourier_parameters">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.geological_knowledge.</span></span><span class="sig-name descname"><span class="pre">check_fourier_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/geological_knowledge.html#check_fourier_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.geological_knowledge.check_fourier_parameters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-FoldOptLib.objective_functions.lambda_objective_function">
+<span id="foldoptlib-objective-functions-lambda-objective-function-module"></span><h2>FoldOptLib.objective_functions.lambda_objective_function module<a class="headerlink" href="#module-FoldOptLib.objective_functions.lambda_objective_function" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.lambda_objective_function.LambdaObjectiveFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.lambda_objective_function.</span></span><span class="sig-name descname"><span class="pre">LambdaObjectiveFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/lambda_objective_function.html#LambdaObjectiveFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.lambda_objective_function.LambdaObjectiveFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is used to create a lambda objective function.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.lambda_objective_function.LambdaObjectiveFunction.make_objective_function">
+<span class="sig-name descname"><span class="pre">make_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/lambda_objective_function.html#LambdaObjectiveFunction.make_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.lambda_objective_function.LambdaObjectiveFunction.make_objective_function" title="Link to this definition">¶</a></dt>
+<dd><p>This method is wrapper that takes an objective function and
+prepares it for use in the optimiser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.objective_functions.least_squares">
+<span id="foldoptlib-objective-functions-least-squares-module"></span><h2>FoldOptLib.objective_functions.least_squares module<a class="headerlink" href="#module-FoldOptLib.objective_functions.least_squares" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.least_squares.</span></span><span class="sig-name descname"><span class="pre">LeastSquaresFunctions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knowledge_constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class used to represent the Least Squares Functions.</p>
+<p>…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.rotation_angle">
+<span class="sig-name descname"><span class="pre">rotation_angle</span></span><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.rotation_angle" title="Link to this definition">¶</a></dt>
+<dd><p>Either the calculated fold limb or axis rotation angles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.fold_frame">
+<span class="sig-name descname"><span class="pre">fold_frame</span></span><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.fold_frame" title="Link to this definition">¶</a></dt>
+<dd><p>The fold frame z or y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.knowledge_constraints">
+<span class="sig-name descname"><span class="pre">knowledge_constraints</span></span><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.knowledge_constraints" title="Link to this definition">¶</a></dt>
+<dd><p>A callable function that calculate the likelihood of input knowledge constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.kwargs">
+<span class="sig-name descname"><span class="pre">kwargs</span></span><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.kwargs" title="Link to this definition">¶</a></dt>
+<dd><p>Additional keyword arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.square_residuals">
+<span class="sig-name descname"><span class="pre">square_residuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">np.ndarray:</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.square_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.square_residuals" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the square residuals between observations y and predicted rotation angle _y.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.huber_loss">
+<span class="sig-name descname"><span class="pre">huber_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">np.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">np.ndarray:</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.huber_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.huber_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the Huber loss.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.soft_l1_loss">
+<span class="sig-name descname"><span class="pre">soft_l1_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">np.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">np.ndarray:</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.soft_l1_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.soft_l1_loss" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the Soft L1 loss.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.cost">
+<span class="sig-name descname"><span class="pre">cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float:</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.cost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.least_squares.LeastSquaresFunctions.cost" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the cost function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.cost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the cost function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>float</em>) – The theta value.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cost</strong> – The calculated cost.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">huber_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.huber_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the Huber loss function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>residuals</strong> (<em>np.ndarray</em>) – The residuals.</p></li>
+<li><p><strong>delta</strong> (<em>float</em>) – The delta value. Default is 0.5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>s</strong> – The calculated Huber loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">soft_l1_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">residuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.soft_l1_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the Soft L1 loss function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>residuals</strong> (<em>np.ndarray</em>) – The residuals.</p></li>
+<li><p><strong>delta</strong> (<em>float</em>) – The delta value. Default is 0.5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>l1</strong> – The calculated Soft L1 loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">square_residuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/least_squares.html#LeastSquaresFunctions.square_residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the square residuals between observations y and predicted rotation angle _y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>float</em>) – The theta value.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>residuals</strong> – The calculated residuals.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.objective_functions.von_mises_fisher">
+<span id="foldoptlib-objective-functions-von-mises-fisher-module"></span><h2>FoldOptLib.objective_functions.von_mises_fisher module<a class="headerlink" href="#module-FoldOptLib.objective_functions.von_mises_fisher" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.objective_functions.von_mises_fisher.</span></span><span class="sig-name descname"><span class="pre">VonMisesFisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kappa</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/von_mises_fisher.html#VonMisesFisher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class defines objective functions based on the Von Mises-Fisher (vMF) distribution.
+It can be used in Maximum Likelihood Estimation (MLE) optimization problems,
+and for drawing samples from a vMF distribution.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher.draw_samples">
+<span class="sig-name descname"><span class="pre">draw_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/von_mises_fisher.html#VonMisesFisher.draw_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher.draw_samples" title="Link to this definition">¶</a></dt>
+<dd><p>Draw random samples from the Von Mises-Fisher distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of random samples to draw. Default is 1.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed for the random number generator. Default is 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The array of drawn random samples. Each sample is a 3D vector</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>TypeError</strong> – If <cite>size</cite> or <cite>random_state</cite> is not an integer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher.logpdf">
+<span class="sig-name descname"><span class="pre">logpdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/von_mises_fisher.html#VonMisesFisher.logpdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher.logpdf" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the logarithm of the Probability Density Function (PDF) of the
+Von Mises-Fisher distribution at a given point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.ndarray</em>) – Points at which the logarithm of the PDF should be evaluated.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The evaluated logarithm of the PDF at each point in <cite>x</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher.pdf">
+<span class="sig-name descname"><span class="pre">pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/objective_functions/von_mises_fisher.html#VonMisesFisher.pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.objective_functions.von_mises_fisher.VonMisesFisher.pdf" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the Probability Density Function (PDF) of the Von Mises-Fisher distribution at a given point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.ndarray</em>) – Points at which the PDF should be evaluated.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The evaluated PDF at each point in <cite>x</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.objective_functions">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-FoldOptLib.objective_functions" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="API.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">FoldOptLib</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="FoldOptLib.html">FoldOptLib package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">FoldOptLib</a><ul>
+  <li><a href="FoldOptLib.html">FoldOptLib package</a><ul>
+      <li>Previous: <a href="FoldOptLib.ipywidgets_interface.html" title="previous chapter">FoldOptLib.ipywidgets_interface package</a></li>
+      <li>Next: <a href="FoldOptLib.optimisers.html" title="next chapter">FoldOptLib.optimisers package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/FoldOptLib.objective_functions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

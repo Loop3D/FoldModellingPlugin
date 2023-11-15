@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FoldOptLib.fold_modelling package &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="FoldOptLib.from_loopstructural package" href="FoldOptLib.from_loopstructural.html" />
+    <link rel="prev" title="FoldOptLib.examples package" href="FoldOptLib.examples.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="foldoptlib-fold-modelling-package">
+<h1>FoldOptLib.fold_modelling package<a class="headerlink" href="#foldoptlib-fold-modelling-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-FoldOptLib.fold_modelling.base_fold_frame_builder">
+<span id="foldoptlib-fold-modelling-base-fold-frame-builder-module"></span><h2>FoldOptLib.fold_modelling.base_fold_frame_builder module<a class="headerlink" href="#module-FoldOptLib.fold_modelling.base_fold_frame_builder" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.fold_modelling.base_fold_frame_builder.</span></span><span class="sig-name descname"><span class="pre">BaseFoldFrameBuilder</span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/base_fold_frame_builder.html#BaseFoldFrameBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder.build_fold_frame">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_fold_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axial_normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/base_fold_frame_builder.html#BaseFoldFrameBuilder.build_fold_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder.build_fold_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Build the fold frame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder.initialise_model">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">initialise_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/base_fold_frame_builder.html#BaseFoldFrameBuilder.initialise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder.initialise_model" title="Link to this definition">¶</a></dt>
+<dd><p>Setup the bounding box of the fold frame</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-FoldOptLib.fold_modelling.engine">
+<span id="foldoptlib-fold-modelling-engine-module"></span><h2>FoldOptLib.fold_modelling.engine module<a class="headerlink" href="#module-FoldOptLib.fold_modelling.engine" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FoldOptLib.fold_modelling.engine.</span></span><span class="sig-name descname"><span class="pre">FoldModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geological_knowledge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder" title="FoldOptLib.fold_modelling.base_fold_frame_builder.BaseFoldFrameBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseFoldFrameBuilder</span></code></a></p>
+<p>A class used to build a fold model.</p>
+<p>…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.data" title="Link to this definition">¶</a></dt>
+<dd><p>processed data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.bounding_box">
+<span class="sig-name descname"><span class="pre">bounding_box</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.bounding_box" title="Link to this definition">¶</a></dt>
+<dd><p>bounding box for the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.model" title="Link to this definition">¶</a></dt>
+<dd><p>the GeologicalModel object to be built, initialised as None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.gradient_data">
+<span class="sig-name descname"><span class="pre">gradient_data</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.gradient_data" title="Link to this definition">¶</a></dt>
+<dd><p>gradient data extracted from the data DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.points">
+<span class="sig-name descname"><span class="pre">points</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.points" title="Link to this definition">¶</a></dt>
+<dd><p>coordinates of the data points</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.kwargs">
+<span class="sig-name descname"><span class="pre">kwargs</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.kwargs" title="Link to this definition">¶</a></dt>
+<dd><p>additional keyword arguments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.axial_surface">
+<span class="sig-name descname"><span class="pre">axial_surface</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.axial_surface" title="Link to this definition">¶</a></dt>
+<dd><p>axial surface of the model, initialised as None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.scaled_points">
+<span class="sig-name descname"><span class="pre">scaled_points</span></span><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.scaled_points" title="Link to this definition">¶</a></dt>
+<dd><p>scaled from UTM to the model scale, initialised as None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">No</span> <span class="pre">methods</span> <span class="pre">defined</span> <span class="pre">yet.</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.build_fold_frame">
+<span class="sig-name descname"><span class="pre">build_fold_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axial_normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.build_fold_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.build_fold_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Builds a fold frame.</p>
+<p>This function processes the axial surface proposition (iteration),
+updates the model data, creates and adds a fold frame to the model, and then interpolates the fold frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axial_normal</strong> (<em>np.ndarray</em>) – The axial surface normal vector proposition to be processed.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.calculate_folded_foliation_vectors">
+<span class="sig-name descname"><span class="pre">calculate_folded_foliation_vectors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.calculate_folded_foliation_vectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.calculate_folded_foliation_vectors" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the folded foliation vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns the predicted bedding.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.calculate_svariogram">
+<span class="sig-name descname"><span class="pre">calculate_svariogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fold_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.calculate_svariogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.calculate_svariogram" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the S-Variogram (semi-variogram) of the fold rotation angles.
+for more details about the S-Variogram, see Grose et al (2017)</p>
+<p>Depending on the keyword arguments ‘axis_wl’ and ‘limb_wl’,
+this function either returns the initial guess of the fold axis or fold limb rotation angles
+to optimise a fourier series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fold_frame</strong> (<em>np.ndarray</em>) – The fold frame to be used for the semi-variogram calculation.</p></li>
+<li><p><strong>rotation_angles</strong> (<em>np.ndarray</em>) – The rotation angles to be used for the semi-variogram calculation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the initial guess for fourier series optimisation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.create_and_build_fold_event">
+<span class="sig-name descname"><span class="pre">create_and_build_fold_event</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FoldEvent</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.create_and_build_fold_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.create_and_build_fold_event" title="Link to this definition">¶</a></dt>
+<dd><p>Creates and builds a fold event.</p>
+<p>A fold frame object is first created from the axial surface proposition.
+The gradient of the axial surface is then calculated and normalised.
+The fold limb rotation angle is calculated depending on the argument ‘av_fold_axis’. If the argument is set True,
+the fold limb rotation angle is calculated using the average fold axis. If the argument is set False, the fold
+limb rotation angle is calculated down a folded fold axis, which is the case of noncylindrical folds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The created fold event.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>FoldEvent</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.fit_fourier_series">
+<span class="sig-name descname"><span class="pre">fit_fourier_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fold_frame_coordinate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knowledge_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'fold_limb_rotation_angle'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.fit_fourier_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.fit_fourier_series" title="Link to this definition">¶</a></dt>
+<dd><p>Fit the Fourier series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fold_frame_coordinate</strong> (<em>np.ndarray</em>) – The fold frame coordinate.</p></li>
+<li><p><strong>rotation_angle</strong> (<em>np.ndarray</em>) – The fold limb or axis rotation angle.</p></li>
+<li><p><strong>knowledge_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of knowledge, use ‘fold_limb_rotation_angle’ or ‘fold_axis_rotation_angle’,
+by default ‘fold_limb_rotation_angle’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result of the optimisation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.get_predicted_foliation">
+<span class="sig-name descname"><span class="pre">get_predicted_foliation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axial_normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.get_predicted_foliation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.get_predicted_foliation" title="Link to this definition">¶</a></dt>
+<dd><p>Get the predicted foliation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axial_normal</strong> (<em>np.ndarray</em>) – The axial foliation normal vector.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the normal vectors to the predicted foliation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.initialise_model">
+<span class="sig-name descname"><span class="pre">initialise_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.initialise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.initialise_model" title="Link to this definition">¶</a></dt>
+<dd><p>Initialises the geological model and scales the points (xyz).</p>
+<p>The GeologicalModel class is initialised with the bounding box.
+The xyz points of the FoldModel object are then scaled using the geological model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.FoldModel.process_axial_surface_proposition">
+<span class="sig-name descname"><span class="pre">process_axial_surface_proposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axial_normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#FoldModel.process_axial_surface_proposition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.FoldModel.process_axial_surface_proposition" title="Link to this definition">¶</a></dt>
+<dd><p>Process the axial surface proposition at each iteration by creating a dataset from the axial surface normal.</p>
+<p>The axial surface normal is first normalised. A dataset is then created from the axial surface normal.
+A rotated vector is created by rotating the axial normal by 90 degrees to be perpendicular to the axial surface.
+The rotated vector is the Y axis of the fold frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axial_normal</strong> (<em>np.ndarray</em>) – The axial surface normal vector.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The dataset to use to build a fold frame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FoldOptLib.fold_modelling.engine.fold_function">
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.fold_modelling.engine.</span></span><span class="sig-name descname"><span class="pre">fold_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/fold_modelling/engine.html#fold_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.fold_modelling.engine.fold_function" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-FoldOptLib.fold_modelling.simple_fold_frame_builder">
+<span id="foldoptlib-fold-modelling-simple-fold-frame-builder-module"></span><h2>FoldOptLib.fold_modelling.simple_fold_frame_builder module<a class="headerlink" href="#module-FoldOptLib.fold_modelling.simple_fold_frame_builder" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-FoldOptLib.fold_modelling">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-FoldOptLib.fold_modelling" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="API.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">FoldOptLib</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="FoldOptLib.html">FoldOptLib package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">FoldOptLib</a><ul>
+  <li><a href="FoldOptLib.html">FoldOptLib package</a><ul>
+      <li>Previous: <a href="FoldOptLib.examples.html" title="previous chapter">FoldOptLib.examples package</a></li>
+      <li>Next: <a href="FoldOptLib.from_loopstructural.html" title="next chapter">FoldOptLib.from_loopstructural package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/FoldOptLib.fold_modelling.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

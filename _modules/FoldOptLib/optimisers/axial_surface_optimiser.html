@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoldOptLib.optimisers.axial_surface_optimiser &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FoldOptLib.optimisers.axial_surface_optimiser</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="c1"># import mplstereonet</span>
+<span class="c1"># from sklearn.preprocessing import StandardScaler</span>
+<span class="c1"># from scipy.optimize import minimize, differential_evolution</span>
+<span class="c1"># from scipy.stats import vonmises_fisher, vonmises</span>
+<span class="kn">from</span> <span class="nn">.fold_optimiser</span> <span class="kn">import</span> <span class="n">FoldOptimiser</span>
+<span class="kn">from</span> <span class="nn">..objective_functions</span> <span class="kn">import</span> <span class="n">GeologicalKnowledgeFunctions</span>
+<span class="kn">from</span> <span class="nn">..input</span> <span class="kn">import</span> <span class="n">CheckInputData</span>
+<span class="kn">from</span> <span class="nn">..helper.utils</span> <span class="kn">import</span> <span class="n">strike_dip_to_vector</span><span class="p">,</span> <span class="n">normal_vector_to_strike_and_dip</span><span class="p">,</span> <span class="n">get_predicted_rotation_angle</span>
+<span class="kn">from</span> <span class="nn">..objective_functions</span> <span class="kn">import</span> <span class="n">VonMisesFisher</span>
+<span class="kn">from</span> <span class="nn">..objective_functions</span> <span class="kn">import</span> <span class="n">is_axial_plane_compatible</span>
+<span class="kn">from</span> <span class="nn">..fold_modelling</span> <span class="kn">import</span> <span class="n">FoldModel</span>
+<span class="kn">from</span> <span class="nn">..objective_functions</span> <span class="kn">import</span> <span class="n">loglikelihood_axial_surface</span>
+
+
+<div class="viewcode-block" id="calculate_intersection_lineation">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.calculate_intersection_lineation">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_intersection_lineation</span><span class="p">(</span><span class="n">axial_surface</span><span class="p">,</span> <span class="n">folded_foliation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the intersection lineation of the axial surface and the folded foliation.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    axial_surface (np.ndarray): The normal vector of the axial surface.</span>
+<span class="sd">    folded_foliation (np.ndarray): The normal vector of the folded foliation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    np.ndarray: The normalised intersection lineation vector.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the inputs are numpy arrays</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axial_surface</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Axial surface vector must be a numpy array.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">folded_foliation</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Folded foliation vector must be a numpy array.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check if the inputs have the same shape</span>
+    <span class="k">if</span> <span class="n">axial_surface</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">folded_foliation</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Axial surface and folded foliation arrays must have the same shape.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Calculate cross product of the axial surface and folded foliation normal vectors</span>
+    <span class="n">li</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">axial_surface</span><span class="p">,</span> <span class="n">folded_foliation</span><span class="p">)</span>
+
+    <span class="c1"># Normalise the intersection lineation vector</span>
+    <span class="n">li</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">li</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">li</span></div>
+
+
+
+<span class="c1"># def logp(value: TensorVariable, mu: TensorVariable) -&gt; TensorVariable:</span>
+<span class="c1">#     return -(value - mu)**2</span>
+
+
+<div class="viewcode-block" id="AxialSurfaceOptimiser">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser">[docs]</a>
+<span class="k">class</span> <span class="nc">AxialSurfaceOptimiser</span><span class="p">(</span><span class="n">FoldOptimiser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optimiser for Axial Surfaces.</span>
+
+<span class="sd">        This class inherits from FoldOptimiser, FoldModel. It is used to optimise the axial surfaces</span>
+<span class="sd">        based on the provided data, bounding box, geological knowledge.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+                 <span class="n">bounding_box</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                 <span class="n">geological_knowledge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Initialise the AxialSurfaceOptimiser with data, bounding box, geological knowledge and other parameters.</span>
+
+<span class="sd">                Parameters</span>
+<span class="sd">                ----------</span>
+<span class="sd">                data : pd.DataFrame</span>
+<span class="sd">                    The input data for optimisation.</span>
+<span class="sd">                bounding_box : Union[list, np.ndarray]</span>
+<span class="sd">                    The bounding box for the optimisation.</span>
+<span class="sd">                geological_knowledge : Optional[Dict[str, Any]], optional</span>
+<span class="sd">                    The geological knowledge used for optimisation, by default None.</span>
+<span class="sd">                **kwargs : Dict[str, Any]</span>
+<span class="sd">                    Other optional parameters for optimisation. Can include scipy optimisation parameters for</span>
+<span class="sd">                    differential evolution and trust-constr methods.</span>
+<span class="sd">                    mode : str, optional, optimisation mode, can be &#39;restricted&#39; or &#39;unrestricted&#39;,</span>
+<span class="sd">                    by default &#39;unrestricted&#39;. only unrestricted mode is supported for now.</span>
+<span class="sd">                    method : str, optional, optimisation method, can be &#39;differential_evolution&#39; or &#39;trust-region&#39;,</span>
+<span class="sd">                    by default &#39;differential_evolution&#39;.</span>
+
+<span class="sd">                &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check the input data</span>
+        <span class="n">check_input</span> <span class="o">=</span> <span class="n">CheckInputData</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bounding_box</span><span class="p">,</span>
+                                     <span class="n">geological_knowledge</span><span class="o">=</span><span class="n">geological_knowledge</span><span class="p">)</span>
+        <span class="n">check_input</span><span class="o">.</span><span class="n">check_input_data</span><span class="p">()</span>
+
+        <span class="n">FoldOptimiser</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fold_engine</span> <span class="o">=</span> <span class="n">FoldModel</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bounding_box</span><span class="p">,</span>
+                                     <span class="n">geological_knowledge</span><span class="o">=</span><span class="n">geological_knowledge</span><span class="p">,</span>
+                                     <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span> <span class="o">=</span> <span class="n">bounding_box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geological_knowledge</span> <span class="o">=</span> <span class="n">geological_knowledge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[[</span><span class="s1">&#39;gx&#39;</span><span class="p">,</span> <span class="s1">&#39;gy&#39;</span><span class="p">,</span> <span class="s1">&#39;gz&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geo_objective</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">guess</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="AxialSurfaceOptimiser.generate_initial_guess">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.generate_initial_guess">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_initial_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the initial guess for the optimisation for differential evolution algorithm.</span>
+<span class="sd">        The initial guess is generated using the Von Mises Fisher distribution.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;axial_surface_guess&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;axial_surface_guess&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">guess</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># Create a VonMisesFisher distribution with the given parameters</span>
+                <span class="n">mu</span> <span class="o">=</span> <span class="n">strike_dip_to_vector</span><span class="p">(</span><span class="o">*</span><span class="n">guess</span><span class="p">)</span>
+                <span class="n">kappa</span> <span class="o">=</span> <span class="mi">5</span>
+                <span class="n">vmf</span> <span class="o">=</span> <span class="n">VonMisesFisher</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">kappa</span><span class="p">)</span>
+                <span class="c1"># Sample from the distribution</span>
+                <span class="n">initial_guess</span> <span class="o">=</span> <span class="n">vmf</span><span class="o">.</span><span class="n">draw_samples</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+                <span class="n">initial_guess</span> <span class="o">=</span> <span class="n">normal_vector_to_strike_and_dip</span><span class="p">(</span><span class="n">initial_guess</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">initial_guess</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">guess</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">mu</span> <span class="o">=</span> <span class="n">guess</span>
+                <span class="c1"># normalise guess</span>
+                <span class="n">mu</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+                <span class="n">kappa</span> <span class="o">=</span> <span class="mi">5</span>
+                <span class="n">vmf</span> <span class="o">=</span> <span class="n">VonMisesFisher</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">kappa</span><span class="p">)</span>
+                <span class="c1"># Sample from the distribution</span>
+                <span class="n">initial_guess</span> <span class="o">=</span> <span class="n">vmf</span><span class="o">.</span><span class="n">draw_samples</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+                <span class="n">initial_guess</span> <span class="o">=</span> <span class="n">normal_vector_to_strike_and_dip</span><span class="p">(</span><span class="n">initial_guess</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">initial_guess</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;axial_surface_guess&#39; should be a list or a np.array &quot;</span>
+                                 <span class="s2">&quot;of the form [strike, dip] or a 3D unit vector&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;axial_surface_guess&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># use the halton method to initialise the optimisation</span>
+            <span class="k">return</span> <span class="s1">&#39;halton&#39;</span></div>
+
+
+<div class="viewcode-block" id="AxialSurfaceOptimiser.loglikelihood">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.loglikelihood">[docs]</a>
+    <span class="k">def</span> <span class="nf">loglikelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">predicted_foliation</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                      <span class="n">geological_knowledge</span><span class="p">:</span> <span class="n">GeologicalKnowledgeFunctions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Calculate the maximum likelihood estimate of the axial surface and the geological knowledge.</span>
+
+<span class="sd">         Parameters</span>
+<span class="sd">         ----------</span>
+<span class="sd">         x : np.ndarray</span>
+<span class="sd">             The axial surface normal vector to be optimised.</span>
+<span class="sd">         predicted_foliation : np.ndarray</span>
+<span class="sd">             The predicted foliation data.</span>
+<span class="sd">         geological_knowledge : GeologicalKnowledgeFunctions</span>
+<span class="sd">             The geological knowledge functions.</span>
+
+<span class="sd">         Returns</span>
+<span class="sd">         -------</span>
+<span class="sd">         float</span>
+<span class="sd">             The calculated loglikelihood of the axial surface. Returns None if input is not valid.</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+
+        <span class="c1"># Calculate the angle difference between the predicted and observed foliation</span>
+        <span class="n">angle_difference</span> <span class="o">=</span> <span class="n">is_axial_plane_compatible</span><span class="p">(</span><span class="n">predicted_foliation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span><span class="p">)</span>
+        <span class="c1"># Calculate the loglikelihood of the axial surface</span>
+        <span class="n">loglikelihood</span> <span class="o">=</span> <span class="n">loglikelihood_axial_surface</span><span class="p">(</span><span class="n">angle_difference</span><span class="p">)</span> <span class="o">+</span> <span class="n">geological_knowledge</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loglikelihood</span></div>
+
+
+<div class="viewcode-block" id="AxialSurfaceOptimiser.mle_optimisation">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.mle_optimisation">[docs]</a>
+    <span class="k">def</span> <span class="nf">mle_optimisation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strike_dip</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs Maximum Likelihood Estimation (MLE) optimisation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        strike_dip : tuple</span>
+<span class="sd">            A tuple containing strike and dip values of the estimated axial surface.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        logpdf : float</span>
+<span class="sd">            The log-likelihood of the MLE.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This function performs MLE optimisation and used when geological knowledge constraints are provided.</span>
+<span class="sd">        The function returns the log-likelihood of the MLE that is optimised</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">axial_normal</span> <span class="o">=</span> <span class="n">strike_dip_to_vector</span><span class="p">(</span><span class="o">*</span><span class="n">strike_dip</span><span class="p">)</span>
+        <span class="n">axial_normal</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">)</span>
+
+        <span class="n">predicted_foliation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold_engine</span><span class="o">.</span><span class="n">get_predicted_foliation</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">)</span>
+        <span class="n">logpdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglikelihood</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">,</span> <span class="n">predicted_foliation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_objective</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logpdf</span></div>
+
+
+<div class="viewcode-block" id="AxialSurfaceOptimiser.angle_optimisation">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.angle_optimisation">[docs]</a>
+    <span class="k">def</span> <span class="nf">angle_optimisation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strike_dip</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Minimises the angle between the observed and predicted folded foliation.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            strike_dip : tuple</span>
+<span class="sd">                A tuple containing strike and dip values of the estimated axial surface.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            angle_difference : float</span>
+<span class="sd">                The difference between the predicted and actual angle.</span>
+
+<span class="sd">            Notes</span>
+<span class="sd">            -----</span>
+<span class="sd">            This function optimises the axial surface by minimising the angle between the predicted and observed folded</span>
+<span class="sd">            foliation. This function is used when there are no geological knowledge constraints provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">axial_normal</span> <span class="o">=</span> <span class="n">strike_dip_to_vector</span><span class="p">(</span><span class="n">strike_dip</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">strike_dip</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">axial_normal</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">)</span>
+        <span class="n">predicted_foliation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fold_engine</span><span class="o">.</span><span class="n">get_predicted_foliation</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">)</span>
+        <span class="n">angle_difference</span> <span class="o">=</span> <span class="n">is_axial_plane_compatible</span><span class="p">(</span><span class="n">predicted_foliation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">angle_difference</span></div>
+
+
+<div class="viewcode-block" id="AxialSurfaceOptimiser.setup_optimisation">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.setup_optimisation">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_optimisation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Sets up the optimisation algorithm.</span>
+
+<span class="sd">           Parameters</span>
+<span class="sd">           ----------</span>
+<span class="sd">           geological_knowledge : dict, optional</span>
+<span class="sd">               A dictionary containing geological knowledge. Default is None.</span>
+
+<span class="sd">           Returns</span>
+<span class="sd">           -------</span>
+<span class="sd">           objective_function : callable</span>
+<span class="sd">               The objective function to be minimised.</span>
+<span class="sd">           _geological_knowledge : dict or None</span>
+<span class="sd">               The geological knowledge objective functions.</span>
+<span class="sd">           solver : BaseOptimiser</span>
+<span class="sd">               The solver from BaseOptimiser to be used for optimisation.</span>
+<span class="sd">           guess : Union[np.ndarray, str]</span>
+<span class="sd">               The initial guess for the optimisation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO - check format of the geological knowledge dictionary</span>
+        <span class="n">_geological_knowledge</span><span class="p">,</span> <span class="n">solver</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup_optimisation</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="p">)</span>
+        <span class="c1"># guess = self.generate_initial_guess()</span>
+
+        <span class="c1"># Generate initial guess</span>
+        <span class="n">guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_initial_guess</span><span class="p">()</span>
+        <span class="c1"># Setup objective function</span>
+        <span class="k">if</span> <span class="n">_geological_knowledge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if _geological_knowledge exists then use the negative logpdf of the Von Mises distribution</span>
+            <span class="c1"># as the objective function to minimise</span>
+            <span class="n">objective_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mle_optimisation</span>
+
+        <span class="c1"># if no geological knowledge is provided then use the angle difference between the predicted and observed</span>
+        <span class="c1"># foliation as the objective function to minimise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">objective_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_optimisation</span>
+
+        <span class="k">return</span> <span class="n">objective_function</span><span class="p">,</span> <span class="n">_geological_knowledge</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">guess</span></div>
+
+
+<div class="viewcode-block" id="AxialSurfaceOptimiser.optimise">
+<a class="viewcode-back" href="../../../FoldOptLib.optimisers.html#FoldOptLib.optimisers.axial_surface_optimiser.AxialSurfaceOptimiser.optimise">[docs]</a>
+    <span class="k">def</span> <span class="nf">optimise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geological_knowledge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the optimisation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        geological_knowledge : dict, optional</span>
+<span class="sd">            A dictionary containing geological knowledge. Default is None.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opt : Dict</span>
+<span class="sd">            The result of the optimisation.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This function runs the optimisation by setting up the optimisation problem,</span>
+<span class="sd">        checking if geological knowledge exists, and running the solver.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">geological_knowledge</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_objective</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">guess</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">setup_optimisation</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;differential_evolution&#39;</span><span class="p">:</span>
+                <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">guess</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">guess</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">opt</span>
+
+        <span class="c1"># Check if geological knowledge exists</span>
+        <span class="k">if</span> <span class="n">geological_knowledge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Setup optimisation</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="p">[</span><span class="s1">&#39;fold_axial_surface&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_objective</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">guess</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">setup_optimisation</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="o">=</span><span class="n">geological_knowledge</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;differential_evolution&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s1">&#39;axial_surface_guess&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+                        <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">guess</span><span class="p">)</span>
+
+                        <span class="k">return</span> <span class="n">opt</span>
+                    <span class="k">if</span> <span class="s1">&#39;axial_surface_guess&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+                        <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="s1">&#39;halton&#39;</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">guess</span><span class="p">)</span>
+
+                    <span class="k">return</span> <span class="n">opt</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="p">[</span><span class="s1">&#39;fold_axial_surface&#39;</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geo_objective</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">guess</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">setup_optimisation</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="p">[</span><span class="s1">&#39;fold_axial_surface&#39;</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;differential_evolution&#39;</span><span class="p">:</span>
+                    <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">guess</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">guess</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">opt</span></div>
+</div>
+
+
+            <span class="c1"># TODO: add support for restricted optimisation mode</span>
+            <span class="c1"># Check if mode is restricted</span>
+            <span class="c1"># if &#39;mode&#39; in self.kwargs and self.kwargs[&#39;mode&#39;] == &#39;restricted&#39;:</span>
+            <span class="c1">#     opt = self.solver(self.objective_function, x0=self.guess, constraints=self.geo_objective)</span>
+            <span class="c1">#     return opt</span>
+            <span class="c1"># else:</span>
+
+            <span class="c1"># return opt</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">FoldOptLib</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

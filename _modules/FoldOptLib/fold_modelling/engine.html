@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoldOptLib.fold_modelling.engine &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FoldOptLib.fold_modelling.engine</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">LoopStructural</span> <span class="kn">import</span> <span class="n">GeologicalModel</span>
+<span class="kn">from</span> <span class="nn">..helper._helper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..helper.utils</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="c1"># from</span>
+<span class="kn">from</span> <span class="nn">..input.input_data_processor</span> <span class="kn">import</span> <span class="n">InputDataProcessor</span>
+<span class="kn">from</span> <span class="nn">..from_loopstructural._fold</span> <span class="kn">import</span> <span class="n">FoldEvent</span>
+<span class="kn">from</span> <span class="nn">..from_loopstructural._fold_frame</span> <span class="kn">import</span> <span class="n">FoldFrame</span>
+<span class="c1"># from from_loopstructural._svariogram import SVariogram</span>
+<span class="kn">from</span> <span class="nn">.base_fold_frame_builder</span> <span class="kn">import</span> <span class="n">BaseFoldFrameBuilder</span>
+<span class="kn">from</span> <span class="nn">..optimisers.fourier_optimiser</span> <span class="kn">import</span> <span class="n">FourierSeriesOptimiser</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+
+<div class="viewcode-block" id="fold_function">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.fold_function">[docs]</a>
+<span class="k">def</span> <span class="nf">fold_function</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">rot_func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">fourier_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">rot_func</span></div>
+
+
+
+<div class="viewcode-block" id="FoldModel">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel">[docs]</a>
+<span class="k">class</span> <span class="nc">FoldModel</span><span class="p">(</span><span class="n">BaseFoldFrameBuilder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class used to build a fold model.</span>
+
+<span class="sd">    ...</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        processed data</span>
+<span class="sd">    bounding_box : list</span>
+<span class="sd">        bounding box for the model</span>
+<span class="sd">    model : Any</span>
+<span class="sd">        the GeologicalModel object to be built, initialised as None</span>
+<span class="sd">    gradient_data : np.ndarray</span>
+<span class="sd">        gradient data extracted from the data DataFrame</span>
+<span class="sd">    points : np.ndarray</span>
+<span class="sd">        coordinates of the data points</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        additional keyword arguments</span>
+<span class="sd">    axial_surface : Any</span>
+<span class="sd">        axial surface of the model, initialised as None</span>
+<span class="sd">    scaled_points : Any</span>
+<span class="sd">        scaled from UTM to the model scale, initialised as None</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    No methods defined yet.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+                 <span class="n">bounding_box</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                 <span class="n">geological_knowledge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs all the necessary attributes for the FoldModel object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            data : pd.DataFrame</span>
+<span class="sd">                structural data</span>
+<span class="sd">            bounding_box : list or np.ndarray</span>
+<span class="sd">                bounding box for the model</span>
+<span class="sd">            **kwargs : dict</span>
+<span class="sd">                additional keyword arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_processor</span> <span class="o">=</span> <span class="n">InputDataProcessor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bounding_box</span><span class="p">,</span>
+                                            <span class="n">geological_knowledge</span><span class="o">=</span><span class="n">geological_knowledge</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data_processor</span><span class="o">.</span><span class="n">process_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span> <span class="o">=</span> <span class="n">bounding_box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[[</span><span class="s1">&#39;gx&#39;</span><span class="p">,</span> <span class="s1">&#39;gy&#39;</span><span class="p">,</span> <span class="s1">&#39;gz&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>  <span class="c1"># coordinates of the data points</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span><span class="p">),</span> <span class="s2">&quot;coordinates must have the same length as data&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">geological_knowledge</span> <span class="o">=</span> <span class="n">geological_knowledge</span>
+
+<div class="viewcode-block" id="FoldModel.initialise_model">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.initialise_model">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialise_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the geological model and scales the points (xyz).</span>
+
+<span class="sd">        The GeologicalModel class is initialised with the bounding box.</span>
+<span class="sd">        The xyz points of the FoldModel object are then scaled using the geological model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">GeologicalModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FoldModel.process_axial_surface_proposition">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.process_axial_surface_proposition">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_axial_surface_proposition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axial_normal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the axial surface proposition at each iteration by creating a dataset from the axial surface normal.</span>
+
+<span class="sd">        The axial surface normal is first normalised. A dataset is then created from the axial surface normal.</span>
+<span class="sd">        A rotated vector is created by rotating the axial normal by 90 degrees to be perpendicular to the axial surface.</span>
+<span class="sd">        The rotated vector is the Y axis of the fold frame.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axial_normal : np.ndarray</span>
+<span class="sd">            The axial surface normal vector.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            The dataset to use to build a fold frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># normalise axial surface normal</span>
+        <span class="n">axial_normal</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">)</span>
+        <span class="c1"># create a dataset from the axial surface normal</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span><span class="p">),</span> <span class="s2">&quot;coordinates must have the same length as data&quot;</span>
+
+        <span class="c1"># rotate the axial normal by 90 degrees to create the Y axis of the fold frame</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">rotate_vector</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># create a dataset from the Y axis of the fold frame</span>
+        <span class="n">y_coord</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># append the two datasets together</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dataset</span><span class="p">,</span> <span class="n">y_coord</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+<div class="viewcode-block" id="FoldModel.build_fold_frame">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.build_fold_frame">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_fold_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axial_normal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a fold frame.</span>
+
+<span class="sd">        This function processes the axial surface proposition (iteration),</span>
+<span class="sd">        updates the model data, creates and adds a fold frame to the model, and then interpolates the fold frame.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axial_normal : np.ndarray</span>
+<span class="sd">            The axial surface normal vector proposition to be processed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># process the axial surface proposition and get the dataset</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_axial_surface_proposition</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">)</span>
+
+        <span class="c1"># update the model data with the dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span>
+
+        <span class="c1"># create and add a fold frame to the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">create_and_add_fold_frame</span><span class="p">(</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span>
+                                                                  <span class="n">buffer</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                                                                  <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;pyamg&#39;</span><span class="p">,</span>
+                                                                  <span class="n">nelements</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span>
+                                                                  <span class="n">damp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># update the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">progressbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FoldModel.create_and_build_fold_event">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.create_and_build_fold_event">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_and_build_fold_event</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FoldEvent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates and builds a fold event.</span>
+
+<span class="sd">        A fold frame object is first created from the axial surface proposition.</span>
+<span class="sd">        The gradient of the axial surface is then calculated and normalised.</span>
+<span class="sd">        The fold limb rotation angle is calculated depending on the argument &#39;av_fold_axis&#39;. If the argument is set True,</span>
+<span class="sd">        the fold limb rotation angle is calculated using the average fold axis. If the argument is set False, the fold</span>
+<span class="sd">        limb rotation angle is calculated down a folded fold axis, which is the case of noncylindrical folds.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        FoldEvent</span>
+<span class="sd">            The created fold event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a fold frame object from the axial surface</span>
+        <span class="n">foldframe</span> <span class="o">=</span> <span class="n">FoldFrame</span><span class="p">(</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">)</span>
+
+        <span class="c1"># calculate the gradient of the axial surface</span>
+        <span class="n">s1g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate_gradient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span><span class="p">)</span>
+
+        <span class="c1"># normalise the gradient</span>
+        <span class="n">s1g</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">s1g</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># check if &#39;av_fold_axis&#39; is in kwargs and if it&#39;s True</span>
+        <span class="k">if</span> <span class="s1">&#39;av_fold_axis&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># calculate intersection lineation li</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">calculate_intersection_lineation</span><span class="p">(</span><span class="n">s1g</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span><span class="p">)</span>
+
+            <span class="c1"># calculate the mean of intersection lineation li and normalise it</span>
+            <span class="n">av_fold_axis</span> <span class="o">=</span> <span class="n">li</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">av_fold_axis</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">av_fold_axis</span><span class="p">)</span>
+
+            <span class="c1"># calculate the fold limb rotation angle</span>
+            <span class="n">flr</span><span class="p">,</span> <span class="n">fld</span> <span class="o">=</span> <span class="n">foldframe</span><span class="o">.</span><span class="n">calculate_fold_limb_rotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span><span class="p">)</span>
+
+            <span class="c1"># fit a fourier series to the fold limb rotation</span>
+            <span class="n">fitted_flr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_fourier_series</span><span class="p">(</span><span class="n">fld</span><span class="p">,</span> <span class="n">flr</span><span class="p">,</span> <span class="n">knowledge_type</span><span class="o">=</span><span class="s1">&#39;fold_limb_rotation_angle&#39;</span><span class="p">)</span>
+
+            <span class="c1"># create a fold function from the fitted fourier series</span>
+            <span class="n">fold_limb_rotation_function</span> <span class="o">=</span> <span class="n">fold_function</span><span class="p">(</span><span class="n">fitted_flr</span><span class="p">)</span>
+
+            <span class="c1"># create a fold event with the axial surface, fold limb rotation function and fold axis</span>
+            <span class="n">fold</span> <span class="o">=</span> <span class="n">FoldEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">,</span>
+                             <span class="n">fold_limb_rotation</span><span class="o">=</span><span class="n">fold_limb_rotation_function</span><span class="p">,</span> <span class="n">fold_axis</span><span class="o">=</span><span class="n">av_fold_axis</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">fold</span>
+
+        <span class="c1"># check if &#39;av_fold_axis&#39; is not in kwargs or if it&#39;s False</span>
+        <span class="k">if</span> <span class="s1">&#39;av_fold_axis&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># calculate the fold axis rotation angle</span>
+            <span class="n">far</span><span class="p">,</span> <span class="n">fad</span> <span class="o">=</span> <span class="n">foldframe</span><span class="o">.</span><span class="n">calculate_fold_axis_rotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span><span class="p">,</span> <span class="n">s1g</span><span class="p">)</span>
+
+            <span class="c1"># fit a fourier series to the calculated fold axis rotation angle</span>
+            <span class="n">fitted_far</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_fourier_series</span><span class="p">(</span><span class="n">fad</span><span class="p">,</span> <span class="n">far</span><span class="p">,</span> <span class="n">knowledge_type</span><span class="o">=</span><span class="s1">&#39;fold_axis_rotation_angle&#39;</span><span class="p">)</span>
+
+            <span class="c1"># create a fold function from the fitted fourier series</span>
+            <span class="n">fold_axis_rotation_function</span> <span class="o">=</span> <span class="n">fold_function</span><span class="p">(</span><span class="n">fitted_far</span><span class="p">)</span>
+
+            <span class="c1"># create a fold event with the axial surface and fold axis rotation function</span>
+            <span class="n">fold</span> <span class="o">=</span> <span class="n">FoldEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">,</span>
+                             <span class="n">fold_axis_rotation</span><span class="o">=</span><span class="n">fold_axis_rotation_function</span><span class="p">)</span>
+
+            <span class="c1"># calculate the fold limb rotation angle</span>
+            <span class="n">flr</span><span class="p">,</span> <span class="n">fld</span> <span class="o">=</span> <span class="n">foldframe</span><span class="o">.</span><span class="n">calculate_fold_limb_rotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_data</span><span class="p">,</span>
+                                                              <span class="n">axis</span><span class="o">=</span><span class="n">fold</span><span class="o">.</span><span class="n">get_fold_axis_orientation</span><span class="p">)</span>
+
+            <span class="c1"># fit a fourier series to the fold limb rotation</span>
+            <span class="n">fitted_flr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_fourier_series</span><span class="p">(</span><span class="n">fld</span><span class="p">,</span> <span class="n">flr</span><span class="p">,</span> <span class="n">knowledge_type</span><span class="o">=</span><span class="s1">&#39;fold_limb_rotation_angle&#39;</span><span class="p">)</span>
+
+            <span class="c1"># create a fold function from the fitted fourier series</span>
+            <span class="n">fold_limb_rotation_function</span> <span class="o">=</span> <span class="n">fold_function</span><span class="p">(</span><span class="n">fitted_flr</span><span class="p">)</span>
+
+            <span class="c1"># set the fold limb rotation of the fold event</span>
+            <span class="n">fold</span><span class="o">.</span><span class="n">fold_limb_rotation</span> <span class="o">=</span> <span class="n">fold_limb_rotation_function</span>
+
+            <span class="k">return</span> <span class="n">fold</span></div>
+
+
+<div class="viewcode-block" id="FoldModel.calculate_svariogram">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.calculate_svariogram">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_svariogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold_frame</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                             <span class="n">rotation_angles</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates the S-Variogram (semi-variogram) of the fold rotation angles.</span>
+<span class="sd">        for more details about the S-Variogram, see Grose et al (2017)</span>
+
+<span class="sd">        Depending on the keyword arguments &#39;axis_wl&#39; and &#39;limb_wl&#39;,</span>
+<span class="sd">        this function either returns the initial guess of the fold axis or fold limb rotation angles</span>
+<span class="sd">        to optimise a fourier series.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fold_frame : np.ndarray</span>
+<span class="sd">            The fold frame to be used for the semi-variogram calculation.</span>
+<span class="sd">        rotation_angles : np.ndarray</span>
+<span class="sd">            The rotation angles to be used for the semi-variogram calculation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            the initial guess for fourier series optimisation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check if &#39;axis_wl&#39; is in kwargs</span>
+        <span class="k">if</span> <span class="s1">&#39;axis_wl&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;axis_wl&#39;</span><span class="p">]])</span>
+
+        <span class="c1"># check if &#39;limb_wl&#39; is in kwargs</span>
+        <span class="k">if</span> <span class="s1">&#39;limb_wl&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;limb_wl&#39;</span><span class="p">]])</span>
+
+        <span class="c1"># if neither &#39;axis_wl&#39; nor &#39;limb_wl&#39; is in kwargs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># check if the length of rotation_angles is less than 5</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rotation_angles</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="c1"># calculate the pairwise distance</span>
+                <span class="n">pdist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fold_frame</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">fold_frame</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="n">pdist</span><span class="p">[</span><span class="n">pdist</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">lagx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">pdist</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+                <span class="c1"># calculate the semivariogram</span>
+                <span class="n">theta</span><span class="p">,</span> <span class="n">lags</span><span class="p">,</span> <span class="n">variogram</span> <span class="o">=</span> <span class="n">calculate_semivariogram</span><span class="p">(</span><span class="n">fold_frame</span><span class="p">,</span> <span class="n">rotation_angles</span><span class="p">,</span>
+                                                                 <span class="n">lag</span><span class="o">=</span><span class="n">lagx</span><span class="p">,</span>
+                                                                 <span class="n">nlag</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># calculate the semivariogram</span>
+                <span class="n">theta</span><span class="p">,</span> <span class="n">lags</span><span class="p">,</span> <span class="n">variogram</span> <span class="o">=</span> <span class="n">calculate_semivariogram</span><span class="p">(</span><span class="n">fold_frame</span><span class="p">,</span> <span class="n">rotation_angles</span><span class="p">,</span>
+                                                                 <span class="n">lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                                 <span class="n">nlag</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">theta</span></div>
+
+
+<div class="viewcode-block" id="FoldModel.fit_fourier_series">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.fit_fourier_series">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit_fourier_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold_frame_coordinate</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rotation_angle</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                           <span class="n">knowledge_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;fold_limb_rotation_angle&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the Fourier series.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fold_frame_coordinate : np.ndarray</span>
+<span class="sd">            The fold frame coordinate.</span>
+<span class="sd">        rotation_angle :  np.ndarray</span>
+<span class="sd">            The fold limb or axis rotation angle.</span>
+<span class="sd">        knowledge_type : str, optional</span>
+<span class="sd">            The type of knowledge, use &#39;fold_limb_rotation_angle&#39; or &#39;fold_axis_rotation_angle&#39;,</span>
+<span class="sd">            by default &#39;fold_limb_rotation_angle&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[float]</span>
+<span class="sd">            Returns the result of the optimisation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check the type of knowledge and generate x accordingly</span>
+        <span class="k">if</span> <span class="n">knowledge_type</span> <span class="o">==</span> <span class="s1">&#39;fold_axis_rotation_angle&#39;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">100</span><span class="p">)</span>
+
+        <span class="c1"># Create a FourierSeriesOptimiser instance</span>
+        <span class="n">fourier_optimiser</span> <span class="o">=</span> <span class="n">FourierSeriesOptimiser</span><span class="p">(</span><span class="n">fold_frame_coordinate</span><span class="p">,</span> <span class="n">rotation_angle</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geological_knowledge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="n">opt</span> <span class="o">=</span> <span class="n">fourier_optimiser</span><span class="o">.</span><span class="n">optimise</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">geological_knowledge</span><span class="p">[</span><span class="n">knowledge_type</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">opt</span><span class="o">.</span><span class="n">x</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="c1"># Optimise the Fourier series</span>
+            <span class="n">opt</span> <span class="o">=</span> <span class="n">fourier_optimiser</span><span class="o">.</span><span class="n">optimise</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">opt</span><span class="o">.</span><span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="FoldModel.calculate_folded_foliation_vectors">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.calculate_folded_foliation_vectors">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_folded_foliation_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the folded foliation vectors.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[float]</span>
+<span class="sd">            Returns the predicted bedding.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create and build fold event</span>
+        <span class="n">fold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_and_build_fold_event</span><span class="p">()</span>
+
+        <span class="c1"># Evaluate and normalize the gradient</span>
+        <span class="n">s1g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axial_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">evaluate_gradient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span><span class="p">)</span>
+        <span class="n">s1g</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">s1g</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># Get deformed orientation and normalize the fold direction</span>
+        <span class="n">fold_direction</span><span class="p">,</span> <span class="n">fold_axis</span><span class="p">,</span> <span class="n">gz</span> <span class="o">=</span> <span class="n">fold</span><span class="o">.</span><span class="n">get_deformed_orientation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_points</span><span class="p">)</span>
+        <span class="n">fold_direction</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">fold_direction</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># Correct any fold_direction vector to be consistent with the axial surface orientation</span>
+        <span class="n">dot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">s1g</span><span class="p">,</span> <span class="n">fold_direction</span><span class="p">)</span>
+        <span class="n">fold_direction</span><span class="p">[</span><span class="n">dot</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># Calculate predicted bedding and normalize it</span>
+        <span class="n">predicted_foliation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">fold_axis</span><span class="p">,</span> <span class="n">fold_direction</span><span class="p">)</span>
+        <span class="n">predicted_foliation</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">predicted_foliation</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># TODO write function that free up memory</span>
+        <span class="c1"># Free up memory</span>
+        <span class="k">del</span> <span class="n">fold_direction</span><span class="p">,</span> <span class="n">fold_axis</span><span class="p">,</span> <span class="n">fold</span><span class="p">,</span> <span class="n">dot</span><span class="p">,</span> <span class="n">s1g</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">predicted_foliation</span></div>
+
+
+<div class="viewcode-block" id="FoldModel.get_predicted_foliation">
+<a class="viewcode-back" href="../../../FoldOptLib.fold_modelling.html#FoldOptLib.fold_modelling.engine.FoldModel.get_predicted_foliation">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_predicted_foliation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axial_normal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the predicted foliation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axial_normal : np.ndarray</span>
+<span class="sd">            The axial foliation normal vector.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            Returns the normal vectors to the predicted foliation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialise_model</span><span class="p">()</span>
+
+        <span class="c1"># Build the fold frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_fold_frame</span><span class="p">(</span><span class="n">axial_normal</span><span class="p">)</span>
+
+        <span class="c1"># Create and build fold event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_and_build_fold_event</span><span class="p">()</span>
+
+        <span class="c1"># Calculate folded foliation vectors</span>
+        <span class="n">predicted_foliation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_folded_foliation_vectors</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">predicted_foliation</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">FoldOptLib</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

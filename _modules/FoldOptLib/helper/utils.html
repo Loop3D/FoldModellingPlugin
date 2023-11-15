@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoldOptLib.helper.utils &#8212; FoldOptLib 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FoldOptLib.helper.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">..from_loopstructural._svariogram</span> <span class="kn">import</span> <span class="n">SVariogram</span>
+<span class="kn">import</span> <span class="nn">mplstereonet</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+
+<div class="viewcode-block" id="calculate_semivariogram">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.calculate_semivariogram">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_semivariogram</span><span class="p">(</span><span class="n">fold_frame</span><span class="p">,</span> <span class="n">fold_rotation</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nlag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">svario</span> <span class="o">=</span> <span class="n">SVariogram</span><span class="p">(</span><span class="n">fold_frame</span><span class="p">,</span> <span class="n">fold_rotation</span><span class="p">)</span>
+    <span class="n">svario</span><span class="o">.</span><span class="n">calc_semivariogram</span><span class="p">(</span><span class="n">lag</span><span class="o">=</span><span class="n">lag</span><span class="p">,</span> <span class="n">nlag</span><span class="o">=</span><span class="n">nlag</span><span class="p">)</span>
+    <span class="n">wv</span> <span class="o">=</span> <span class="n">svario</span><span class="o">.</span><span class="n">find_wavelengths</span><span class="p">()</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">theta</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">wv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># py = wv[2]</span>
+
+    <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">svario</span><span class="o">.</span><span class="n">lags</span><span class="p">,</span> <span class="n">svario</span><span class="o">.</span><span class="n">variogram</span></div>
+
+
+
+<div class="viewcode-block" id="get_predicted_rotation_angle">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.get_predicted_rotation_angle">[docs]</a>
+<span class="k">def</span> <span class="nf">get_predicted_rotation_angle</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">fold_frame_coordinate</span><span class="p">):</span>
+    <span class="c1"># y_pred = np.tan(np.deg2rad(fourier_series(</span>
+    <span class="c1">#     fold_frame_coordinate, *theta)))</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">fourier_series</span><span class="p">(</span>
+        <span class="n">fold_frame_coordinate</span><span class="p">,</span> <span class="o">*</span><span class="n">theta</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y_pred</span></div>
+
+
+
+<div class="viewcode-block" id="fourier_series">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.fourier_series">[docs]</a>
+<span class="k">def</span> <span class="nf">fourier_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x</span>
+<span class="sd">    c0</span>
+<span class="sd">    c1</span>
+<span class="sd">    c2</span>
+<span class="sd">    w</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+    <span class="c1"># v.fill(c0)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">c0</span> <span class="o">+</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">w</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">c2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">w</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">v</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="fourier_series_x_intercepts">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.fourier_series_x_intercepts">[docs]</a>
+<span class="k">def</span> <span class="nf">fourier_series_x_intercepts</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">popt</span><span class="p">):</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">fourier_series</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">popt</span><span class="p">)</span>
+
+    <span class="n">foldrotm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">foldrotm</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">-</span> <span class="n">foldrotm</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">foldrotm</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">-</span> <span class="n">foldrotm</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">x_int</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">b</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">x_int2</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">c</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">x_intr</span> <span class="o">=</span> <span class="n">x_int</span> <span class="o">+</span> <span class="n">x_int2</span>
+    <span class="n">x_intr</span> <span class="o">/=</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">x_intr</span></div>
+
+
+
+<div class="viewcode-block" id="save_load_object">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.save_load_object">[docs]</a>
+<span class="k">def</span> <span class="nf">save_load_object</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;save&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Saves or loads a python object to/from a file using the dill library.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    obj (Any, optional): The python object to be saved.</span>
+<span class="sd">    file_path (str, optional): The file path where the object should be saved or loaded from.</span>
+<span class="sd">    mode (str, optional): The mode of operation. Must be either &#39;save&#39; or &#39;load&#39;. Defaults to &#39;save&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    Any: The loaded python object, if `mode` is set to &#39;load&#39;.</span>
+<span class="sd">    None: Otherwise.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">    ValueError: If `mode` is not set to either &#39;save&#39; or &#39;load&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;save&#39;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Object saved to file:&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;load&#39;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">loaded_obj</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Object loaded from file:&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loaded_obj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid mode. Must be either &#39;save&#39; or &#39;load&#39;.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="strike_dip_to_vectors">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.strike_dip_to_vectors">[docs]</a>
+<span class="k">def</span> <span class="nf">strike_dip_to_vectors</span><span class="p">(</span><span class="n">strike</span><span class="p">,</span> <span class="n">dip</span><span class="p">):</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">strike</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">s_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">strike</span><span class="p">)</span>
+    <span class="n">d_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">((</span><span class="n">dip</span><span class="p">))</span>
+    <span class="n">vec</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">d_r</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">s_r</span><span class="p">)</span>
+    <span class="n">vec</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">d_r</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">s_r</span><span class="p">)</span>
+    <span class="n">vec</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">d_r</span><span class="p">)</span>
+    <span class="n">vec</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">vec</span></div>
+
+
+
+<div class="viewcode-block" id="strike_dip_to_vector">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.strike_dip_to_vector">[docs]</a>
+<span class="k">def</span> <span class="nf">strike_dip_to_vector</span><span class="p">(</span><span class="n">strike</span><span class="p">,</span> <span class="n">dip</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the strike-dip vector given the strike and dip angles.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    strike (float): The strike angle in degrees.</span>
+<span class="sd">    dip (float): The dip angle in degrees.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    np.ndarray: The normalized strike-dip vector.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the inputs are of correct type</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">strike</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected strike to be a number, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">strike</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dip</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected dip to be a number, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">dip</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Convert degrees to radians</span>
+    <span class="n">s_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">strike</span><span class="p">)</span>
+    <span class="n">d_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">dip</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the components of the strike-dip vector</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">d_r</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">s_r</span><span class="p">)</span>
+    <span class="n">ny</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">d_r</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">s_r</span><span class="p">)</span>
+    <span class="n">nz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">d_r</span><span class="p">)</span>
+
+    <span class="c1"># Create the vector and normalize it</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">vec</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">vec</span></div>
+
+
+
+<div class="viewcode-block" id="normal_vector_to_strike_and_dip">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.normal_vector_to_strike_and_dip">[docs]</a>
+<span class="k">def</span> <span class="nf">normal_vector_to_strike_and_dip</span><span class="p">(</span><span class="n">normal_vector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the strike and dip angles given a normal vector.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    normal_vector (np.ndarray): The normal vector.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    np.ndarray: The strike and dip angles in degrees.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the input is a numpy array</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normal_vector</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Normal vector must be a numpy array.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Normalize the normal vector</span>
+    <span class="n">normal_vector</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">normal_vector</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># Calculate the dip angle</span>
+    <span class="n">dip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">normal_vector</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]))</span>
+
+    <span class="c1"># Calculate the strike angle</span>
+    <span class="n">strike</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">normal_vector</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">normal_vector</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">strike</span><span class="p">,</span> <span class="n">dip</span><span class="p">])</span><span class="o">.</span><span class="n">T</span></div>
+
+
+
+<div class="viewcode-block" id="rotate_vector">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.rotate_vector">[docs]</a>
+<span class="k">def</span> <span class="nf">rotate_vector</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rotate a vector by a given angle around the origin using a rotation matrix.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        v (ndarray): The vector to rotate.</span>
+<span class="sd">        angle (float): The angle to rotate the vector by in radians.</span>
+<span class="sd">        dimension (int): The dimension of the vector (2 or 3). Default is 2.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        ndarray: The rotated vector.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># Define the 2D rotation matrix</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)],</span>
+                      <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)]])</span>
+    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="c1"># Define the 3D rotation matrix</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Dimension must be either 2 or 3.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Rotate the vector by multiplying with the rotation matrix</span>
+    <span class="n">v_rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">v_rotated</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_rotated</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">v_rotated</span></div>
+
+
+
+<div class="viewcode-block" id="get_fold_curves">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.get_fold_curves">[docs]</a>
+<span class="k">def</span> <span class="nf">get_fold_curves</span><span class="p">(</span><span class="n">geological_feature</span><span class="p">,</span> <span class="n">fold_frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the fold axis and limb rotation angle curves of a geological feature.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    geological_feature: The geological feature to calculate the fold rotation angle curves for.</span>
+<span class="sd">    fold_frame (optional): The fold frame coordinate to use, default 0 for fold limb rotation angle.</span>
+<span class="sd">    for fold axis rotation angle use 1.</span>
+<span class="sd">    If not provided, the function will use a default axis.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    tuple: The x values and the corresponding fold curve values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the geological_feature has the required attributes</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">geological_feature</span><span class="p">,</span> <span class="s1">&#39;fold&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">geological_feature</span><span class="o">.</span><span class="n">fold</span><span class="p">,</span> <span class="s1">&#39;foldframe&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span>
+            <span class="n">geological_feature</span><span class="o">.</span><span class="n">fold</span><span class="p">,</span> <span class="s1">&#39;fold_axis_rotation&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">geological_feature</span><span class="o">.</span><span class="n">fold</span><span class="p">,</span>
+                                                                          <span class="s1">&#39;fold_limb_rotation&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;Geological feature must have a &#39;fold&#39; attribute with &#39;foldframe&#39;, &quot;</span>
+            <span class="s2">&quot;&#39;fold_axis_rotation&#39;, and &#39;fold_limb_rotation&#39; attributes.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Determine the axis to use for the calculation</span>
+    <span class="n">coordinate_to_use</span> <span class="o">=</span> <span class="n">fold_frame</span>
+
+    <span class="c1"># Calculate the fold frame coordinate values x and the fold rotation angle curve</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">geological_feature</span><span class="o">.</span><span class="n">fold</span><span class="o">.</span><span class="n">foldframe</span><span class="p">[</span><span class="n">coordinate_to_use</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                    <span class="n">geological_feature</span><span class="o">.</span><span class="n">fold</span><span class="o">.</span><span class="n">foldframe</span><span class="p">[</span><span class="n">coordinate_to_use</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">200</span><span class="p">)</span>
+    <span class="n">curve</span> <span class="o">=</span> <span class="n">geological_feature</span><span class="o">.</span><span class="n">fold</span><span class="o">.</span><span class="n">fold_axis_rotation</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">fold_frame</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">geological_feature</span><span class="o">.</span><span class="n">fold</span><span class="o">.</span><span class="n">fold_limb_rotation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">curve</span></div>
+
+
+
+<div class="viewcode-block" id="create_dict">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.create_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">create_dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strike</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">coord</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">fn</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">feature_name</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span>
+    <span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+                  <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span>
+                  <span class="s1">&#39;Z&#39;</span><span class="p">:</span> <span class="n">z</span><span class="p">,</span>
+                  <span class="s1">&#39;strike&#39;</span><span class="p">:</span> <span class="n">strike</span><span class="p">,</span>
+                  <span class="s1">&#39;dip&#39;</span><span class="p">:</span> <span class="n">dip</span><span class="p">,</span>
+                  <span class="s1">&#39;feature_name&#39;</span><span class="p">:</span> <span class="n">fn</span><span class="p">,</span>
+                  <span class="s1">&#39;coord&#39;</span><span class="p">:</span> <span class="n">c</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">dictionary</span></div>
+
+
+
+<div class="viewcode-block" id="create_gradient_dict">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.create_gradient_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">create_gradient_dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">nx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">feature_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">fn</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">feature_name</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span>
+    <span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+                  <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span>
+                  <span class="s1">&#39;Z&#39;</span><span class="p">:</span> <span class="n">z</span><span class="p">,</span>
+                  <span class="s1">&#39;gx&#39;</span><span class="p">:</span> <span class="n">nx</span><span class="p">,</span>
+                  <span class="s1">&#39;gy&#39;</span><span class="p">:</span> <span class="n">ny</span><span class="p">,</span>
+                  <span class="s1">&#39;gz&#39;</span><span class="p">:</span> <span class="n">nz</span><span class="p">,</span>
+                  <span class="s1">&#39;feature_name&#39;</span><span class="p">:</span> <span class="n">fn</span><span class="p">,</span>
+                  <span class="s1">&#39;coord&#39;</span><span class="p">:</span> <span class="n">c</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">dictionary</span></div>
+
+
+
+<div class="viewcode-block" id="create_fold_frame_dataset">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.create_fold_frame_dataset">[docs]</a>
+<span class="k">def</span> <span class="nf">create_fold_frame_dataset</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">strike</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dip</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">s1_ori</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">strike</span><span class="p">,</span> <span class="n">dip</span><span class="p">])</span>
+    <span class="n">xyz</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">regular_grid</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+    <span class="n">s1_orientation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">s1_ori</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">s1_dict</span> <span class="o">=</span> <span class="n">create_dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xyz</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span>
+                          <span class="n">y</span><span class="o">=</span><span class="n">xyz</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span>
+                          <span class="n">z</span><span class="o">=</span><span class="n">xyz</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span>
+                          <span class="n">strike</span><span class="o">=</span><span class="n">s1_orientation</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span>
+                          <span class="n">dip</span><span class="o">=</span><span class="n">s1_orientation</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span>
+                          <span class="n">feature_name</span><span class="o">=</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span>
+                          <span class="n">coord</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># Generate a dataset using s1 dictionary</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">s1_dict</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;strike&#39;</span><span class="p">,</span> <span class="s1">&#39;dip&#39;</span><span class="p">,</span> <span class="s1">&#39;feature_name&#39;</span><span class="p">,</span> <span class="s1">&#39;coord&#39;</span><span class="p">])</span>
+    <span class="c1"># Add y coordinate axis orientation. Y coordinate axis always perpendicular</span>
+    <span class="c1"># to the axial surface and roughly parallel to the fold axis</span>
+    <span class="n">s2y</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">s2s</span> <span class="o">=</span> <span class="n">s2y</span><span class="p">[[</span><span class="s1">&#39;strike&#39;</span><span class="p">,</span> <span class="s1">&#39;dip&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">s2s</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">90</span>
+    <span class="n">s2s</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">dip</span>
+    <span class="n">s2y</span><span class="p">[</span><span class="s1">&#39;strike&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s2s</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">s2y</span><span class="p">[</span><span class="s1">&#39;dip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s2s</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">s2y</span><span class="p">[</span><span class="s1">&#39;coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="c1"># Add y coordinate dictionary to s1 dataframe</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dataset</span><span class="p">,</span> <span class="n">s2y</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">xyz</span></div>
+
+
+
+<div class="viewcode-block" id="create_dataset">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.create_dataset">[docs]</a>
+<span class="k">def</span> <span class="nf">create_dataset</span><span class="p">(</span><span class="n">vec</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;s0&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Make a dataset from one unit vector and xyz points of the folded feature data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vec : np.ndarray</span>
+<span class="sd">        The unit vector to be used as the gradient.</span>
+<span class="sd">    points : np.ndarray</span>
+<span class="sd">        The xyz coordinates of the data points.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        The name of the feature, by default &#39;s0&#39;.</span>
+<span class="sd">    coord : int, optional</span>
+<span class="sd">        The coordinate, by default 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        A DataFrame where each row represents a data point with its coordinates (X, Y, Z),</span>
+<span class="sd">        gradient (gx, gy, gz), feature name, and coordinate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">points</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;gx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;gy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;gz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;feature_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coord</span>
+
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+
+<div class="viewcode-block" id="get_wavelength_guesses">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.get_wavelength_guesses">[docs]</a>
+<span class="k">def</span> <span class="nf">get_wavelength_guesses</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">180</span><span class="p">)</span>
+    <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">guess</span><span class="p">,</span> <span class="n">guess</span> <span class="o">/</span> <span class="mi">3</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sigma</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="objective_wrapper">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.objective_wrapper">[docs]</a>
+<span class="k">def</span> <span class="nf">objective_wrapper</span><span class="p">(</span><span class="n">func1</span><span class="p">,</span> <span class="n">func2</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">objective_function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">func2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">objective_function</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_intersection_lineation">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.calculate_intersection_lineation">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_intersection_lineation</span><span class="p">(</span><span class="n">axial_surface</span><span class="p">,</span> <span class="n">folded_foliation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the intersection lineation of the axial surface and the folded foliation.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    axial_surface (np.ndarray): The normal vector of the axial surface.</span>
+<span class="sd">    folded_foliation (np.ndarray): The normal vector of the folded foliation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    np.ndarray: The normalised intersection lineation vector.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the inputs are numpy arrays</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axial_surface</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Axial surface vector must be a numpy array.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">folded_foliation</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Folded foliation vector must be a numpy array.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check if the inputs have the same shape</span>
+    <span class="k">if</span> <span class="n">axial_surface</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">folded_foliation</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Axial surface and folded foliation arrays must have the same shape.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Calculate cross product of the axial surface and folded foliation normal vectors</span>
+    <span class="n">li</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">axial_surface</span><span class="p">,</span> <span class="n">folded_foliation</span><span class="p">)</span>
+
+    <span class="c1"># Normalise the intersection lineation vector</span>
+    <span class="n">li</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">li</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">li</span></div>
+
+
+
+<div class="viewcode-block" id="axial_plane_stereonet">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.axial_plane_stereonet">[docs]</a>
+<span class="k">def</span> <span class="nf">axial_plane_stereonet</span><span class="p">(</span><span class="n">strike</span><span class="p">,</span> <span class="n">dip</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Calculate the axial plane in a stereonet given the strike and dip angles.</span>
+<span class="sd">    credit: https://mplstereonet.readthedocs.io/en/latest/examples/axial_plane.html</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    strike (np.ndarray): The strike angles in degrees.</span>
+<span class="sd">    dip (np.ndarray): The dip angles in degrees.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    tuple: The axial strike and dip angles in degrees.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the inputs are numpy arrays</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">strike</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected strike to be a numpy array, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">strike</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dip</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected dip to be a numpy array, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">dip</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check if the inputs have the same shape</span>
+    <span class="k">if</span> <span class="n">strike</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">dip</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Strike and dip arrays must have the same shape.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Find the two modes</span>
+    <span class="n">centers</span> <span class="o">=</span> <span class="n">mplstereonet</span><span class="o">.</span><span class="n">kmeans</span><span class="p">(</span><span class="n">strike</span><span class="p">,</span> <span class="n">dip</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="s1">&#39;poles&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Fit a girdle to the two modes</span>
+    <span class="n">axis_s</span><span class="p">,</span> <span class="n">axis_d</span> <span class="o">=</span> <span class="n">mplstereonet</span><span class="o">.</span><span class="n">fit_girdle</span><span class="p">(</span><span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">centers</span><span class="p">),</span> <span class="n">measurement</span><span class="o">=</span><span class="s1">&#39;radians&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Find the midpoint</span>
+    <span class="n">mid</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mplstereonet</span><span class="o">.</span><span class="n">find_mean_vector</span><span class="p">(</span><span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">centers</span><span class="p">),</span> <span class="n">measurement</span><span class="o">=</span><span class="s1">&#39;radians&#39;</span><span class="p">)</span>
+    <span class="n">midx</span><span class="p">,</span> <span class="n">midy</span> <span class="o">=</span> <span class="n">mplstereonet</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="o">*</span><span class="n">mid</span><span class="p">)</span>
+
+    <span class="c1"># Find the axial plane by fitting another girdle to the midpoint and the pole of the plunge axis</span>
+    <span class="n">xp</span><span class="p">,</span> <span class="n">yp</span> <span class="o">=</span> <span class="n">mplstereonet</span><span class="o">.</span><span class="n">pole</span><span class="p">(</span><span class="n">axis_s</span><span class="p">,</span> <span class="n">axis_d</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">xp</span><span class="p">,</span> <span class="n">midx</span><span class="p">],</span> <span class="p">[</span><span class="n">yp</span><span class="p">,</span> <span class="n">midy</span><span class="p">]</span>
+    <span class="n">axial_s</span><span class="p">,</span> <span class="n">axial_dip</span> <span class="o">=</span> <span class="n">mplstereonet</span><span class="o">.</span><span class="n">fit_girdle</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="s1">&#39;radians&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">axial_s</span><span class="p">,</span> <span class="n">axial_dip</span></div>
+
+
+
+<div class="viewcode-block" id="clean_knowledge_dict">
+<a class="viewcode-back" href="../../../FoldOptLib.helper.html#FoldOptLib.helper.utils.clean_knowledge_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">clean_knowledge_dict</span><span class="p">(</span><span class="n">geological_knowledge</span><span class="p">):</span>
+    <span class="n">keys_to_delete</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">geological_knowledge</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys_to_delete</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">geological_knowledge</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">geological_knowledge</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">FoldOptLib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">FoldOptLib</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Rabii Chaarani.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
