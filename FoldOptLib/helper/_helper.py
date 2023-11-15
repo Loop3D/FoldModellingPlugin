@@ -1,6 +1,6 @@
 # from modified_loopstructural.extra_utils import *
 import numpy as np
-import joblib as jb
+# import joblib as jb
 from LoopStructural.modelling.features.fold import fourier_series
 # from uncertainty_quantification.fold_uncertainty import *
 # import dill
@@ -28,50 +28,13 @@ def fourier_series_2(x, theta):
     return np.rad2deg(np.arctan(v))
 
 
-def parallel(function, array, jobs=1):
-    results = jb.Parallel(n_jobs=jobs, verbose=1, prefer='threads')(jb.delayed(function)(i) for i in array)
-    results = np.asarray(results, dtype='object')
-    return results
+# def parallel(function, array, jobs=1):
+#     results = jb.Parallel(n_jobs=jobs, verbose=1, prefer='threads')(jb.delayed(function)(i) for i in array)
+#     results = np.asarray(results, dtype='object')
+#     return results
 
 
-def axial_plane_stereonet(strike, dip):
-    """
-    Calculate the axial plane in a stereonet given the strike and dip angles.
-    credit: https://mplstereonet.readthedocs.io/en/latest/examples/axial_plane.html
 
-    Parameters:
-    strike (np.ndarray): The strike angles in degrees.
-    dip (np.ndarray): The dip angles in degrees.
-
-    Returns:
-    tuple: The axial strike and dip angles in degrees.
-    """
-    # Check if the inputs are numpy arrays
-    if not isinstance(strike, np.ndarray):
-        raise TypeError(f"Expected strike to be a numpy array, got {type(strike).__name__}")
-    if not isinstance(dip, np.ndarray):
-        raise TypeError(f"Expected dip to be a numpy array, got {type(dip).__name__}")
-
-    # Check if the inputs have the same shape
-    if strike.shape != dip.shape:
-        raise ValueError("Strike and dip arrays must have the same shape.")
-
-    # Find the two modes
-    centers = mplstereonet.kmeans(strike, dip, num=2, measurement='poles')
-
-    # Fit a girdle to the two modes
-    axis_s, axis_d = mplstereonet.fit_girdle(*zip(*centers), measurement='radians')
-
-    # Find the midpoint
-    mid, _ = mplstereonet.find_mean_vector(*zip(*centers), measurement='radians')
-    midx, midy = mplstereonet.line(*mid)
-
-    # Find the axial plane by fitting another girdle to the midpoint and the pole of the plunge axis
-    xp, yp = mplstereonet.pole(axis_s, axis_d)
-    x, y = [xp, midx], [yp, midy]
-    axial_s, axial_dip = mplstereonet.fit_girdle(x, y, measurement='radians')
-
-    return axial_s, axial_dip
 
 
 def get_fold_curves(geological_feature, fold_frame=0):

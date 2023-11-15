@@ -1,0 +1,51 @@
+{% set name = "foldoptlib" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ environ.get('GIT_DESCRIBE_TAG', '') }}"
+
+source:
+  git_url: https://github.com/Loop3D/FoldOptLib
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install ."
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - numpy
+    - loopstructural
+    - scipy
+  host:
+    - pip
+    - python
+    - setuptools
+    - numpy
+  run:
+    - numpy
+    - scipy
+    - python>=3.9
+    - loopstructural
+    - ipywidgets
+    - mplstereonet
+
+test:
+  import:
+    - numpy
+    - pandas
+    - loopstructural
+
+
+about:
+  home: "https://github.com/Loop3D/FoldOptLib"
+  license: MIT
+  license_family: MIT
+  license_file:
+  summary: "Fold Geometry Optimisers for LoopStructural and Map2Loop"
+  doc_url: "https://loop3d.github.io/FoldOptLib/"
+  dev_url:
+
+extra:
+  recipe-maintainers:
+    - rabii-chaarani
