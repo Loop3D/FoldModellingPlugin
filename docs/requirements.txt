@@ -1,5 +1,6 @@
 sphinx
 numpy
+cython
 loopstructural>=1.4.10
 ipywidgets
 mplstereonet
