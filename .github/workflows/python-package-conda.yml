@@ -5,7 +5,7 @@ on:
     types: [edited, created, published]
 jobs:
   conda-deploy:
-    name: Uploading to Loop3d for python ${{ matrix.os }})
+    name: Uploading to FoldOptLib for python ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -13,7 +13,7 @@ jobs:
         os: ["ubuntu-latest",  "windows-latest","macos-latest"]
         python-version: ["3.9"]
     steps:
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
