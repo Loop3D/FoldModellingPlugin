@@ -1,4 +1,4 @@
-#TODO : Make a simplified fold frame builder. isolate codes from GeologicalModel
+# TODO : Make a simplified fold frame builder. isolate codes from GeologicalModel
 # class from get_interpolator() and create_and_add_fold_frame() methods.
 # Use directly structural_frame_builder and FDI interpolator.
 
@@ -41,7 +41,7 @@ from ...interpolators import TetMesh
 from ...modelling.features.fault import FaultSegment
 from ...interpolators import DiscreteInterpolator
 
-from ...modelling.features.builders import (
+from .features.builders import (
     FaultBuilder,
     GeologicalFeatureBuilder,
     StructuralFrameBuilder,
@@ -73,15 +73,9 @@ from ...modelling.intrusions import IntrusionFrameBuilder
 
 class SimpleFoldFrameBuilder:
 
-    def __init__(self):
+    def __init__(self, data, origin, maximum, rescale=True, reuse_supports=False, nsteps=1):
 
         self.bounding_box = None
-        # print('tet')
-        if logfile:
-            self.logfile = logfile
-            log_to_file(logfile, level=loglevel)
-
-        logger.info("Initialising geological model")
         self.features = []
         self.feature_name_index = {}
         self._data = None
@@ -113,69 +107,39 @@ class SimpleFoldFrameBuilder:
         self.bounding_box /= self.scale_factor
         self.support = {}
         self.reuse_supports = reuse_supports
-        if self.reuse_supports:
-            logger.warning(
-                "Supports are shared between geological features \n"
-                "this may cause unexpected behaviour and should only\n"
-                "be use by advanced users"
-            )
-        logger.info("Reusing interpolation supports: {}".format(self.reuse_supports))
         self.stratigraphic_column = None
 
         self.tol = 1e-10 * np.max(self.bounding_box[1, :] - self.bounding_box[0, :])
         self._dtm = None
 
-    def get_interpolator(
-        self,
-        interpolatortype="FDI",
-        nelements=1e4,
-        buffer=0.2,
-        element_volume=None,
-        **kwargs,
-    ):
+    def set_interpolator(self, nelements, buffer=0.2, element_volume=None):
         """
-        Returns an interpolator given the arguments, also constructs a
-        support for a discrete interpolator
+        Set up an interpolator for a structured grid in 3D space.
+
+        This function creates a structured grid interpolator based on the bounding box,
+        total volume, and number of elements. It calculates the step vector for a regular
+        cube and ensures that the number of steps in each direction is adequate for
+        creating an interpolator.
 
         Parameters
         ----------
-        interpolatortype : string
-            define the interpolator type
+        bb : ndarray
+            2x3 array representing the bounding box with min and max coordinates.
         nelements : int
-            number of elements in the interpolator
-        buffer : double or numpy array 3x1
-            value(s) between 0,1 specifying the buffer around the bounding box
-        data_bb : bool
-            whether to use the model boundary or the boundary around
-        kwargs : no kwargs used, this just catches any additional arguments
+            Number of elements in the structured grid.
+        element_volume : float, optional
+            Volume of a single element. If None, it is calculated from box_vol and nelements.
 
         Returns
         -------
-        interpolator : GeologicalInterpolator
-            A geological interpolator
+        FDI
+            An instance of the FDI class representing the structured grid interpolator.
 
-        Notes
-        -----
-        This method will create a geological interpolator for the bounding box of the model. A
-        buffer area is added to the interpolation region to avoid boundaries and issues with faults.
-        This function wil create a :class:`LoopStructural.interpolators.GeologicalInterpolator` which can either be:
-        A discrete interpolator :class:`LoopStructural.interpolators.DiscreteInterpolator`
-
-        - 'FDI' :class:`LoopStructural.interpolators.FiniteDifferenceInterpolator`
-        - 'PLI' :class:`LoopStructural.interpolators.PiecewiseLinearInterpolator`
-        - 'P1'  :class:`LoopStructural.interpolators.P1Interpolator`
-        - 'DFI' :class:`LoopStructural.interpolators.DiscreteFoldInterpolator`
-        - 'P2'  :class:`LoopStructural.interpolators.P2Interpolator`
-        or
-
-        - 'surfe'  :class:`LoopStructural.interpolators.SurfeRBFInterpolator`
-
-        The discrete interpolators will require a support.
-
-        - 'PLI','DFI','P1Interpolator','P2Interpolator' :class:`LoopStructural.interpolators.supports.TetMesh` or you can provide another
-          mesh builder which returns :class:`LoopStructural.interpolators.support.UnStructuredTetMesh`
-
-        - 'FDI' :class:`LoopStructural.interpolators.supports.StructuredGrid`
+        Raises
+        ------
+        ValueError
+            If the number of steps in any direction is less than 3, making it impossible to
+            create a valid interpolator.
         """
         bb = np.copy(self.bounding_box)
         # add a buffer to the interpolation domain, this is necessary for
@@ -186,137 +150,78 @@ class SimpleFoldFrameBuilder:
         bb[0, :] -= buffer  # *(bb[1,:]-bb[0,:])
         bb[1, :] += buffer  # *(bb[1,:]-bb[0,:])
         box_vol = (bb[1, 0] - bb[0, 0]) * (bb[1, 1] - bb[0, 1]) * (bb[1, 2] - bb[0, 2])
-        if interpolatortype == "PLI" and pli:
-            if element_volume is None:
-                # nelements /= 5
-                element_volume = box_vol / nelements
-            # calculate the step vector of a regular cube
-            step_vector = np.zeros(3)
-            step_vector[:] = element_volume ** (1.0 / 3.0)
-            # step_vector /= np.array([1,1,2])
-            # number of steps is the length of the box / step vector
-            nsteps = np.ceil((bb[1, :] - bb[0, :]) / step_vector).astype(int)
-            if np.any(np.less(nsteps, 3)):
-                axis_labels = ["x", "y", "z"]
-                for i in range(3):
-                    if nsteps[i] < 3:
-                        logger.error(
-                            f"Number of steps in direction {axis_labels[i]} is too small, try increasing nelements"
-                        )
-                logger.error("Cannot create interpolator: number of steps is too small")
-                raise ValueError("Number of steps too small cannot create interpolator")
-            # create a structured grid using the origin and number of steps
-            if self.reuse_supports:
-                mesh_id = f"mesh_{nelements}"
-                mesh = self.support.get(
-                    mesh_id,
-                    TetMesh(origin=bb[0, :], nsteps=nsteps, step_vector=step_vector),
-                )
-                if mesh_id not in self.support:
-                    self.support[mesh_id] = mesh
-            else:
-                if "meshbuilder" in kwargs:
-                    mesh = kwargs["meshbuilder"](bb, nelements)
-                else:
-                    mesh = TetMesh(
-                        origin=bb[0, :], nsteps=nsteps, step_vector=step_vector
-                    )
-            logger.info(
-                "Creating regular tetrahedron mesh with %i elements \n"
-                "for modelling using PLI" % (mesh.ntetra)
-            )
 
-            return PLI(mesh)
-        if interpolatortype == "P2":
-            if element_volume is None:
-                # nelements /= 5
-                element_volume = box_vol / nelements
-            # calculate the step vector of a regular cube
-            step_vector = np.zeros(3)
-            step_vector[:] = element_volume ** (1.0 / 3.0)
-            # step_vector /= np.array([1,1,2])
-            # number of steps is the length of the box / step vector
-            nsteps = np.ceil((bb[1, :] - bb[0, :]) / step_vector).astype(int)
-            if "meshbuilder" in kwargs:
-                mesh = kwargs["meshbuilder"](bb, nelements)
-            else:
-                raise NotImplementedError(
-                    "Cannot use P2 interpolator without external mesh"
-                )
-            logger.info(
-                "Creating regular tetrahedron mesh with %i elements \n"
-                "for modelling using P2" % (mesh.ntetra)
+        # Find the volume of one element
+        if element_volume is None:
+            element_volume = box_vol / nelements
+        # Calculate the step vector of a regular cube
+        step_vector = np.zeros(3)
+        step_vector[:] = element_volume ** (1.0 / 3.0)
+        # Number of steps is the length of the box / step vector
+        nsteps = np.ceil((bb[1, :] - bb[0, :]) / step_vector).astype(int)
+        if np.any(np.less(nsteps, 3)):
+            axis_labels = ["x", "y", "z"]
+            for i in range(3):
+                if nsteps[i] < 3:
+                    # logger.error(
+                    #     f"Number of steps in direction {axis_labels[i]} is too small, try increasing nelements"
+                    # )
+                    raise ValueError("Number of steps too small cannot create interpolator")
+        # Create a structured grid using the origin and number of steps
+        if self.reuse_supports:
+            grid_id = f"grid_{nelements}"
+            grid = self.support.get(
+                grid_id,
+                StructuredGrid(origin=bb[0, :], nsteps=nsteps, step_vector=step_vector),
             )
-            return P2Interpolator(mesh)
-        if interpolatortype == "FDI":
+            if grid_id not in self.support:
+                self.support[grid_id] = grid
+        else:
+            grid = StructuredGrid(origin=bb[0, :], nsteps=nsteps, step_vector=step_vector)
 
-            # find the volume of one element
-            if element_volume is None:
-                element_volume = box_vol / nelements
-            # calculate the step vector of a regular cube
-            step_vector = np.zeros(3)
-            step_vector[:] = element_volume ** (1.0 / 3.0)
-            # number of steps is the length of the box / step vector
-            nsteps = np.ceil((bb[1, :] - bb[0, :]) / step_vector).astype(int)
-            if np.any(np.less(nsteps, 3)):
-                logger.error("Cannot create interpolator: number of steps is too small")
-                axis_labels = ["x", "y", "z"]
-                for i in range(3):
-                    if nsteps[i] < 3:
-                        logger.error(
-                            f"Number of steps in direction {axis_labels[i]} is too small, try increasing nelements"
-                        )
-                raise ValueError("Number of steps too small cannot create interpolator")
-            # create a structured grid using the origin and number of steps
-            if self.reuse_supports:
-                grid_id = "grid_{}".format(nelements)
-                grid = self.support.get(
-                    grid_id,
-                    StructuredGrid(
-                        origin=bb[0, :], nsteps=nsteps, step_vector=step_vector
-                    ),
-                )
-                if grid_id not in self.support:
-                    self.support[grid_id] = grid
-            else:
-                grid = StructuredGrid(
-                    origin=bb[0, :], nsteps=nsteps, step_vector=step_vector
-                )
-            logger.info(
-                f"Creating regular grid with {grid.n_elements} elements \n"
-                "for modelling using FDI"
-            )
-            return FDI(grid)
+        # logger.info(
+        #     f"Creating regular grid with {grid.n_elements} elements \n"
+        #     "for modelling using FDI"
+        # )
+        return FDI(grid)
 
-        if interpolatortype == "DFI" and dfi is True:
-            if element_volume is None:
-                nelements /= 5
-                element_volume = box_vol / nelements
-            # calculate the step vector of a regular cube
-            step_vector = np.zeros(3)
-            step_vector[:] = element_volume ** (1.0 / 3.0)
-            # number of steps is the length of the box / step vector
-            nsteps = np.ceil((bb[1, :] - bb[0, :]) / step_vector).astype(int)
-            # create a structured grid using the origin and number of steps
-            if "meshbuilder" in kwargs:
-                mesh = kwargs["meshbuilder"].build(bb, nelements)
-            else:
-                mesh = kwargs.get(
-                    "mesh",
-                    TetMesh(origin=bb[0, :], nsteps=nsteps, step_vector=step_vector),
-                )
-            logger.info(
-                f"Creating regular tetrahedron mesh with {mesh.ntetra} elements \n"
-                "for modelling using DFI"
-            )
-            return DFI(mesh, kwargs["fold"])
-        if interpolatortype == "Surfe" or interpolatortype == "surfe":
-            # move import of surfe to where we actually try and use it
-            if not surfe:
-                logger.warning("Cannot import Surfe, try another interpolator")
-                raise ImportError("Cannot import surfepy, try pip install surfe")
-            method = kwargs.get("method", "single_surface")
-            logger.info("Using surfe interpolator")
-            return Surfe(method)
-        logger.warning("No interpolator")
-        raise InterpolatorError("Could not create interpolator")
+    def create_and_add_fold_frame(self, foldframe_data, tol=None, **kwargs):
+        """
+        Parameters
+        ----------
+        foldframe_data : string
+            unique string in feature_name column
+
+        kwargs
+
+        Returns
+        -------
+        fold_frame : FoldFrame
+            the created fold frame
+        """
+        # if not self.check_inialisation():
+        #     return False
+        if tol is None:
+            tol = self.tol
+
+        # create fault frame
+        interpolator = self.set_interpolator(**kwargs)
+        #
+        fold_frame_builder = StructuralFrameBuilder(
+            interpolator, name=foldframe_data, frame=FoldFrame, **kwargs
+        )
+        # add data
+        fold_frame_data = self.data[self.data["feature_name"] == foldframe_data]
+        fold_frame_builder.add_data_from_data_frame(fold_frame_data)
+        # self._add_faults(fold_frame_builder[0])
+        # self._add_faults(fold_frame_builder[1])
+        # self._add_faults(fold_frame_builder[2])
+        kwargs["tol"] = tol
+        fold_frame_builder.setup(**kwargs)
+        fold_frame = fold_frame_builder.frame
+
+        fold_frame.type = FeatureType.STRUCTURALFRAME
+        fold_frame.builder = fold_frame_builder
+        # self._add_feature(fold_frame)
+
+        return fold_frame

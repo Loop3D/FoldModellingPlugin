@@ -365,7 +365,6 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 
 
 def axial_plane_stereonet(strike, dip):
-
     """
 
     Calculate the axial plane in a stereonet given the strike and dip angles.
@@ -404,6 +403,53 @@ def axial_plane_stereonet(strike, dip):
     axial_s, axial_dip = mplstereonet.fit_girdle(x, y, measurement='radians')
 
     return axial_s, axial_dip
+
+
+def get_vectors(normal):
+    length = np.linalg.norm(normal, axis=1)[:, None]
+    normal /= length  # np.linalg.norm(normal,axis=1)[:,None]
+    strikedip = normal_vector_to_strike_and_dip(normal)
+    strike_vec = get_strike_vector(strikedip[:, 0])
+    strike_vec /= np.linalg.norm(strike_vec, axis=0)[None, :]
+    dip_vec = np.cross(
+        strike_vec, normal, axisa=0, axisb=1
+    ).T  # (strikedip[:, 0], strikedip[:, 1])
+    dip_vec /= np.linalg.norm(dip_vec, axis=0)[None, :]
+    return strike_vec * length.T, dip_vec * length.T
+
+
+def get_strike_vector(strike):
+    """
+
+    Parameters
+    ----------
+    strike
+
+    Returns
+    -------
+
+    """
+
+    v = np.array(
+        [
+            np.sin(np.deg2rad(-strike)),
+            -np.cos(np.deg2rad(-strike)),
+            np.zeros(strike.shape[0]),
+        ]
+    )
+
+    return v
+
+
+def get_dip_vector(strike, dip):
+    v = np.array(
+        [
+            -np.cos(np.deg2rad(-strike)) * np.cos(-np.deg2rad(dip)),
+            np.sin(np.deg2rad(-strike)) * np.cos(-np.deg2rad(dip)),
+            np.sin(-np.deg2rad(dip)),
+        ]
+    )
+    return v
 
 
 def clean_knowledge_dict(geological_knowledge):
