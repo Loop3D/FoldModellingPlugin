@@ -1,27 +1,27 @@
 <h1 align="center">Fold modelling - Axial surface optimisation tutorial Part I</h1>
 
 
-#### Overview
+###Overview
 
-This tutorial demonstrates the use of a newly developed computational method for approximating fold axial surfaces. This section integrates algorithms proposed by Laurent et al. (2016) [Laurent et al. (2016)](https://linkinghub.elsevier.com/retrieve/pii/S0012821X16305209) with a data-driven approach from [Grose et al. (2017)](https://gmd.copernicus.org/articles/14/3915/2021/) and the geological likelihood functions of [Grose et al. (2019)](https://linkinghub.elsevier.com/retrieve/pii/S0191814118303638) to address the challenge of estimating planar fold axial surfaces in poorly outcropping regions.
+This tutorial demonstrates the use of a newly developed computational method for approximating fold axial surfaces. This section integrates algorithms proposed by Laurent et al.  <2016>`_ `Laurent et al.  <2016>`_` <https://linkinghub.elsevier.com/retrieve/pii/S0012821X16305209>`_ with a data-driven approach from `Grose et al.  <2017>`_` <https://gmd.copernicus.org/articles/14/3915/2021/>`_ and the geological likelihood functions of `Grose et al.  <2019>`_` <https://linkinghub.elsevier.com/retrieve/pii/S0191814118303638>`_ to address the challenge of estimating planar fold axial surfaces in poorly outcropping regions.
 
-#### Solving the Axial Surface Optimization Problem
+###Solving the Axial Surface Optimization Problem
 
 The axial surface optimisation problem is addressed through a multi-step computational algorithm that involves:
 
-1. **Maximum Likelihood Estimation (MLE)**: The method uses MLE to estimate model parameters that define the axial surface: strike and dip or a 3D unit vector. MLE finds the most probable parameters (like the 3D unit vector representing the axial surface) by maximising a likelihood function based on the observed data and/or geological knowledge.
+1. ``Maximum Likelihood Estimation  <MLE>`_``: The method uses MLE to estimate model parameters that define the axial surface: strike and dip or a 3D unit vector. MLE finds the most probable parameters  <like the 3D unit vector representing the axial surface>`_ by maximising a likelihood function based on the observed data and/or geological knowledge.
 
-2. **Incorporating Geological Knowledge**: A key aspect of this approach is the inclusion of geological knowledge constraints, such as fold tightness, asymmetry, and axial traces. These constraints are used to guide the optimisation process, ensuring that the resulting model aligns with observations and Structural Geological concepts.
+2. ``Incorporating Geological Knowledge``: A key aspect of this approach is the inclusion of geological knowledge constraints, such as fold tightness, asymmetry, and axial traces. These constraints are used to guide the optimisation process, ensuring that the resulting model aligns with observations and Structural Geological concepts.
 
-3. **Optimisation Techniques**: The method leverages optimisation techniques like the Differential Evolution algorithm, which helps in navigating complex parameter spaces and ensures a robust search for the optimal axial surface.
+3. ``Optimisation Techniques``: The method leverages optimisation techniques like the Differential Evolution algorithm, which helps in navigating complex parameter spaces and ensures a robust search for the optimal axial surface.
 
-4. **Objective Function the relationship between the folded foliation and axial surface**: An objective function is used to evaluate the geometrical relationship between the axial surface and the folded surface, ensuring the geometrical compatibility between the folded foliation and its axial surface.
+4. ``Objective Function the relationship between the folded foliation and axial surface``: An objective function is used to evaluate the geometrical relationship between the axial surface and the folded surface, ensuring the geometrical compatibility between the folded foliation and its axial surface.
 
-5. **Final Solution**: The result of this method is a data-driven and geologically informed model of the axial surface.
+5. ``Final Solution``: The result of this method is a data-driven and geologically informed model of the axial surface.
 
-##### Pre-requisites: 
-- **[LoopStructural-Fold Frame tutorial](https://github.com/Loop3D/LoopStructural/blob/master/examples/2_fold/plot_adding_folds_to_surfaces.py)**
-- **[Fourier series optimisation tutorial](https://github.com/Loop3D/FoldOptLib/blob/main/FoldOptLib/examples/fourier_series_optimisation.ipynb)**
+####Pre-requisites: 
+- ```LoopStructural-Fold Frame tutorial` <https://github.com/Loop3D/LoopStructural/blob/master/examples/2_fold/plot_adding_folds_to_surfaces.py>`_``
+- ```Fourier series optimisation tutorial` <https://github.com/Loop3D/FoldOptLib/blob/main/FoldOptLib/examples/fourier_series_optimisation.ipynb>`_``
 
 
 .. code-block:: python
@@ -54,7 +54,7 @@ The axial surface optimisation problem is addressed through a multi-step computa
     import ipywidgets as widgets
     from ipywidgets import IntProgress, interact, interactive
 
-# I. Creation of a synthetic model  
+I. Creation of a synthetic model  
 
 Like the Fourier series tutorial, we will start by creating a synthetic model. The synthetic model is the reference from within which we will sample data points that will be used to infer the axial surface.  
 
@@ -157,27 +157,27 @@ Like the Fourier series tutorial, we will start by creating a synthetic model. T
     theta = [0, 2e-2, 2e-2, 500]
     fold_limb_rotation = fold_limb_rotation_profile(*theta)
 
-**5. Calculate the normal vectors to the folded foliation**
+``5. Calculate the normal vectors to the folded foliation``
 
 The next lines of code define the orientation of the folded foliation within the fold frame. 
 Let's break down the steps to understand the computations involved in this code snippet.
 
-###### **- Defining Fold Axis Orientation**
+#####``- Defining Fold Axis Orientation``
 Initially, the code defines a fold axis orientation based on a given plunge direction and plunge angle. The `define_fold_axis_orientation` function is used for this purpose, which returns the fold axis orientation vector.
 
-###### **- Creating a Fold Event**
+#####``- Creating a Fold Event``
 A `FoldEvent` object is created, representing a geological fold event. This object is initialised with the fold frame `s1` and the `fold_limb_rotation`. Later, the fold axis orientation vector `fold_axis` is assigned to this `FoldEvent` object.
 
-###### **- Computing Deformed Orientation**
+#####``- Computing Deformed Orientation``
 The `get_deformed_orientation` method is invoked on the `FoldEvent` object to compute the deformed orientation of the folded foliation. This method returns three values: the fold direction vectors, the fold axis vector, and the gradient of the scalar field of the X-axis of the fold frame.
 
-###### **- Normalizing Vectors**
+#####``- Normalizing Vectors``
 The gradient of S1, `dgx` and the fold direction vectors are normalized to ensure they have unit lengths.
 
-###### **- Correct fold direction vectors with S1**
+#####``- Correct fold direction vectors with S1``
 The dot product between `dgx` and the fold direction vectors is calculated to align any inverted fold direction vectors with the axial surface's direction to ensure consistency. If the dot product is negative, the fold direction vectors are inverted.
 
-###### **- Computing Normal Vectors**
+#####``- Computing Normal Vectors``
 The normal vectors of the folded foliation are computed using the cross-product of the fold axis and the fold direction vectors. The cross-product yields a vector that is perpendicular to the plane defined by the fold axis and fold direction vectors.
 
 .. code-block:: python
@@ -260,11 +260,11 @@ The normal vectors of the folded foliation are computed using the cross-product 
     # viewer.display()
     # viewer.interactive()
 
-# II. Axial surface optimisation
+II. Axial surface optimisation
 
-- **write a brief intro of what will happen in this section**
+- ``write a brief intro of what will happen in this section``
 
-###### **1. Sampling S<sub>0</sub> from the reference model**  
+#####``1. Sampling S<sub>0</sub> from the reference model``  
 
 Now, we sample a random dataset from the reference model we just built. 
 
@@ -295,6 +295,7 @@ Now, we sample a random dataset from the reference model we just built.
     
     
     display(interactive_sampling)
+    
 
 Now, we create a dataset called `test_data` using the random sample. The dataset should be a *Pandas Dataframe*.
 
@@ -326,9 +327,9 @@ The `AxialSurfaceOptimiser` class is designed to optimise the axial surfaces bas
 ---
 -`data`: the input data for optimisation which should be a pd.DataFrame  
 -`bounding_box`: The bounding box for the optimisation. Which should be a list or a NumPy array.   
--`geological_knowledge`: The geological knowledge used for optimisation, by default None. If used, the input should be a nested python dictionary. See [Fourier series optimisation tutorial](https://github.com/Loop3D/FoldOptLib/blob/main/FoldOptLib/examples/fourier_series_optimisation.ipynb) for the structure of the dictionary.   
--`**kwargs`: Other optional parameters for optimisation.  
-* `axial_surface_guess`: an estimate of the axial surface to provide to the algorithm to speed up optimisation. It should be a list in the following format: [strike, dip]  
+-`geological_knowledge`: The geological knowledge used for optimisation, by default None. If used, the input should be a nested python dictionary. See `Fourier series optimisation tutorial` <https://github.com/Loop3D/FoldOptLib/blob/main/FoldOptLib/examples/fourier_series_optimisation.ipynb>`_ for the structure of the dictionary.   
+-```kwargs`: Other optional parameters for optimisation.  
+* `axial_surface_guess`: an estimate of the axial surface to provide to the algorithm to speed up optimisation. It should be a list in the following format: `strike, dip`  
 * `av_fold_axis`: True for cylindrical folds and False for noncylindrical folds. 
 It can include SciPy optimisation parameters for differential evolution and trust-constr methods.  
     `mode`: the optimisation mode to use, can be 'restricted' or 'unrestricted', by default 'unrestricted'. only unrestricted mode is supported for now.  
@@ -336,7 +337,7 @@ It can include SciPy optimisation parameters for differential evolution and trus
     by default 'differential_evolution'.  
 
 
-In the following example, we will use only data (test_data) to find the optimal axial surface. 
+In the following example, we will use only data  <test_data>`_ to find the optimal axial surface. 
 
 .. code-block:: python
 
@@ -359,4 +360,5 @@ In the following example, we will use only data (test_data) to find the optimal 
 
 .. code-block:: python
 
+    
 
