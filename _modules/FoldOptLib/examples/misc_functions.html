@@ -35,16 +35,43 @@
 
 <div class="viewcode-block" id="sample_random_dataset">
 <a class="viewcode-back" href="../../../FoldOptLib.examples.html#FoldOptLib.examples.misc_functions.sample_random_dataset">[docs]</a>
-<span class="k">def</span> <span class="nf">sample_random_dataset</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">180</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">sample_random_dataset</span><span class="p">(</span><span class="n">bounding_box</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">180</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a random dataset of 3D coordinates within a specified model bounding box.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bounding_box : ndarray</span>
+<span class="sd">        A 3x3 array where each row represents the minimum and maximum values of x and y coordinates.</span>
+<span class="sd">    sample_size : int, optional</span>
+<span class="sd">        The number of random samples to generate. Default is 2.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        The seed for the random number generator for reproducibility. Default is 180.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    random_xyz : ndarray</span>
+<span class="sd">        A sample_size x 3 array of random 3D coordinates within the specified bounding box.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Set the seed for the random number generator for reproducible results</span>
     <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
-    <span class="c1"># select all xy points with z = 0</span>
-    <span class="n">xyz</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">grid</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">xmax</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="n">ymax</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="c1"># Extract the maximum x and y coordinates from the bounding box</span>
+    <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">bounding_box</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">bounding_box</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Define the maximum z coordinate (fixed at 0 to only sample model&#39;s surface)</span>
     <span class="n">zmax</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="n">xn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">xmax</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">sample_size</span><span class="p">)</span>
-    <span class="n">yn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">ymax</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">sample_size</span><span class="p">)</span>
+
+    <span class="c1"># Generate &#39;sample_size&#39; number of random x-coordinates</span>
+    <span class="n">xn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">bounding_box</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">high</span><span class="o">=</span><span class="n">xmax</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">sample_size</span><span class="p">)</span>
+
+    <span class="c1"># Generate &#39;sample_size&#39; number of random y-coordinates</span>
+    <span class="n">yn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">bounding_box</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">high</span><span class="o">=</span><span class="n">ymax</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">sample_size</span><span class="p">)</span>
+
+    <span class="c1"># Create an array of z-coordinates, all set to &#39;zmax&#39; (fixed z-coordinate for all points)</span>
     <span class="n">zn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">zmax</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">)</span>
+
+    <span class="c1"># Combine the x, y, and z coordinates into a single 2D array (shape: sample_size x 3)</span>
     <span class="n">random_xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xn</span><span class="p">,</span> <span class="n">yn</span><span class="p">,</span> <span class="n">zn</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
 
     <span class="k">return</span> <span class="n">random_xyz</span></div>

@@ -41,8 +41,24 @@
 <span id="foldoptlib-examples-misc-functions-module"></span><h2>FoldOptLib.examples.misc_functions module<a class="headerlink" href="#module-FoldOptLib.examples.misc_functions" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="FoldOptLib.examples.misc_functions.sample_random_dataset">
-<span class="sig-prename descclassname"><span class="pre">FoldOptLib.examples.misc_functions.</span></span><span class="sig-name descname"><span class="pre">sample_random_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/examples/misc_functions.html#sample_random_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.examples.misc_functions.sample_random_dataset" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">FoldOptLib.examples.misc_functions.</span></span><span class="sig-name descname"><span class="pre">sample_random_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FoldOptLib/examples/misc_functions.html#sample_random_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FoldOptLib.examples.misc_functions.sample_random_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a random dataset of 3D coordinates within a specified model bounding box.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bounding_box</strong> (<em>ndarray</em>) – A 3x3 array where each row represents the minimum and maximum values of x and y coordinates.</p></li>
+<li><p><strong>sample_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of random samples to generate. Default is 2.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed for the random number generator for reproducibility. Default is 180.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>random_xyz</strong> – A sample_size x 3 array of random 3D coordinates within the specified bounding box.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-FoldOptLib.examples">
