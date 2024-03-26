@@ -1,4 +1,5 @@
 from abc import ABC
+import gc
 from typing import Dict, Any, Optional, Union, Tuple
 import numpy as np
 import pandas as pd
@@ -166,6 +167,9 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         # Calculate the loglikelihood of the axial surface
         loglikelihood = loglikelihood_axial_surface(angle_difference) + geological_knowledge(x)
 
+        del angle_difference
+        gc.collect()
+
         return loglikelihood
 
     def mle_optimisation(self, strike_dip: Tuple[float, float]):
@@ -193,6 +197,10 @@ class AxialSurfaceOptimiser(FoldOptimiser):
 
         predicted_foliation = self.fold_engine.get_predicted_foliation(axial_normal)
         logpdf = self.loglikelihood(axial_normal, predicted_foliation, self.geo_objective)
+
+        del predicted_foliation, axial_normal
+        gc.collect()
+
         return logpdf
 
     def angle_optimisation(self, strike_dip: Tuple[float, float]):
@@ -219,6 +227,10 @@ class AxialSurfaceOptimiser(FoldOptimiser):
         axial_normal /= np.linalg.norm(axial_normal)
         predicted_foliation = self.fold_engine.get_predicted_foliation(axial_normal)
         angle_difference = is_axial_plane_compatible(predicted_foliation, self.gradient_data)
+
+        del predicted_foliation, axial_normal
+        gc.collect()
+
         return angle_difference
 
     def setup_optimisation(self, geological_knowledge: Optional[Dict[str, Any]] = None):

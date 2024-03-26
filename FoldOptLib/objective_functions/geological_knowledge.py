@@ -51,7 +51,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
                     'fold_axis_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
                 },
                 'fold_axial_surface': {
-                    'axial_surface': {'lb':10, 'ub':10, 'mu':10, 'kappa':10, 'w':10}
+                    'axial_surface': {'lb':10, 'ub':10, 'mu':[0.,1.,0.], 'kappa':10, 'w':10}
                 }
             }
                 lb and ub are the lower and the upper bounds of the constraints and are used only for a restricted
