@@ -64,7 +64,7 @@ jobs:
   
   conda-deploy:
     name: Building conda package for python ${{ matrix.os }})
-    needs: ["documentation-test", "continuous-integration"]
+    needs: "continuous-integration"
     runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
@@ -98,7 +98,7 @@ jobs:
           path: conda
 
   make_sdist:
-    needs: ["documentation-test", "continuous-integration"]
+    needs: "continuous-integration"
     name: Make SDist
     runs-on: ubuntu-latest
     steps:
