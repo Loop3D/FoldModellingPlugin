@@ -17,8 +17,6 @@ class FoldFrameBuilder(BaseBuilder):
         pass
 
     def build(self):
-        # This method is concrete and should have an implementation.
-        # Since the diagram does not specify what it should do, it's just a pass here.
         pass
 
     def evaluate_scalar_value(self):
