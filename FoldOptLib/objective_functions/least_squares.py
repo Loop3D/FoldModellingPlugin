@@ -42,7 +42,7 @@ class LeastSquaresFunctions:
         rotation_angle : float
             Either the calculated fold limb or axis rotation angles.
         fold_frame : np.ndarray
-            The fold frame z or y.
+            The fold frame coordinate z or y.
         knowledge_constraints : Callable
             A callable function that calculate the likelihood of input knowledge constraints.
         kwargs : Dict[str, Any]
