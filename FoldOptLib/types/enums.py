@@ -7,7 +7,8 @@ class DataType(IntEnum):
     GeologicalKnowledge = 1
     BoundingBox = 2
 
-class ObjectiveType(IntEnum):
+
+class KnowledgeType(IntEnum):
     Asymmetry = 0
     AxialTrace = 1
     FoldWavelength = 2
@@ -16,12 +17,15 @@ class ObjectiveType(IntEnum):
     HingeAngle = 5
     AxialSurface = 6
 
-class DistributionType(IntEnum):
-    Normal = 0
-    VonMisesFisher = 1
 
 class OptimisationType(IntEnum):
     Angle = 0
     MaximumLikelihoodEstimation = 1
     LeastSquares = 2
     Probabilistic = 3
+
+
+class LogLikelihoodType(IntEnum):
+    Normal = 0
+    VonMisesFisher = 1
+    FourierSeries = 2
