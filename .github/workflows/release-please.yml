@@ -151,4 +151,4 @@ jobs:
           skip_existing: true
           verbose: true
           user: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
+          password: ${{ secrets.PYPI_API_TOKEN }}
