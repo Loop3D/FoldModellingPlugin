@@ -28,13 +28,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ${{ fromJSON(vars.BUILD_OS)}}
-        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS)}}
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
 
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ["3.9", "3.10", "3.11"]
       - name: Installing dependencies
         shell: bash -l {0}
         run: |
@@ -70,12 +70,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS)}}
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
+          python-version: ["3.9", "3.10", "3.11"]
 
       - uses: actions/checkout@v4
       - name: update submodules
@@ -121,7 +121,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS)}}
+        python-version: ["3.9", "3.10", "3.11"]
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
       - uses: actions/download-artifact@v4
