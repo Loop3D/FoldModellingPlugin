@@ -22,7 +22,7 @@ jobs:
 #          commit_message: "style: style fixes by ruff and autoformatting by black"
 
   continuous-integration:
-    name: Continuous integration ${{ matrix.os }} python ${{ matrix.python-version }}
+    name: Continuous integration ${{ matrix.os }} python ["3.9", "3.10", "3.11"]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -94,7 +94,7 @@ jobs:
       - name: upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: conda-${{ matrix.os }}-${{ matrix.python-version }}
+          name: conda-${{ matrix.os }}-["3.9", "3.10", "3.11"]
           path: conda
 
   make_sdist:
@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: conda-${{ matrix.os }}-${{ matrix.python-version }}
+          name: conda-${{ matrix.os }}-["3.9", "3.10", "3.11"]
           path: conda
       - uses: conda-incubator/setup-miniconda@v3
       - name: upload all files to conda-forge
