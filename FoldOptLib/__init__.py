@@ -1,4 +1,5 @@
 # from .fold_modelling import FoldModel, BaseFoldFrameBuilder
+from .types.enums import KnowledgeType, OptimisationType, LogLikelihoodType, DataType
 from .helper import utils
 from .input import CheckInputData, InputDataProcessor
 from .objective_functions import GeologicalKnowledgeFunctions, VonMisesFisher, LeastSquaresFunctions, \
