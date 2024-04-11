@@ -2,7 +2,7 @@ name: Upload FoldOptLib to PyPI
 
 on:
   release:
-    types: [edited, created, published]
+    types: [ edited, created, published ]
 
 permissions:
   contents: read
@@ -11,8 +11,8 @@ jobs:
   build-and-test:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        python-version: [ "3.9", "3.10", "3.11" ]
         include:
           - os: windows-latest
             compiler: "msvc"
@@ -50,6 +50,9 @@ jobs:
       - name: Build and Test
         run: |
           python setup.py sdist bdist_wheel
+  
+  
+  
 
   publish:
     needs: build-and-test

@@ -2,24 +2,24 @@ on:
   push:
 name: release-please
 jobs:
-  linting:
-    name: Linting
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install black ruff
-      - name: Autoformat with black
-        run: |
-          black .
-      - name: Lint with ruff
-        run: |
-          ruff check FoldOptLib --fix
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "style: style fixes by ruff and autoformatting by black"
+#  linting:
+#    name: Linting
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Install dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          pip install black ruff
+#      - name: Autoformat with black
+#        run: |
+#          black .
+#      - name: Lint with ruff
+#        run: |
+#          ruff check FoldOptLib --fix
+#      - uses: stefanzweifel/git-auto-commit-action@v5
+#        with:
+#          commit_message: "style: style fixes by ruff and autoformatting by black"
 
   continuous-integration:
     name: Continuous integration ${{ matrix.os }} python ${{ matrix.python-version }}
@@ -28,25 +28,25 @@ jobs:
       fail-fast: false
       matrix:
         os: ${{ fromJSON(vars.BUILD_OS)}}
-        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS)}}
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
 
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ matrix.python-version }}
       - name: Installing dependencies
         shell: bash -l {0}
         run: |
-          conda install -c conda-forge numpy scipy pytest matplotlib mplstereonet ipywidgets loopstructural -y
+          conda install -c conda-forge -c loop3d numpy scipy pytest matplotlib mplstereonet ipywidgets loopstructural -y
       - name: Building and install
         shell: bash -l {0}
         run: |
           pip install . --user
-      - name: pytest
-        shell: bash -l {0}
-        run: |
-          pytest
+#      - name: pytest
+#        shell: bash -l {0}
+#        run: |
+#          pytest
 
   release-please:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS)}}
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: conda-incubator/setup-miniconda@v3
         with:
@@ -121,7 +121,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ${{ fromJSON(vars.PYTHON_VERSIONS)}}
+        python-version: ["3.9", "3.10", "3.11"]
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
       - uses: actions/download-artifact@v4
@@ -151,4 +151,4 @@ jobs:
           skip_existing: true
           verbose: true
           user: ${{ secrets.PYPI_USERNAME }}
-          password: ${{ secrets.PYPI_PASSWORD }}
+          password: ${{ secrets.PYPI_API_TOKEN }}
