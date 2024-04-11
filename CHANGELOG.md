@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/Loop3D/FoldOptLib/compare/v0.1.5...v0.1.6) (2024-04-10)
+
+
+### Bug Fixes
+
+* use correct PYPI token ([d00ccc6](https://github.com/Loop3D/FoldOptLib/commit/d00ccc6f004a7bdca22a808424fe1afcd2f19c5b))
+
 ## [0.1.5](https://github.com/Loop3D/FoldOptLib/compare/v0.1.4...v0.1.5) (2024-04-10)
 
 
