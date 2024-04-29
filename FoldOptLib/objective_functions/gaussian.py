@@ -1,4 +1,4 @@
-from ..types.enums import LogLikelihoodType
+from ..datatypes.enums import LikelihoodType
 import numpy
 from typing import Union
 from ..helper.utils import get_predicted_rotation_angle
@@ -6,7 +6,7 @@ from scipy.stats import vonmises
 import beartype
 
 
-class LogLikelihood:
+class LikelihoodFunction:
     """
     This class contains the functions to calculate the log-likelihood of a Gaussian distribution and the VonMisesFisher
     distribution.
@@ -122,12 +122,12 @@ class LogLikelihood:
     def map_functions():
 
         return {
-            LogLikelihoodType.Normal: LogLikelihood.gaussian_log_likelihood,
-            LogLikelihoodType.VonMisesFisher: LogLikelihood.loglikelihood_axial_surface,
-            LogLikelihoodType.FourierSeries: LogLikelihood.loglikelihood_fourier_series
+            LikelihoodType.LogNormal: LikelihoodFunction.gaussian_log_likelihood,
+            LikelihoodType.VonMisesFisher: LikelihoodFunction.loglikelihood_axial_surface,
+            LikelihoodType.FourierSeries: LikelihoodFunction.loglikelihood_fourier_series
         }
 
     @beartype.beartype
-    def get_function(self, loglikelihood_type: LogLikelihoodType):
+    def __call__(self, likelihood_type: LikelihoodType):
 
-        return self.functions_map[loglikelihood_type]
+        return self.functions_map[likelihood_type]

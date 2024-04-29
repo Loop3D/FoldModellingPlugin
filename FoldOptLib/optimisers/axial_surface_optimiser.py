@@ -14,7 +14,7 @@ from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
 from ..objective_functions import VonMisesFisher
 from ..objective_functions import is_axial_plane_compatible
 from ..fold_modelling import FoldModel
-from ..objective_functions import loglikelihood_axial_surface
+from ..objective_functions import LikelihoodFunction
 
 
 def calculate_intersection_lineation(axial_surface, folded_foliation):

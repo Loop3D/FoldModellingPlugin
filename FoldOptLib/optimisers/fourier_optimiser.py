@@ -10,7 +10,7 @@ import numpy as np
 
 from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 from .fold_optimiser import FoldOptimiser
-from ..objective_functions.gaussian import loglikelihood_fourier_series
+from ..objective_functions.gaussian import LikelihoodFunction, LikelihoodType
 from ..helper.utils import *
 
 

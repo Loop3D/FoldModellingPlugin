@@ -1,28 +1,30 @@
-import numpy as np
+import numpy
 from scipy.optimize import NonlinearConstraint, BFGS
 # from LoopStructural.modelling.features.fold import fourier_series
 from typing import Union, Dict, List
-from ..helper._helper import *
 from ..helper.utils import *
 from ..splot.splot_processor import SPlotProcessor
 from .von_mises_fisher import VonMisesFisher
-from .gaussian import gaussian_log_likelihood
+from .gaussian import LikelihoodFunction
+from ..datatypes import LikelihoodType, KnowledgeType, InputGeologicalKnowledge
+import beartype
 
 
 def check_fourier_parameters(theta):
-    if not isinstance(theta, np.ndarray):
+    if not isinstance(theta, numpy.ndarray):
         raise TypeError("`theta` should be a numpy array.")
     if len(theta) < 4:
         raise ValueError("`theta` should have at least 4 Fourier series parameters.")
 
 
+@beartype.beartype
 class GeologicalKnowledgeFunctions(SPlotProcessor):
     """
     Base class for geological knowledge objective functions
 
     """
 
-    def __init__(self, constraints: Dict[str, float]):
+    def __init__(self, input_knowledge: InputGeologicalKnowledge):
 
         # TODO add attribute to use any custom function otherwise use gaussian likelihood
         """
@@ -33,57 +35,36 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         x : np.ndarray
             The values of the fold frame coordinates (0 or 1) used to calculate the fitted fold rotation angle curve.
 
-        constraints : Dict[str, float]
-            The constraints for the geological knowledge.
-            The constraints dictionary should have the following structure:
-            {
-                'fold_limb_rotation_angle': {
-                    'tightness': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-                    'asymmetry': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-                    'fold_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-                    'axial_trace_1': {'mu':10, 'sigma':10},
-                    'axial_traces_2': {'mu':10, 'sigma':10},
-                    'axial_traces_3': {'mu':10, 'sigma':10},
-                    'axial_traces_4': {'mu':10, 'sigma':10},
-                },
-                'fold_axis_rotation_angle': {
-                    'hinge_angle': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-                    'fold_axis_wavelength': {'lb':10, 'ub':10, 'mu':10, 'sigma':10, 'w':10},
-                },
-                'fold_axial_surface': {
-                    'axial_surface': {'lb':10, 'ub':10, 'mu':[0.,1.,0.], 'kappa':10, 'w':10}
-                }
-            }
-                lb and ub are the lower and the upper bounds of the constraints and are used only for a restricted
-                optimisation mode.
-                #TODO Add initialisation check for dictionary
+        input_knowledge : InputGeologicalKnowledge
+            The input geological knowledge constraints.
 
         """
-        # Initialize the x values, constraints
+
+        # Initialise the x values, constraints
         SPlotProcessor.__init__(self)
         self.x = None
-        self.constraints = constraints
+        self.input_knowledge = input_knowledge
 
         # Define the constraint names
         self.constraint_names = ['asymmetry', 'tightness', 'fold_wavelength',
                                  'axial_trace', 'hinge_angle',
                                  'fold_axis_wavelength', 'axial_surface']
 
-        # Initialize the constraint function map
-        self.objective_functions_map = None
+        # Initialise the objective function map
+        self.objective_functions_map = self.create_objective_functions_map()
 
         # Define the intercept function and splot function
         self.intercept_function = fourier_series_x_intercepts
         self.splot_function = fourier_series
 
-    def axial_surface_objective_function(self, v: np.ndarray) -> float:
+    def axial_surface_objective_function(self, vector: np.ndarray) -> float:
         """
         Objective function for the axial surface.
         This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.
 
         Parameters
         ----------
-        v : np.ndarray
+        vector : numpy.ndarray
             the unit vector that represents the axial surface.
             This is evaluated every iteration in the optimisation process
 
@@ -91,35 +72,21 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         -------
         float
             The logpdf value from the VonMisesFisher distribution.
-
-         Raises
-        ------
-        KeyError
-        If the required keys are not found in the constraints dictionary.
-
         """
-        # Check if the required keys exist in the constraints dictionary
-        # if 'axial_surface' not in self.constraints:
-        #     raise KeyError("'axial_surface' key not found in constraints dictionary.")
-        # if 'mu' not in self.constraints['axial_surface']:
-        #     raise KeyError("'mu' key not found in 'axial_surface' dictionary.")
-        # if 'kappa' not in self.constraints['axial_surface']:
-        #     raise KeyError("'kappa' key not found in 'axial_surface' dictionary.")
 
         # Extract parameters for the VonMisesFisher distribution
-        mu = self.constraints['axial_surface']['mu']
-        kappa = self.constraints['axial_surface']['kappa']
-        w = self.constraints['axial_surface']['w']
-
-        # Create a VonMisesFisher distribution with the given parameters
-        vmf = VonMisesFisher(mu, kappa)
+        # Create a VonMisesFisher distribution with the given parameters mu and kappa
+        vmf = VonMisesFisher(
+            self.input_knowledge(KnowledgeType.AxialSurface).mu,
+            self.input_knowledge(KnowledgeType.AxialSurface).kappa,
+        )
 
         # Calculate the logpdf of the input array
-        vmf_logpdf = vmf.logpdf(v) * w
+        vmf_logpdf = vmf.logpdf(vector) * self.input_knowledge(KnowledgeType.AxialSurface).weight
 
         return vmf_logpdf
 
-    def axial_trace_objective_function(self, theta: np.ndarray) -> Union[int, float]:
+    def axial_trace_objective_function(self, theta: numpy.ndarray) -> Union[int, float]:
         """
         Calculate the objective function for the 'axial_trace' constraint.
 
@@ -151,16 +118,17 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             # Initialize the likelihood to 0
             likelihood = 0
             # Iterate over the knowledge constraints dictionary that have "axial_trace" in their key
-            for key, trace in filter(lambda item: "axial_trace" in item[0], self.constraints.items()):
+            for key, trace in filter(lambda item: "axial_trace" in item[0],
+                                     self.input_knowledge(KnowledgeType.AxialTrace).items()):
                 # Get the mu, sigma, and weight values of a given axial trace
                 # These values represent the mean and standard deviation of the location of a given axial trace
-                mu = trace['mu']
-                sigma = trace['sigma']
-                w = trace['w']
+                mu = trace.mu
+                sigma = trace.sigma
+                w = trace.weight
                 # Calculate the distance between mu and the axial trace
                 dist = mu - intercepts
                 # Update the likelihood using the Gaussian log likelihood function
-                likelihood += -gaussian_log_likelihood(intercepts[np.argmin(dist)], mu, sigma) * w
+                likelihood += -LikelihoodFunction(LikelihoodType.LogNormal)(intercepts[np.argmin(dist)], mu, sigma) * w
 
         return likelihood
 
@@ -192,21 +160,20 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         # If not, an exception will be raised
         check_fourier_parameters(theta)
 
-        # Get the mu and sigma values from the constraints dictionary
+        # Get the mu and sigma values
         # These values represent the mean and standard deviation of the fold wavelength
-        mu = self.constraints['fold_wavelength']['mu']
-        sigma = self.constraints['fold_wavelength']['sigma']
-
         # Calculate the likelihood of the fold wavelength
         # The likelihood is calculated using the Gaussian log likelihood function
-        likelihood = -gaussian_log_likelihood(theta[3], mu, sigma)
+        likelihood = -LikelihoodFunction(LikelihoodType.LogNormal)(theta[3],
+                                                                   self.input_knowledge(
+                                                                       KnowledgeType.FoldWavelength).mu,
+                                                                   self.input_knowledge(
+                                                                       KnowledgeType.FoldWavelength).sigma
+                                                                   )
 
-        # Get the weight of the constraint
         # The weight is used to adjust the influence of this constraint on the overall objective function
-        w = self.constraints['fold_wavelength']['w']
-
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= w
+        likelihood *= self.input_knowledge(KnowledgeType.FoldWavelength).weight
 
         return likelihood
 
@@ -240,19 +207,17 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Get the mu and sigma values from the constraints dictionary
         # These values represent the mean and standard deviation of the fold axis wavelength
-        mu = self.constraints['axis_wavelength']['mu']
-        sigma = self.constraints['axis_wavelength']['sigma']
-
         # Calculate the likelihood of the fold axis rotation angle wavelength
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -gaussian_log_likelihood(theta[3], mu, sigma)
+        likelihood = -LikelihoodFunction(LikelihoodType.LogNormal)(
+            theta[3],
+            self.input_knowledge(KnowledgeType.AxisWavelength).mu,
+            self.input_knowledge(KnowledgeType.AxisWavelength).sigma
+        )
 
-        # Get the weight of the constraint
         # The weight is used to adjust the influence of this constraint on the overall objective function
-        w = self.constraints['axis_wavelength']['w']
-
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= w
+        likelihood *= self.input_knowledge(KnowledgeType.AxisWavelength).weight
 
         return likelihood
 
@@ -286,19 +251,19 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Get the mu, sigma, and weight values from the constraints dictionary
         # These values represent the mean, standard deviation, and weight of the fold tightness
-        mu = self.constraints['tightness']['mu']
-        sigma = self.constraints['tightness']['sigma']
-        w = self.constraints['tightness']['w']
-
         # Calculate the tightness of the fold
         tightness = self.calculate_tightness(theta)
 
         # Calculate the likelihood of the fold tightness
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -gaussian_log_likelihood(tightness, mu, sigma)
+        likelihood = -LikelihoodFunction(LikelihoodType.LogNormal)(
+            tightness,
+            self.input_knowledge(KnowledgeType.Tightness).mu,
+            self.input_knowledge(KnowledgeType.Tightness).sigma
+        )
 
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= w
+        likelihood *= self.input_knowledge(KnowledgeType.Tightness).weight
 
         return likelihood
 
@@ -332,19 +297,19 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Get the mu, sigma, and weight values from the constraints dictionary
         # These values represent the mean, standard deviation, and weight of the fold hinge angle
-        mu = self.constraints['hinge_angle']['mu']
-        sigma = self.constraints['hinge_angle']['sigma']
-        w = self.constraints['hinge_angle']['w']
-
         # Calculate the hinge angle of the fold
         hinge_angle = self.calculate_tightness(theta)
 
         # Calculate the likelihood of the fold hinge angle
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -gaussian_log_likelihood(hinge_angle, mu, sigma)
+        likelihood = -LikelihoodFunction(LikelihoodType.LogNormal)(
+            hinge_angle,
+            self.input_knowledge(KnowledgeType.HingeAngle).mu,
+            self.input_knowledge(KnowledgeType.HingeAngle).sigma
+        )
 
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= w
+        likelihood *= self.input_knowledge(KnowledgeType.HingeAngle).weight
 
         return likelihood
 
@@ -378,23 +343,22 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Get the mu, sigma, and weight values from the constraints dictionary
         # These values represent the mean, standard deviation, and weight of the fold asymmetry degree
-        mu = self.constraints['asymmetry']['mu']
-        sigma = self.constraints['asymmetry']['sigma']
-        w = self.constraints['asymmetry']['w']
-
         # Calculate the asymmetry of the fold
         asymmetry = self.calculate_asymmetry(theta)
 
         # Calculate the likelihood of the fold asymmetry
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -gaussian_log_likelihood(asymmetry, mu, sigma)
+        likelihood = -LikelihoodFunction(LikelihoodType.LogNormal)(asymmetry,
+                                                                   self.input_knowledge(KnowledgeType.Asymmetry).mu,
+                                                                   self.input_knowledge(KnowledgeType.Asymmetry).sigma
+                                                                   )
 
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= w
+        likelihood *= self.input_knowledge(KnowledgeType.Asymmetry).weight
 
         return likelihood
 
-    def setup_objective_functions(self):
+    def create_objective_functions_map(self):
         """
         Setup the mapping between constraint names and their corresponding objective function methods.
 
@@ -403,22 +367,24 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         function based on the constraint name.
         """
         # Create a dictionary to map the constraint names to their corresponding objective function methods
-        self.objective_functions_map = {
+        objective_functions_map = {
 
-            'asymmetry': self.asymmetry_objective_function,
+            KnowledgeType.Asymmetry: self.asymmetry_objective_function,
 
-            'tightness': self.tightness_objective_function,
+            KnowledgeType.Tightness: self.tightness_objective_function,
 
-            'fold_wavelength': self.wavelength_objective_function,
+            KnowledgeType.FoldWavelength: self.wavelength_objective_function,
 
-            'fold_axis_wavelength': self.fold_axis_wavelength_objective_function,
+            KnowledgeType.AxisWavelength: self.fold_axis_wavelength_objective_function,
 
-            'axial_trace': self.axial_trace_objective_function,
+            KnowledgeType.AxialTrace: self.axial_trace_objective_function,
 
-            'hinge_angle': self.hinge_angle_objective_function,
+            KnowledgeType.HingeAngle: self.hinge_angle_objective_function,
 
-            'axial_surface': self.axial_surface_objective_function
+            KnowledgeType.AxialSurface: self.axial_surface_objective_function
         }
+
+        return objective_functions_map
 
     def __call__(self, theta: np.ndarray) -> float:
         """
@@ -442,24 +408,18 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         TypeError
             If `theta` is not a numpy array.
         """
-        # Check if theta is an array and has at least 4 parameters
-        # If not, an exception will be raised
-        # self.check_fourier_parameters(theta)
-
-        # Setup the constraint objective functions
-        self.setup_objective_functions()
 
         # Initialize the total objective function value to 0
         total_objective_value = 0
         # Iterate over all constraint names
-        for key in self.constraint_names:
+        for knowledge_type in KnowledgeType:
             # If the constraint is in the constraints dictionary
-            if key in self.constraints:
+            if self.input_knowledge(knowledge_type) is not None:
                 # Add the objective function value for this constraint to the total
-                total_objective_value += self.objective_functions_map[key](theta)
+                total_objective_value += self.objective_functions_map[knowledge_type](theta)
             else:
                 # If the constraint is not in the constraints dictionary, do nothing
-                pass
+                total_objective_value += 0
 
         # Return the total objective function value
         return total_objective_value
@@ -485,13 +445,11 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         TypeError
             If the constraint info is not a dictionary.
         """
-        # Setup the constraint functions
-        self.setup_objective_functions()
 
         # Initialize the list of constraints
         constraints = []
         # Iterate over all constraints
-        for constraint_name, constraint_info in self.constraints.items():
+        for constraint_name, constraint_info in self.input_knowledge.items():
             # Check if constraint_info is a dictionary
             if not isinstance(constraint_info, dict):
                 raise TypeError("`constraint_info` should be a dictionary.")
@@ -503,7 +461,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             sigma = constraint_info['sigma']
 
             # Calculate the negative Gaussian log likelihood for a range of values between the lower and upper bounds
-            val = -gaussian_log_likelihood(np.linspace(lb, ub, 100), mu, sigma)
+            val = -LikelihoodFunction(LikelihoodType.LogNormal)(np.linspace(lb, ub, 100), mu, sigma)
             # Create a NonlinearConstraint object for this constraint
             nlc = NonlinearConstraint(self.objective_functions_map[constraint_name],
                                       val.min(), val.max(),

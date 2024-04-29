@@ -80,7 +80,7 @@ class CheckInputData:
             True if the format is correct, otherwise raises an error.
         """
 
-        # Define the expected keys for different types of inner dictionaries
+        # Define the expected keys for different datatypes of inner dictionaries
         general_keys = {'mu', 'sigma', 'w'}
         # axial_trace_keys = ['mu', 'sigma', 'w']
         axial_surface_keys = {'mu', 'kappa', 'w'}
