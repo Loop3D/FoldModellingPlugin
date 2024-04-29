@@ -1,15 +1,19 @@
-import pandas as pd
-from typing import List, Optional, Dict
-import numpy
+from ..datatypes import InputGeologicalKnowledge
 from .input_data_checker import CheckInputData
 from ..helper.utils import *
 from LoopStructural import BoundingBox
 
+import numpy
+import pandas as pd
+from typing import List, Optional, Dict
+import beartype
 
+
+@beartype.beartype
 class InputDataProcessor(CheckInputData):
 
     def __init__(self, data: pd.DataFrame, bounding_box: BoundingBox,
-                 geological_knowledge: Dict = None) -> None:
+                 geological_knowledge: InputGeologicalKnowledge = None) -> None:
         """
         Constructs all the necessary attributes for the InputDataProcessor object.
 
@@ -22,13 +26,13 @@ class InputDataProcessor(CheckInputData):
         geological_knowledge : Dict, optional
             geological knowledge dictionary.
         """
-        super().__init__(data, bounding_box, geological_knowledge)
+        super().__init__(data)
         self.data = data
         self.bounding_box = bounding_box
         self.knowledge_constraints = geological_knowledge
 
     def process_data(self):
-        self.check_input_data()
+        self.check_foliation_data()
         if 'strike' in self.data.columns and 'dip' in self.data.columns:
             strike = self.data['strike'].to_numpy()
             dip = self.data['dip'].to_numpy()

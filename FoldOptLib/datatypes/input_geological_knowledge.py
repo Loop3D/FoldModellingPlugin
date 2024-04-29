@@ -20,13 +20,13 @@ class InputGeologicalKnowledge:
 
     def __post_init__(self):
         self.knowledge_map = {
-            KnowledgeType.Asymmetry: self.asymmetry,
-            KnowledgeType.AxialTrace: self.axial_trace,
-            KnowledgeType.FoldWavelength: self.fold_wavelength,
-            KnowledgeType.AxisWavelength: self.axis_wavelength,
-            KnowledgeType.AxialSurface: self.axial_surface,
-            KnowledgeType.Tightness: self.tightness,
-            KnowledgeType.HingeAngle: self.hinge_line,
+            KnowledgeType.ASYMMETRY: self.asymmetry,
+            KnowledgeType.AXIALTRACE: self.axial_trace,
+            KnowledgeType.FOLDWAVELENGTH: self.fold_wavelength,
+            KnowledgeType.AXISWAVELENGTH: self.axis_wavelength,
+            KnowledgeType.AXIALSURFACE: self.axial_surface,
+            KnowledgeType.TIGHTNESS: self.tightness,
+            KnowledgeType.HINGEANGLE: self.hinge_line,
         }
 
         for knowledge_type in range(len(KnowledgeType)):

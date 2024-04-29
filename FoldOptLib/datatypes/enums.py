@@ -3,29 +3,29 @@ from enum import IntEnum
 
 class DataType(IntEnum):
     FoldedAxialSurface = 0
-    FoldedFoliation = 0
-    GeologicalKnowledge = 1
-    BoundingBox = 2
+    FoldedFoliation = 1
+    KNOWLEDGE = 2
+    BOUNDINGBOX = 3
 
 
 class KnowledgeType(IntEnum):
-    Asymmetry = 0
-    AxialTrace = 1
-    FoldWavelength = 2
-    AxisWavelength = 3
-    Tightness = 4
-    HingeAngle = 5
-    AxialSurface = 6
+    ASYMMETRY = 0
+    AXIALTRACE = 1
+    FOLDWAVELENGTH = 2
+    AXISWAVELENGTH = 3
+    TIGHTNESS = 4
+    HINGEANGLE = 5
+    AXIALSURFACE = 6
 
 
 class OptimisationType(IntEnum):
-    Angle = 0
-    MaximumLikelihoodEstimation = 1
-    LeastSquares = 2
-    Probabilistic = 3
+    ANGLE = 0
+    MLE = 1
+    LEASTSQUARES = 2
+    PROBABILISTIC = 3
 
 
 class LikelihoodType(IntEnum):
-    LogNormal = 0
-    VonMisesFisher = 1
-    FourierSeries = 2
+    LOGNORMAL = 0
+    VMF = 1
+    FOURIER = 2

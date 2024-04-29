@@ -122,9 +122,9 @@ class LikelihoodFunction:
     def map_functions():
 
         return {
-            LikelihoodType.LogNormal: LikelihoodFunction.gaussian_log_likelihood,
-            LikelihoodType.VonMisesFisher: LikelihoodFunction.loglikelihood_axial_surface,
-            LikelihoodType.FourierSeries: LikelihoodFunction.loglikelihood_fourier_series
+            LikelihoodType.LOGNORMAL: LikelihoodFunction.gaussian_log_likelihood,
+            LikelihoodType.VMF: LikelihoodFunction.loglikelihood_axial_surface,
+            LikelihoodType.FOURIER: LikelihoodFunction.loglikelihood_fourier_series
         }
 
     @beartype.beartype
