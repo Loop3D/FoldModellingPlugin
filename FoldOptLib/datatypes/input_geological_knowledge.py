@@ -4,6 +4,7 @@ from .probability_distributions import NormalDistribution, VonMisesFisherDistrib
 import beartype
 from typing import Dict, Union, Optional, List
 
+
 @beartype.beartype
 @dataclass
 class InputGeologicalKnowledge:
@@ -16,7 +17,6 @@ class InputGeologicalKnowledge:
     axial_surface: Optional[VonMisesFisherDistribution] = None
     knowledge_map: Dict[KnowledgeType, Union[NormalDistribution, VonMisesFisherDistribution]] = field(init=False)
     filledflags: List[bool] = field(default_factory=lambda: [False] * len(KnowledgeType))
-
 
     def __post_init__(self):
         self.knowledge_map = {
@@ -36,7 +36,6 @@ class InputGeologicalKnowledge:
                     self.knowledge_map[knowledge_type] is not None
                     and self.filledflags[knowledge_type] is False
             ):
-
                 self.filledflags[knowledge_type] = True
 
     def __call__(self, input_knowledge: KnowledgeType):
