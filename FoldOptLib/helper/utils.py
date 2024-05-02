@@ -327,13 +327,6 @@ def get_wavelength_guesses(guess, size):
     return np.random.normal(mu, abs(sigma), size)
 
 
-def objective_wrapper(func1, func2):
-    def objective_function(x):
-        return func1(x) + func2(x)
-
-    return objective_function
-
-
 def calculate_intersection_lineation(axial_surface, folded_foliation):
     """
     Calculate the intersection lineation of the axial surface and the folded foliation.
@@ -365,7 +358,6 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 
 
 def axial_plane_stereonet(strike, dip):
-
     """
 
     Calculate the axial plane in a stereonet given the strike and dip angles.
@@ -412,3 +404,10 @@ def clean_knowledge_dict(geological_knowledge):
         del geological_knowledge[key]
 
     return geological_knowledge
+
+
+def objective_wrapper(func1, func2):
+    def objective_function(x):
+        return func1(x) + func2(x)
+
+    return objective_function
