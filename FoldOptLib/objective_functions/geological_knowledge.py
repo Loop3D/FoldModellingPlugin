@@ -5,8 +5,8 @@ from typing import Union, Dict, List
 from ..helper.utils import *
 from ..splot.splot_processor import SPlotProcessor
 from .von_mises_fisher import VonMisesFisher
-from .gaussian import LikelihoodFunction
-from ..datatypes import LikelihoodType, KnowledgeType, InputGeologicalKnowledge
+from .objective_functions import ObjectiveFunction
+from ..datatypes import ObjectiveType, KnowledgeType, InputGeologicalKnowledge
 import beartype
 
 
@@ -77,12 +77,12 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         # Extract parameters for the VonMisesFisher distribution
         # Create a VonMisesFisher distribution with the given parameters mu and kappa
         vmf = VonMisesFisher(
-            self.input_knowledge(KnowledgeType.AXIALSURFACE).mu,
-            self.input_knowledge(KnowledgeType.AXIALSURFACE).kappa,
+            self.input_knowledge(KnowledgeType.AXIAL_SURFACE).mu,
+            self.input_knowledge(KnowledgeType.AXIAL_SURFACE).kappa,
         )
 
         # Calculate the logpdf of the input array
-        vmf_logpdf = vmf.logpdf(vector) * self.input_knowledge(KnowledgeType.AXIALSURFACE).weight
+        vmf_logpdf = vmf.logpdf(vector) * self.input_knowledge(KnowledgeType.AXIAL_SURFACE).weight
 
         return vmf_logpdf
 
@@ -119,7 +119,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             likelihood = 0
             # Iterate over the knowledge constraints dictionary that have "axial_trace" in their key
             for key, trace in filter(lambda item: "axial_trace" in item[0],
-                                     self.input_knowledge(KnowledgeType.AXIALTRACE).items()):
+                                     self.input_knowledge(KnowledgeType.AXIAL_TRACE).items()):
                 # Get the mu, sigma, and weight values of a given axial trace
                 # These values represent the mean and standard deviation of the location of a given axial trace
                 mu = trace.mu
@@ -128,7 +128,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
                 # Calculate the distance between mu and the axial trace
                 dist = mu - intercepts
                 # Update the likelihood using the Gaussian log likelihood function
-                likelihood += -LikelihoodFunction(LikelihoodType.LOGNORMAL)(intercepts[np.argmin(dist)], mu, sigma) * w
+                likelihood += -ObjectiveFunction(ObjectiveType.LOG_NORMAL)(intercepts[np.argmin(dist)], mu, sigma) * w
 
         return likelihood
 
@@ -164,16 +164,16 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         # These values represent the mean and standard deviation of the fold wavelength
         # Calculate the likelihood of the fold wavelength
         # The likelihood is calculated using the Gaussian log likelihood function
-        likelihood = -LikelihoodFunction(LikelihoodType.LOGNORMAL)(theta[3],
-                                                                   self.input_knowledge(
-                                                                       KnowledgeType.FOLDWAVELENGTH).mu,
-                                                                   self.input_knowledge(
-                                                                       KnowledgeType.FOLDWAVELENGTH).sigma
-                                                                   )
+        likelihood = -ObjectiveFunction(ObjectiveType.LOG_NORMAL)(theta[3],
+                                                                  self.input_knowledge(
+                                                                      KnowledgeType.WAVELENGTH).mu,
+                                                                  self.input_knowledge(
+                                                                      KnowledgeType.WAVELENGTH).sigma
+                                                                  )
 
         # The weight is used to adjust the influence of this constraint on the overall objective function
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= self.input_knowledge(KnowledgeType.FOLDWAVELENGTH).weight
+        likelihood *= self.input_knowledge(KnowledgeType.WAVELENGTH).weight
 
         return likelihood
 
@@ -209,15 +209,15 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         # These values represent the mean and standard deviation of the fold axis wavelength
         # Calculate the likelihood of the fold axis rotation angle wavelength
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -LikelihoodFunction(LikelihoodType.LOGNORMAL)(
+        likelihood = -ObjectiveFunction(ObjectiveType.LOG_NORMAL)(
             theta[3],
-            self.input_knowledge(KnowledgeType.AXISWAVELENGTH).mu,
-            self.input_knowledge(KnowledgeType.AXISWAVELENGTH).sigma
+            self.input_knowledge(KnowledgeType.AXIS_WAVELENGTH).mu,
+            self.input_knowledge(KnowledgeType.AXIS_WAVELENGTH).sigma
         )
 
         # The weight is used to adjust the influence of this constraint on the overall objective function
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= self.input_knowledge(KnowledgeType.AXISWAVELENGTH).weight
+        likelihood *= self.input_knowledge(KnowledgeType.AXIS_WAVELENGTH).weight
 
         return likelihood
 
@@ -256,7 +256,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Calculate the likelihood of the fold tightness
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -LikelihoodFunction(LikelihoodType.LOGNORMAL)(
+        likelihood = -ObjectiveFunction(ObjectiveType.LOG_NORMAL)(
             tightness,
             self.input_knowledge(KnowledgeType.TIGHTNESS).mu,
             self.input_knowledge(KnowledgeType.TIGHTNESS).sigma
@@ -302,14 +302,14 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Calculate the likelihood of the fold hinge angle
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -LikelihoodFunction(LikelihoodType.LOGNORMAL)(
+        likelihood = -ObjectiveFunction(ObjectiveType.LOG_NORMAL)(
             hinge_angle,
-            self.input_knowledge(KnowledgeType.HINGEANGLE).mu,
-            self.input_knowledge(KnowledgeType.HINGEANGLE).sigma
+            self.input_knowledge(KnowledgeType.HINGE_ANGLE).mu,
+            self.input_knowledge(KnowledgeType.HINGE_ANGLE).sigma
         )
 
         # Multiply the likelihood by the weight to get the final objective function value
-        likelihood *= self.input_knowledge(KnowledgeType.HINGEANGLE).weight
+        likelihood *= self.input_knowledge(KnowledgeType.HINGE_ANGLE).weight
 
         return likelihood
 
@@ -348,10 +348,10 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Calculate the likelihood of the fold asymmetry
         # The likelihood is calculated using the negative Gaussian log likelihood function
-        likelihood = -LikelihoodFunction(LikelihoodType.LOGNORMAL)(asymmetry,
-                                                                   self.input_knowledge(KnowledgeType.ASYMMETRY).mu,
-                                                                   self.input_knowledge(KnowledgeType.ASYMMETRY).sigma
-                                                                   )
+        likelihood = -ObjectiveFunction(ObjectiveType.LOG_NORMAL)(asymmetry,
+                                                                  self.input_knowledge(KnowledgeType.ASYMMETRY).mu,
+                                                                  self.input_knowledge(KnowledgeType.ASYMMETRY).sigma
+                                                                  )
 
         # Multiply the likelihood by the weight to get the final objective function value
         likelihood *= self.input_knowledge(KnowledgeType.ASYMMETRY).weight
@@ -373,56 +373,19 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
             KnowledgeType.TIGHTNESS: self.tightness_objective_function,
 
-            KnowledgeType.FOLDWAVELENGTH: self.wavelength_objective_function,
+            KnowledgeType.WAVELENGTH: self.wavelength_objective_function,
 
-            KnowledgeType.AXISWAVELENGTH: self.fold_axis_wavelength_objective_function,
+            KnowledgeType.AXIS_WAVELENGTH: self.fold_axis_wavelength_objective_function,
 
-            KnowledgeType.AXIALTRACE: self.axial_trace_objective_function,
+            KnowledgeType.AXIAL_TRACE: self.axial_trace_objective_function,
 
-            KnowledgeType.HINGEANGLE: self.hinge_angle_objective_function,
+            KnowledgeType.HINGE_ANGLE: self.hinge_angle_objective_function,
 
-            KnowledgeType.AXIALSURFACE: self.axial_surface_objective_function
+            KnowledgeType.AXIAL_SURFACE: self.axial_surface_objective_function
         }
 
         return objective_functions_map
 
-    def __call__(self, theta: np.ndarray) -> float:
-        """
-        Calculate the total geological knowledge objective function value for all constraints by summing up the
-        objective function values for all constraints. This objective function represent only the
-        knowledge constraints and it is minimised with the main objective function that calculates the residuals.
-
-        Parameters
-        ----------
-        theta : np.ndarray
-            The Fourier series parameters. These are the parameters of the Fourier series used to
-            calculate the fold limb and axis rotation angle curve.
-
-        Returns
-        -------
-        float
-            The total objective function value.
-
-        Raises
-        ------
-        TypeError
-            If `theta` is not a numpy array.
-        """
-
-        # Initialize the total objective function value to 0
-        total_objective_value = 0
-        # Iterate over all constraint names
-        for knowledge_type in KnowledgeType:
-            # If the constraint is in the constraints dictionary
-            if self.input_knowledge(knowledge_type) is not None:
-                # Add the objective function value for this constraint to the total
-                total_objective_value += self.objective_functions_map[knowledge_type](theta)
-            else:
-                # If the constraint is not in the constraints dictionary, do nothing
-                total_objective_value += 0
-
-        # Return the total objective function value
-        return total_objective_value
 
     def setup_objective_functions_for_restricted_mode(self) -> List[NonlinearConstraint]:
         """
@@ -461,7 +424,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             sigma = constraint_info['sigma']
 
             # Calculate the negative Gaussian log likelihood for a range of values between the lower and upper bounds
-            val = -LikelihoodFunction(LikelihoodType.LOGNORMAL)(np.linspace(lb, ub, 100), mu, sigma)
+            val = -ObjectiveFunction(ObjectiveType.LOG_NORMAL)(np.linspace(lb, ub, 100), mu, sigma)
             # Create a NonlinearConstraint object for this constraint
             nlc = NonlinearConstraint(self.objective_functions_map[constraint_name],
                                       val.min(), val.max(),
@@ -471,3 +434,76 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Return the list of constraints
         return constraints
+
+    def __call__(self, theta: np.ndarray) -> float:
+        """
+        Calculate the total geological knowledge objective function value for all constraints by summing up the
+        objective function values for all constraints. This objective function represent only the
+        knowledge constraints and it is minimised with the main objective function that calculates the residuals.
+
+        Parameters
+        ----------
+        theta : np.ndarray
+            The Fourier series parameters 1x4 or unit vector 1x3. These are the parameters of the Fourier series used to
+            calculate the fold limb and axis rotation angle curve.
+
+        Returns
+        -------
+        float
+            The total objective function value.
+
+        Raises
+        ------
+        TypeError
+            If `theta` is not a numpy array.
+        """
+
+        # Initialize the total objective function value to 0
+        total_objective_value = 0
+        if (
+                len(theta) == 3
+                and self.input_knowledge(KnowledgeType.AXIAL_SURFACE) is not None
+        ):
+            total_objective_value += self.axial_surface_objective_function(theta)
+
+        elif len(theta) == 4:
+
+            if self.input_knowledge(KnowledgeType.WAVELENGTH) is not None:
+                total_objective_value += self.wavelength_objective_function(theta)
+
+            elif self.input_knowledge(KnowledgeType.ASYMMETRY) is not None:
+                total_objective_value += self.asymmetry_objective_function(theta)
+
+            elif self.input_knowledge(KnowledgeType.TIGHTNESS) is not None:
+                total_objective_value += self.tightness_objective_function(theta)
+
+            elif self.input_knowledge(KnowledgeType.HINGE_ANGLE) is not None:
+                total_objective_value += self.hinge_angle_objective_function(theta)
+
+            elif self.input_knowledge(KnowledgeType.AXIS_WAVELENGTH) is not None:
+                total_objective_value += self.fold_axis_wavelength_objective_function(theta)
+
+            elif self.input_knowledge(KnowledgeType.AXIAL_TRACE) is not None:
+                total_objective_value += self.axial_trace_objective_function(theta)
+
+            else:
+                total_objective_value += 0
+
+            # Return the total objective function value
+        return total_objective_value
+
+    def __getitem__(self, knowledge_type: KnowledgeType):
+        """
+        Get the geological knowledge constraints for a given knowledge type.
+
+        Parameters
+        ----------
+        knowledge_type : KnowledgeType
+            The knowledge type.
+
+        Returns
+        -------
+        Union[NormalDistribution, VonMisesFisherDistribution]
+            The knowledge constraints for the given knowledge type.
+        """
+        return self.input_knowledge(knowledge_type)

@@ -1,5 +1,5 @@
 from .geological_knowledge import GeologicalKnowledgeFunctions
 from .axial_plane import is_axial_plane_compatible
-from .gaussian import LikelihoodFunction
+from .objective_functions import ObjectiveFunction
 from .von_mises_fisher import VonMisesFisher
 from .least_squares import LeastSquaresFunctions
