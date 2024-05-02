@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from ..helper import strike_dip_to_vector
 from .enums import KnowledgeType
 from .probability_distributions import NormalDistribution, VonMisesFisherDistribution
 import beartype
@@ -15,28 +16,21 @@ class InputGeologicalKnowledge:
     hinge_line: Optional[NormalDistribution] = None
     axial_trace: Optional[NormalDistribution] = None
     axial_surface: Optional[VonMisesFisherDistribution] = None
-    knowledge_map: Dict[KnowledgeType, Union[NormalDistribution, VonMisesFisherDistribution]] = field(init=False)
-    filledflags: List[bool] = field(default_factory=lambda: [False] * len(KnowledgeType))
 
     def __post_init__(self):
-        self.knowledge_map = {
-            KnowledgeType.ASYMMETRY: self.asymmetry,
-            KnowledgeType.AXIALTRACE: self.axial_trace,
-            KnowledgeType.FOLDWAVELENGTH: self.fold_wavelength,
-            KnowledgeType.AXISWAVELENGTH: self.axis_wavelength,
-            KnowledgeType.AXIALSURFACE: self.axial_surface,
-            KnowledgeType.TIGHTNESS: self.tightness,
-            KnowledgeType.HINGEANGLE: self.hinge_line,
-        }
-
-        for knowledge_type in range(len(KnowledgeType)):
-
-            # initialise dirtyflags and filled flags
-            if (
-                    self.knowledge_map[knowledge_type] is not None
-                    and self.filledflags[knowledge_type] is False
-            ):
-                self.filledflags[knowledge_type] = True
+        if len(self.axial_surface.mu) == 2:
+            self.axial_surface.mu = strike_dip_to_vector(self.axial_surface.mu[0], self.axial_surface.mu[1])
 
     def __call__(self, input_knowledge: KnowledgeType):
-        return self.knowledge_map[input_knowledge]
+
+        knowledge_map = {
+            KnowledgeType.ASYMMETRY: self.asymmetry,
+            KnowledgeType.AXIAL_TRACE: self.axial_trace,
+            KnowledgeType.WAVELENGTH: self.fold_wavelength,
+            KnowledgeType.AXIS_WAVELENGTH: self.axis_wavelength,
+            KnowledgeType.AXIAL_SURFACE: self.axial_surface,
+            KnowledgeType.TIGHTNESS: self.tightness,
+            KnowledgeType.HINGE_ANGLE: self.hinge_line,
+        }
+
+        return knowledge_map[input_knowledge]
