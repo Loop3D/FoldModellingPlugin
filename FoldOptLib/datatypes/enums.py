@@ -45,7 +45,7 @@ class RotationType(IntEnum):
     AXIS = 1
 
 
-class ConstraintType(IntEnum):
+class CoordinateType(IntEnum):
     VALUE = 0
     TANGENT = 1
     NORMAL = 2

@@ -1,12 +1,14 @@
 from base_builder import BaseBuilder
-from ..datatypes import ConstraintType, InterpolationConstraints
+from ..input import OptData
+from ..datatypes import CoordinateType, InterpolationConstraints
 from LoopStructural import LoopInterpolator, BoundingBox
 import numpy
+from typing import Union, Any
 
 
-class StructuralFrameBuilder(BaseBuilder):
+class Builder(BaseBuilder):
 
-    def __init__(self, constraints: InterpolationConstraints, bounding_box: BoundingBox):
+    def __init__(self, constraints: Union[InterpolationConstraints, OptData], bounding_box: BoundingBox):
         self.constraints = constraints
         self.bounding_box = bounding_box
         self.interpolator = LoopInterpolator(
@@ -14,13 +16,14 @@ class StructuralFrameBuilder(BaseBuilder):
             dimensions=3,
             nelements=1000
         )
-
-    def set_constraints(self):
-        self.interpolator.fit(
-            values=self.constraints[ConstraintType.VALUE],
-            tangent_vectors=self.constraints[ConstraintType.TANGENT],
-            normal_vectors=self.constraints[ConstraintType.NORMAL],
-        )
+    #TODO:Restart from here
+    
+    # def set_constraints(self, type: Union[CoordinateType, Any]):
+    #     self.interpolator.fit(
+    #         values=self.constraints[type.VALUE],
+    #         tangent_vectors=self.constraints[type.TANGENT],
+    #         normal_vectors=self.constraints[type.NORMAL],
+    #     )
 
     def evaluate_scalar_value(self, locations: numpy.ndarray) -> numpy.ndarray:
         return self.interpolator.evaluate_scalar_value(locations)
