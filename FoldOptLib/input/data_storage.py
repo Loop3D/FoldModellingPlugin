@@ -11,3 +11,8 @@ class InputData:
     folded_foliation: pandas.DataFrame
     bounding_box: BoundingBox
     geological_knowledge: InputGeologicalKnowledge = None
+
+
+    def __post_init__(self):
+    self.
+

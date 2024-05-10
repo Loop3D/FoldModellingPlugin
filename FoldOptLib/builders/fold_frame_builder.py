@@ -1,26 +1,19 @@
-from abc import ABC, abstractmethod
-from base_builder import BaseBuilder
+from .structural_frame_builder import StructuralFrameBuilder
+from ..datatypes import ConstraintType, InterpolationConstraints
+from LoopStructural import LoopInterpolator, BoundingBox
+import numpy
 
 
-class FoldFrameBuilder(BaseBuilder):
+class FoldFrameBuilder(StructuralFrameBuilder):
 
-    def set_value_constraints(self):
+    def __init__(self, constraints: InterpolationConstraints, bounding_box: BoundingBox):
+        super().__init__(constraints, bounding_box)
+
+    def build_axial_surface_field(self):
         pass
 
-    def set_tangent_constraints(self):
+    def build_fold_axis_field(self):
         pass
 
-    def set_normal_constraints(self):
-        pass
-
-    def set_gradient_constraints(self):
-        pass
-
-    def build(self):
-        pass
-
-    def evaluate_scalar_value(self):
-        pass
-
-    def evaluate_gradient(self):
+    def build_x_axis_field(self):
         pass

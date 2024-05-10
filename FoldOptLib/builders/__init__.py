@@ -1,1 +1,2 @@
-from base_builder import BaseBuilder
+from .base_builder import BaseBuilder
+from .structural_frame_builder import StructuralFrameBuilder

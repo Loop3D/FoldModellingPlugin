@@ -44,3 +44,16 @@ class SolverType(IntEnum):
 class RotationType(IntEnum):
     LIMB = 0
     AXIS = 1
+
+
+class ConstraintType(IntEnum):
+    VALUE = 0
+    TANGENT = 1
+    NORMAL = 2
+    GRADIENT = 3
+
+
+class CoordinateType(IntEnum):
+    AXIAL_FOLIATION_FIELD = 0
+    FOLD_AXIS_FIELD = 1
+    X_AXIS = 2
