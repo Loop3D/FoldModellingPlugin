@@ -2,10 +2,9 @@ from enum import IntEnum
 
 
 class DataType(IntEnum):
-    FOLDED_AXIAL_SURFACE = 0
-    FOLDED_FOLIATION = 1
-    GEOLOGICAL_KNOWLEDGE = 2
-    BOUNDING_BOX = 3
+    DATA = 0
+    GEOLOGICAL_KNOWLEDGE = 1
+    BOUNDING_BOX = 2
 
 
 class KnowledgeType(IntEnum):
