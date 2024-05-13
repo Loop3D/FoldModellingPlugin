@@ -1,51 +1,52 @@
-from ..datatypes import InputGeologicalKnowledge
-from .input_data_checker import CheckInputData
+from dataclasses import dataclass
+from ..input import CheckInputData, InputData
+from ..datatypes import DataType
 from ..helper.utils import *
 from LoopStructural import BoundingBox
 
 import numpy
-import pandas as pd
+import pandas
 from typing import List, Optional, Dict
 import beartype
 
 
 @beartype.beartype
-class InputDataProcessor(CheckInputData):
+@dataclass
+class InputDataProcessor:
 
-    def __init__(self, data: pd.DataFrame, bounding_box: BoundingBox,
-                 geological_knowledge: InputGeologicalKnowledge = None) -> None:
-        """
-        Constructs all the necessary attributes for the InputDataProcessor object.
+    data: InputData = None
+    processed_data: pandas.DataFrame = None
 
-        Parameters
-        ----------
-        data : pd.DataFrame
-            The input data to be processed.
-        bounding_box : np.ndarray
-            Bounding box for the model.
-        geological_knowledge : Dict, optional
-            geological knowledge dictionary.
-        """
-        super().__init__(data)
-        self.data = data
-        self.bounding_box = bounding_box
-        self.knowledge_constraints = geological_knowledge
+    def __post_init__(self):
 
-    def process_data(self):
-        self.check_foliation_data()
-        if 'strike' in self.data.columns and 'dip' in self.data.columns:
-            strike = self.data['strike'].to_numpy()
-            dip = self.data['dip'].to_numpy()
+
+        CheckInputData(self.data[DataType.DATA])
+        if (
+
+            'strike' in self.data[DataType.DATA].columns 
+            and 'dip' in self.data[DataType.DATA].columns
+
+        ):
+
+            strike = self.data[DataType.DATA]['strike'].to_numpy()
+            dip = self.data[DataType.DATA]['dip'].to_numpy()
             gradient = strike_dip_to_vectors(strike, dip)
-        elif 'gx' in self.data.columns and 'gy' in self.data.columns and 'gz' in self.data.columns:
-            gradient = self.data[['gx', 'gy', 'gz']].to_numpy()
-        else:
-            return None
+
+        elif (
+
+            'gx' in self.data[DataType.DATA].columns 
+            and 'gy' in self.data[DataType.DATA].columns 
+            and 'gz' in self.data[DataType.DATA].columns
+
+        ):
+            gradient = self.data[DataType.DATA][['gx', 'gy', 'gz']].to_numpy()
 
         gradient = InputDataProcessor.normalise(gradient)
-        self.data['gx'], self.data['gy'], self.data['gz'] = gradient[:, 0], gradient[:, 1], gradient[:, 2]
 
-        return self.data
+        self.data[DataType.DATA]['gx'], self.data[DataType.DATA]['gy'], self.data[DataType.DATA]['gz'] = gradient[:, 0], gradient[:, 1], gradient[:, 2]
+        self.processed_data = self.data[DataType.DATA]
+
+        return self.processed_data
 
     @staticmethod
     def normalise(gradient: numpy.ndarray) -> numpy.ndarray:

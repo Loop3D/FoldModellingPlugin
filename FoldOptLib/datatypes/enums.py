@@ -25,6 +25,10 @@ class OptimisationType(IntEnum):
     LEAST_SQUARES = 4
     PROBABILISTIC = 5
 
+class OptimiserType(IntEnum):
+    AXIAL_SURFACE = 0
+    FOURIER = 1
+
 
 class ObjectiveType(IntEnum):
     LOG_NORMAL = 0
