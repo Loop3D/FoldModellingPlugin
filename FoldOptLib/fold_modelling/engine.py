@@ -1,15 +1,16 @@
 from typing import Union, Dict, Any, List, Optional
 import numpy as np
-import pandas as pd
+import pandas
 from LoopStructural import GeologicalModel
-from ..helper._helper import *
+# from ..helper._helper import *
 from ..helper.utils import *
-# from
-from ..input.input_data_processor import InputDataProcessor
+from ..builders import FoldFrameBuilder
+from ..datatypes import DataType, InterpolationConstraints, ConstraintType, CoordinateType, InputGeologicalKnowledge, KnowledgeType, RotationType
+from ..input import InputDataProcessor, OptData, InputData
 from ..from_loopstructural._fold import FoldEvent
 from ..from_loopstructural._fold_frame import FoldFrame
-# from from_loopstructural._svariogram import SVariogram
-from .base_fold_frame_builder import BaseFoldFrameBuilder
+from LoopStructural import BoundingBox
+from .base_engine import BaseEngine
 from ..optimisers.fourier_optimiser import FourierSeriesOptimiser
 import gc
 
@@ -21,7 +22,8 @@ def fold_function(params):
     return rot_func
 
 
-class FoldModel(BaseFoldFrameBuilder):
+class FoldModel(BaseEngine):
+
     """
     A class used to build a fold model.
 
@@ -51,9 +53,8 @@ class FoldModel(BaseFoldFrameBuilder):
     No methods defined yet.
     """
 
-    def __init__(self, data: pd.DataFrame,
-                 bounding_box: Union[list, np.ndarray],
-                 geological_knowledge: Optional[Dict[str, Any]] = None,
+    def __init__(self, data: InputData,
+                 dimensions: int = 2,
                  **kwargs: Dict[str, Any]):
         """
         Constructs all the necessary attributes for the FoldModel object.
@@ -67,10 +68,11 @@ class FoldModel(BaseFoldFrameBuilder):
             **kwargs : dict
                 additional keyword arguments
         """
-        data_processor = InputDataProcessor(data, bounding_box,
-                                            geological_knowledge=geological_knowledge)
-        self.data = data_processor.process_data()
+        data_processor = InputDataProcessor(data)
+        self.data = data_processor.get_data()
+        self.geological_knowledge = geological_knowledge
         self.bounding_box = bounding_box
+        self.dimensions = dimensions
         self.model = None
         self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
         self.points = self.data[['X', 'Y', 'Z']].to_numpy()  # coordinates of the data points
@@ -78,7 +80,8 @@ class FoldModel(BaseFoldFrameBuilder):
         self.kwargs = kwargs
         self.axial_surface = None
         self.scaled_points = None
-        self.geological_knowledge = geological_knowledge
+        
+        
 
     def initialise_model(self) -> None:
         """
@@ -95,6 +98,7 @@ class FoldModel(BaseFoldFrameBuilder):
         self.scaled_points = self.model.scale(self.points)
 
     def process_axial_surface_proposition(self, axial_normal: np.ndarray) -> pd.DataFrame:
+
         """
         Process the axial surface proposition at each iteration by creating a dataset from the axial surface normal.
 
@@ -112,6 +116,7 @@ class FoldModel(BaseFoldFrameBuilder):
         pd.DataFrame
             The dataset to use to build a fold frame.
         """
+
         # normalise axial surface normal
         axial_normal /= np.linalg.norm(axial_normal)
         # create a dataset from the axial surface normal
@@ -123,9 +128,11 @@ class FoldModel(BaseFoldFrameBuilder):
         y = rotate_vector(axial_normal, np.pi / 2, dimension=3)
         # create a dataset from the Y axis of the fold frame
         y_coord = create_dataset(y, self.points, name='sn', coord=1)
+        
 
         # append the two datasets together
-        dataset = pd.concat([dataset, y_coord])
+        dataset = pandas.concat([dataset, y_coord])
+        dataset = OptData(dataset)
 
         return dataset
 
@@ -148,18 +155,8 @@ class FoldModel(BaseFoldFrameBuilder):
         # process the axial surface proposition and get the dataset
         dataset = self.process_axial_surface_proposition(axial_normal)
 
-        # update the model data with the dataset
-        self.model.data = dataset
-
-        # create and add a fold frame to the model
-        self.axial_surface = self.model.create_and_add_fold_frame('sn',
-                                                                  buffer=0.6,
-                                                                  solver='pyamg',
-                                                                  nelements=1e3,
-                                                                  damp=True)
-
-        # update the model
-        self.model.update(progressbar=False)
+        # build the axial surface field - fold frame
+        self.axial_surface = FoldFrameBuilder(dataset, self.bounding_box).build()
 
     def create_and_build_fold_event(self) -> FoldEvent:
         """
