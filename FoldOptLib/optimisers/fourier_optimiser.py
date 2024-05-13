@@ -1,5 +1,5 @@
 from typing import Tuple, Callable, Union, Any, Optional, Dict
-from ..datatypes import ObjectiveType, InputGeologicalKnowledge
+from ..datatypes import ObjectiveType, InputGeologicalKnowledge, SolverType
 from .fold_optimiser import BaseOptimiser
 from ..objective_functions import ObjectiveFunction, GeologicalKnowledgeFunctions
 from ..helper.utils import *
@@ -42,11 +42,17 @@ class FourierSeriesOptimiser(BaseOptimiser):
     TODO: Add methods here.
     """
 
-    def __init__(self, fold_frame_coordinate: Union[list, numpy.ndarray], rotation_angle: Union[list, numpy.ndarray],
-                 x: Union[list, numpy.ndarray],
-                 geological_knowledge: GeologicalKnowledgeFunctions = None,
-                 method='differential_evolution',
-                 **kwargs: Dict[str, Any]):
+    def __init__(
+            
+            self, 
+            fold_frame_coordinate: Union[list, numpy.ndarray], 
+            rotation_angle: Union[list, numpy.ndarray],
+            x: Union[list, numpy.ndarray],
+            geological_knowledge: GeologicalKnowledgeFunctions = None,
+            method='differential_evolution',
+            **kwargs: Dict[str, Any]
+        ):
+
         """
         Constructs all the necessary attributes for the Fourier Series Optimiser object.
 
@@ -97,14 +103,25 @@ class FourierSeriesOptimiser(BaseOptimiser):
             if 'wl_guess' in self.kwargs:
                 wl = get_wavelength_guesses(self.kwargs['wl_guess'], 1000)
                 # bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
-                bounds = numpy.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max())], dtype=object)
-                return bounds
+                self.bounds = numpy.array(
+                    [(-1, 1), (-1, 1), (-1, 1), 
+                    (wl[wl > 0].min() / 2, wl.max())],
+                    dtype=object
+                )
+                
             else:
                 # Calculate semivariogram and get the wavelength guess
-                guess, lags, variogram = calculate_semivariogram(self.fold_frame_coordinate, self.rotation_angle)
+                guess, lags, variogram = calculate_semivariogram(
+                    self.fold_frame_coordinate, 
+                    self.rotation_angle
+                    )
                 wl = get_wavelength_guesses(guess[3], 1000)
-                bounds = numpy.array([(-1, 1), (-1, 1), (-1, 1), (wl[wl > 0].min() / 2, wl.max() / 3)], dtype=object)
-                return bounds
+                self.bounds = numpy.array(
+                    [(-1, 1), (-1, 1), (-1, 1), 
+                    (wl[wl > 0].min() / 2, wl.max() / 3)], 
+                    dtype=object
+                )
+                
 
         # Check if wl_guess is specified in kwargs
         if 'wl_guess' in self.kwargs:
@@ -112,7 +129,10 @@ class FourierSeriesOptimiser(BaseOptimiser):
 
         else:
             # Calculate semivariogram and get the wavelength guess
-            self.guess, lags, variogram = calculate_semivariogram(self.fold_frame_coordinate, self.rotation_angle)
+            self.guess, lags, variogram = calculate_semivariogram(
+                self.fold_frame_coordinate, 
+                self.rotation_angle
+                )
 
 
 
@@ -154,15 +174,17 @@ class FourierSeriesOptimiser(BaseOptimiser):
         # for the moment fourier series optimisation is done only
         # using MLE optimisation. Least squares will be added later
         if self.geological_knowledge is not None:
+
             self.objective_function = self.build_optimisation_function(
                 ObjectiveFunction[ObjectiveType.FOURIER](
                     self.rotation_angle,
                     self.fold_frame_coordinate
                 ),
+
                 self.geological_knowledge
             )
 
-    def setup_optimisation(self, geological_knowledge: GeologicalKnowledgeFunctions = None):
+    def setup_optimisation(self):
         """
         Setup Fourier series optimisation.
 
@@ -186,43 +208,3 @@ class FourierSeriesOptimiser(BaseOptimiser):
 
         # Generate initial guess
         self.generate_bounds_and_initial_guess()
-
-    def optimise(self, geological_knowledge: GeologicalKnowledgeFunctions = None, **kwargs) -> Dict[str, Any]:
-        """
-        Optimise the Fourier series.
-
-        Returns
-        -------
-        Dict[str, Any]
-            Returns the result of the optimisation.
-        """
-
-        # Setup optimisation
-        objective_function, geological_knowledge, solver, guess = self.setup_optimisation(
-            geological_knowledge=geological_knowledge)
-        if self.method == 'differential_evolution':
-
-            # Check if geological knowledge exists
-            if geological_knowledge is not None:
-                # Check if mode is restricted
-                if 'mode' in self.kwargs and self.kwargs['mode'] == 'restricted':
-                    opt = solver(objective_function, x0=guess, constraints=geological_knowledge)
-
-                    return opt
-                else:
-                    # Wrap to produce an objective function that
-                    # takes into account the geological knowledge functions
-                    objective_function = objective_wrapper(objective_function, geological_knowledge)
-                    # bounds = np.array([(-1, 1), (-1, 1), (-1, 1), (guess[3] / 2, guess[3] * 2)], dtype=object)
-                    opt = solver(objective_function, bounds=guess)
-
-                    return opt
-            else:
-                opt = solver(objective_function, bounds=guess)
-
-                return opt
-
-        else:
-            opt = solver(objective_function, guess)
-
-        return opt

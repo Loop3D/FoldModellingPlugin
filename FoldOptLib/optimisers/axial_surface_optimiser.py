@@ -4,7 +4,7 @@ import numpy
 import pandas
 from .fold_optimiser import BaseOptimiser
 from ..objective_functions import GeologicalKnowledgeFunctions, ObjectiveFunction
-from ..input import CheckInputData
+from ..input import CheckInputData, InputData
 from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
 from ..objective_functions import VonMisesFisher
 from ..fold_modelling import FoldModel
@@ -54,9 +54,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
     """
 
-    def __init__(self, data: pandas.DataFrame,
-                 bounding_box: BoundingBox,
-                 geological_knowledge: InputGeologicalKnowledge = None,
+    def __init__(self, data: InputData,
                  method: str = 'differential_evolution',
                  **kwargs: Dict[str, Any]):
 
@@ -81,15 +79,8 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
                 """
 
-        # Check the input data
-        check_input = CheckInputData(data, bounding_box,
-                                     geological_knowledge=geological_knowledge)
-        # check_input.check_input_data()
-
         super().__init__(method=method)
-        self.fold_engine = FoldModel(data, bounding_box,
-                                     geological_knowledge=geological_knowledge,
-                                     **kwargs)
+        self.fold_engine = FoldModel(data, **kwargs)
 
         self.data = data
         self.bounding_box = bounding_box
@@ -99,6 +90,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
         self.objective_function = None
         self.guess = None
+        self.bounds = None
         self.kwargs = kwargs
 
 
@@ -152,6 +144,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         The initial guess is generated using the Von Mises Fisher distribution.
 
         """
+        self.bounds = [(0, 360), (0, 90)]
 
         if self.geological_knowledge[KnowledgeType.AXIAL_SURFACE] is not None:
             # Create a VonMisesFisher distribution with the given parameters
@@ -273,23 +266,8 @@ class AxialSurfaceOptimiser(BaseOptimiser):
     def setup_optimisation(self):
 
         """
-           Sets up the optimisation algorithm.
+           Sets up the optimisation algorithm, the solver, the objective function, and the initial guess.
 
-           Parameters
-           ----------
-           geological_knowledge : dict, optional
-               A dictionary containing geological knowledge. Default is None.
-
-           Returns
-           -------
-           objective_function : callable
-               The objective function to be minimised.
-           _geological_knowledge : dict or None
-               The geological knowledge objective functions.
-           solver : BaseOptimiser
-               The solver from BaseOptimiser to be used for optimisation.
-           guess : Union[np.ndarray, str]
-               The initial guess for the optimisation.
         """
         super().setup_optimisation()
 
@@ -297,39 +275,4 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         self.guess = self.generate_bounds_and_initial_guess()
 
         # Setup optimisation method
-        self.setup_optimisation_method(OptimisationType.MLE)
-
-    def optimise(self):
-
-        """
-        Runs the optimisation.
-
-        Parameters
-        ----------
-        geological_knowledge : InputGeologicalKnowledge, optional
-            A dataclass containing geological knowledge. Default is None.
-
-        Returns
-        -------
-        opt : Dict
-            The result of the optimisation.
-
-        Notes
-        -----
-        This function runs the optimisation by setting up the optimisation problem,
-        checking if geological knowledge exists, and running the solver.
-        """
-        # Set the strike and dip bounds for the optimisation
-        bounds = [(0, 360), (0, 90)]
-
-        self.setup_optimisation()
-
-        if self.solver is self._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
-
-            return self.solver(self.objective_function, bounds, init=self.guess)
-
-        elif self.solver is self._solvers[SolverType.CONSTRAINED_TRUST_REGION]:
-
-            return self.solver(self.objective_function, x0=self.guess)
-
-        # TODO: ...add support for restricted optimisation mode...
+        self.setup_optimisation_method()

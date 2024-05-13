@@ -1,9 +1,10 @@
 from ..helper.utils import *
-import numpy as np
-from LoopStructural.modelling.features.fold import fourier_series
+import numpy
+from ..helper import fourier_series
 
 
 class SPlotProcessor:
+    
     def __init__(self):
         self.x = None
         # self.splot_cache = {}
@@ -37,8 +38,8 @@ class SPlotProcessor:
         curve = self.calculate_splot(self.x, theta)
 
         if v == 'radians':
-            amax = np.arctan(np.deg2rad(curve.max()))
-            amin = np.arctan(np.deg2rad(curve.min()))
+            amax = numpy.arctan(numpy.deg2rad(curve.max()))
+            amin = numpy.arctan(numpy.deg2rad(curve.min()))
 
             return amax, amin
 
@@ -92,7 +93,7 @@ class SPlotProcessor:
                 The tightness metric of the curve
             """
         amax, amin = self.find_amax_amin(theta, v='radians')
-        return 180 - np.rad2deg(2 * np.tan((amax - amin) / 2))
+        return 180 - numpy.rad2deg(2 * numpy.tan((amax - amin) / 2))
 
     def calculate_asymmetry(self, theta):
         """
@@ -112,8 +113,8 @@ class SPlotProcessor:
             """
 
         amax, amin, curve = self.find_amax_amin(theta, v='degrees')
-        median = np.median(curve)
-        tightness_range = amax + np.abs(amin)
+        median = numpy.median(curve)
+        tightness_range = amax + numpy.abs(amin)
         asymmetry = median / tightness_range
 
         return asymmetry
