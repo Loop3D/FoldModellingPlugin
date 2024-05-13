@@ -1,0 +1,109 @@
+from ..datatypes import SolverType, DataType, OptimiserType
+from ..input import InputData
+from .fourier_optimiser import FourierSeriesOptimiser
+from .axial_surface_optimiser import AxialSurfaceOptimiser
+from ..solvers import Solver
+from typing import Union, Dict, List
+import numpy
+
+
+class GeologicalOptimiser:
+
+    def __init__(
+            self, 
+            data: InputData = None,
+            fold_frame_coordinate: Union[List, numpy.ndarray] = None, 
+            rotation_angle: Union[List, numpy.ndarray] = None,
+            x: Union[List, numpy.ndarray] = None,
+            opt_target: str = 'fourier', 
+            method: str = 'differential_evolution'
+            ):
+        
+        self._data = data
+        self._fold_frame_coordinate = fold_frame_coordinate
+        self._rotation_angle = rotation_angle
+        self._x = x
+        self.__opt_target__ = opt_target
+        self._method = method
+        self.__solvers__ = Solver()
+        self._solver = None
+        self._optimiser_type = {
+            OptimiserType.AXIAL_SURFACE: AxialSurfaceOptimiser,
+            OptimiserType.FOURIER: FourierSeriesOptimiser
+        }
+        self._optimiser = None
+        self._objective_function = None
+        self._guess = None
+        self._bounds = None
+    
+    def get_solver(self):
+        
+        self._solver = self.optimiser.solver
+
+    def get_objective_function(self):
+        
+        self._objective_function = self.optimiser.objective_function
+
+    def get_guess(self):
+        
+        self._guess = self.optimiser.guess
+    
+    def get_bounds(self):
+        
+        self._bounds = self.optimiser.bounds
+
+    def setup_optimisation(self):
+
+        #TODO: write what type of data to use for each optimiser in docstring
+        if self.__opt_target__ == 'fourier':
+
+            self.optimiser = self._optimiser_type[OptimiserType.FOURIER](
+                self._fold_frame_coordinate, 
+                self._rotation_angle, 
+                self._x, 
+                self._method
+                )
+            
+            self.optimiser.setup_optimisation()
+
+        elif self.__opt_target__ == 'axial_surface':
+
+            self.optimiser = self._optimiser_type[OptimiserType.AXIAL_SURFACE](self._data, self._method)
+            
+            self.optimiser.setup_optimisation()
+
+        else:
+            raise ValueError('Invalid optimisation target.')
+        
+        self._objective_function = self.get_objective_function()
+        self._guess = self.get_guess()
+        self._bounds = self.get_bounds()
+        self._solver = self.get_solver()
+
+    def optimise(self):
+
+        """
+        Runs the optimisation.
+
+        Returns
+        -------
+        opt : Dict
+            The result of the optimisation.
+
+        Notes
+        -----
+        This function runs the optimisation by setting up the optimisation problem,
+        checking if geological knowledge exists, and running the solver.
+        """
+
+        self.setup_optimisation()
+
+        if self._solver is self.optimiser._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
+
+            return self._solver(self.objective_function, self._bounds, init=self._guess)
+
+        elif self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]:
+
+            return self._solver(self.objective_function, x0=self._guess)
+
+        # TODO: ...add support for restricted optimisation mode...
