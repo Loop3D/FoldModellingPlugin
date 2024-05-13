@@ -1,2 +1,3 @@
 from .base_builder import BaseBuilder
-from .structural_frame_builder import StructuralFrameBuilder
+from .builder import Builder
+from .fold_frame_builder import FoldFrameBuilder
