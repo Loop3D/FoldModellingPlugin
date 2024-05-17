@@ -1,4 +1,3 @@
-from .version import __version__
 from FoldOptLib.datatypes import (
     KnowledgeType,
     OptimisationType,
