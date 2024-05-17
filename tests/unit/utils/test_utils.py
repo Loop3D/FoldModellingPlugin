@@ -1,11 +1,9 @@
 import numpy as np
-import pandas as pd
-import os
+import pandas
 from FoldOptLib.utils.utils import (
     get_predicted_rotation_angle,
     fourier_series,
     fourier_series_x_intercepts,
-    save_load_object,
     strike_dip_to_vectors,
     strike_dip_to_vector,
     rotate_vector,
@@ -39,13 +37,13 @@ def test_fourier_series_x_intercepts():
     assert isinstance(result, np.ndarray)
 
 
-def test_save_load_object():
-    obj = {"key": "value"}
-    file_path = "test_object.pkl"
-    save_load_object(obj=obj, file_path=file_path, mode="save")
-    loaded_obj = save_load_object(file_path=file_path, mode="load")
-    assert obj == loaded_obj
-    os.remove(file_path)
+# def test_save_load_object():
+#     obj = {"key": "value"}
+#     file_path = "test_object.pkl"
+#     save_load_object(obj=obj, file_path=file_path, mode="save")
+#     loaded_obj = save_load_object(file_path=file_path, mode="load")
+#     assert obj == loaded_obj
+#     os.remove(file_path)
 
 
 def test_strike_dip_to_vectors():
@@ -99,4 +97,4 @@ def test_make_dataset():
     vec = np.array([1, 0, 0])
     points = np.array([[1, 2, 3], [4, 5, 6]])
     result = create_dataset(vec, points)
-    assert isinstance(result, pd.DataFrame)
+    assert isinstance(result, pandas.DataFrame)

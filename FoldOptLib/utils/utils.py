@@ -362,12 +362,11 @@ def create_dataset(
 
     return dataset
 
-
 def get_wavelength_guesses(guess, size):
-    rng = numpy.random.default_rng(1651465414615413541564580)
+    rng = numpy.random.default_rng()
 
     mu, sigma = guess, guess / 3
-    return rng.standard_normal(mu, abs(sigma), size)
+    return rng.normal(mu, abs(sigma), size)
 
 
 def calculate_intersection_lineation(axial_surface, folded_foliation):

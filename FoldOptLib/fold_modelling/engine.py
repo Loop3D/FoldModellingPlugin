@@ -10,7 +10,7 @@ from ..utils.utils import (
 )
 from ..builders import FoldFrameBuilder
 from ..datatypes import DataType, CoordinateType, FitType
-from ..input import InumpyutDataProcessor, OptData, InputData
+from ..input import InputDataProcessor, OptData, InputData
 from ..from_loopstructural._fold import FoldEvent
 from ..from_loopstructural._fold_frame import FoldFrame
 from .base_engine import BaseEngine
@@ -94,7 +94,7 @@ class FoldModel(BaseEngine):
         -------
         None
         """
-        data_processor = InumpyutDataProcessor(data)
+        data_processor = InputDataProcessor(data)
         self.data = data_processor.get_data()
 
     def initialise_model(self) -> None:
