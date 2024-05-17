@@ -41,14 +41,6 @@ setup(
     ],
     version=version,
     packages=find_packages(),
-    # ext_modules=
-    # ),
-    # include_dirs=[numpy.get_include()],
-    # include_package_data=True,
-    # package_data={
-    #     "FoldOptLib": [
-    #     ]
-    # },
     keywords=[
         "earth sciences",
         "geology",
