@@ -186,7 +186,7 @@ class OptData:
         """
         if self.constraints[coordinate_type] is not None:
             return self.constraints[coordinate_type]
-        
+
         if self.constraints[coordinate_type] is None:
             if coordinate_type == CoordinateType.AXIAL_FOLIATION_FIELD:
                 self.set_axial_surface_field_constraints()
@@ -197,5 +197,3 @@ class OptData:
                 self.set_fold_axis_field_constraints()
 
                 return self.constraints[coordinate_type]
-
-        

@@ -76,7 +76,6 @@ class VonMisesFisher:
 
         return logpdf_values
 
-
     def draw_samples(self, size: int = 1, random_state: int = 1) -> np.ndarray:
         """
         Draw random samples from the Von Mises-Fisher distribution.

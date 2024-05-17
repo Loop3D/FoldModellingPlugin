@@ -170,7 +170,12 @@ def rotate_vector(v, angle, dimension=2):
     """
     if dimension == 2:
         # Define the 2D rotation matrix
-        R = numpy.array([[numpy.cos(angle), -numpy.sin(angle)], [numpy.sin(angle), numpy.cos(angle)]])
+        R = numpy.array(
+            [
+                [numpy.cos(angle), -numpy.sin(angle)],
+                [numpy.sin(angle), numpy.cos(angle)],
+            ]
+        )
     elif dimension == 3:
         # Define the 3D rotation matrix
         R = numpy.array(
@@ -384,7 +389,9 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 
     # Check if the inumpyuts have the same shape
     if axial_surface.shape != folded_foliation.shape:
-        raise ValueError("Axial surface and folded foliation arrays must have the same shape.")
+        raise ValueError(
+            "Axial surface and folded foliation arrays must have the same shape."
+        )
 
     # Calculate cross product of the axial surface and folded foliation normal vectors
     li = numpy.cross(axial_surface, folded_foliation)
@@ -410,7 +417,9 @@ def axial_plane_stereonet(strike, dip):
     """
     # Check if the inumpyuts are numpy arrays
     if not isinstance(strike, numpy.ndarray):
-        raise TypeError(f"Expected strike to be a numpy array, got {type(strike).__name__}")
+        raise TypeError(
+            f"Expected strike to be a numpy array, got {type(strike).__name__}"
+        )
     if not isinstance(dip, numpy.ndarray):
         raise TypeError(f"Expected dip to be a numpy array, got {type(dip).__name__}")
 

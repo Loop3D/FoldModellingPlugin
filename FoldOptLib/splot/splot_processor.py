@@ -3,7 +3,7 @@ from ..utils import fourier_series, fourier_series_x_intercepts
 
 
 class SPlotProcessor:
-    
+
     def __init__(self):
         self.x = None
         # self.splot_cache = {}
@@ -17,32 +17,32 @@ class SPlotProcessor:
         }
         # self.constraints = constraints
 
-    def find_amax_amin(self, theta, v='radians'):
+    def find_amax_amin(self, theta, v="radians"):
         """
-            Helper method to find the amax and amin values of a fold rotation angle curve
+        Helper method to find the amax and amin values of a fold rotation angle curve
 
-            Parameters
-            ----------
-            theta : float
-                The fourier parameters
+        Parameters
+        ----------
+        theta : float
+            The fourier parameters
 
-            Returns
-            -------
-            amax : float
-                The maximum value of the curve in radians
-            amin : float
-                The minimum value of the curve in radians
-            """
+        Returns
+        -------
+        amax : float
+            The maximum value of the curve in radians
+        amin : float
+            The minimum value of the curve in radians
+        """
 
         curve = self.calculate_splot(self.x, theta)
 
-        if v == 'radians':
+        if v == "radians":
             amax = numpy.arctan(numpy.deg2rad(curve.max()))
             amin = numpy.arctan(numpy.deg2rad(curve.min()))
 
             return amax, amin
 
-        if v == 'degrees':
+        if v == "degrees":
             amax = curve.max()
             amin = curve.min()
 
@@ -50,22 +50,22 @@ class SPlotProcessor:
 
     def calculate_splot(self, fold_frame, theta):
         """
-            Calculates the curve using the passed ref_fold_frame and theta values, it uses
-            the passed coeff value to determine the specific function to use.
+        Calculates the curve using the passed ref_fold_frame and theta values, it uses
+        the passed coeff value to determine the specific function to use.
 
-            Parameters
-            ----------
-            fold_frame : array
-                The fold frame coordinates of the fold rotation angles
-            theta : float
-                The fourier parameters
+        Parameters
+        ----------
+        fold_frame : array
+            The fold frame coordinates of the fold rotation angles
+        theta : float
+            The fourier parameters
 
-            Returns
-            -------
-            curve : array
-                The calculated curve.
+        Returns
+        -------
+        curve : array
+            The calculated curve.
 
-            """
+        """
         coeff = len(theta)
         # key = str(theta)
         result = None
@@ -79,39 +79,39 @@ class SPlotProcessor:
 
     def calculate_tightness(self, theta):
         """
-            Calculates the tightness metric of the curve using the passed theta value
+        Calculates the tightness metric of the curve using the passed theta value
 
-            Parameters
-            ----------
-            theta : float
-                The parameter that is used to calculate the curve
+        Parameters
+        ----------
+        theta : float
+            The parameter that is used to calculate the curve
 
-            Returns
-            -------
-            tightness : float
-                The tightness metric of the curve
-            """
-        amax, amin = self.find_amax_amin(theta, v='radians')
+        Returns
+        -------
+        tightness : float
+            The tightness metric of the curve
+        """
+        amax, amin = self.find_amax_amin(theta, v="radians")
         return 180 - numpy.rad2deg(2 * numpy.tan((amax - amin) / 2))
 
     def calculate_asymmetry(self, theta):
         """
-            Calculates the fold asymmetry for a given set of fourier parameters.
-            The asymmetry of a curve is a measure of how much it deviates from symmetry.
+        Calculates the fold asymmetry for a given set of fourier parameters.
+        The asymmetry of a curve is a measure of how much it deviates from symmetry.
 
-            Parameters:
-            -----------
-            theta : float
-                The parameter used to calculate the curve
+        Parameters:
+        -----------
+        theta : float
+            The parameter used to calculate the curve
 
-            Returns:
-            --------
-            asymmetry: float
-                The asymmetry of the curve measured in degrees.
+        Returns:
+        --------
+        asymmetry: float
+            The asymmetry of the curve measured in degrees.
 
-            """
+        """
 
-        amax, amin, curve = self.find_amax_amin(theta, v='degrees')
+        amax, amin, curve = self.find_amax_amin(theta, v="degrees")
         median = numpy.median(curve)
         tightness_range = amax + numpy.abs(amin)
         asymmetry = median / tightness_range

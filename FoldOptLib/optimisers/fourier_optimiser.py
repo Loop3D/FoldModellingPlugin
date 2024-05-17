@@ -65,7 +65,9 @@ class FourierSeriesOptimiser(BaseOptimiser):
         self.fold_frame_coordinate = fold_frame_coordinate
         self.rotation_angle = numpy.tan(numpy.deg2rad(rotation_angle))
         self.method = method
-        self.geological_knowledge = self.setup_geological_knowledge(geological_knowledge)
+        self.geological_knowledge = self.setup_geological_knowledge(
+            geological_knowledge
+        )
         # TODO: check how to initialise self.x = x in self.geological_knowledge
         self.x = x
         self.solver = None
@@ -215,7 +217,9 @@ class FourierSeriesOptimiser(BaseOptimiser):
         if self._solver is self.optimiser._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
             return self._solver(self.objective_function, self._bounds, init=self._guess)
 
-        elif self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]:
+        elif (
+            self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]
+        ):
             return self._solver(self.objective_function, x0=self._guess)
 
         # TODO: ...add support for restricted optimisation mode...

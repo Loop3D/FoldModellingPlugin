@@ -1,6 +1,5 @@
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
 from ..solvers import Solver
 from ..datatypes import SolverType, InputGeologicalKnowledge
 
@@ -10,7 +9,9 @@ class BaseOptimiser(ABC):
     Base class for configuration of fold geometry optimisers.
     """
 
-    def __init__(self, method: str = 'differential_evolution', **kwargs: Dict[str, Any]):
+    def __init__(
+        self, method: str = "differential_evolution", **kwargs: Dict[str, Any]
+    ):
         """
         Constructs all the necessary attributes for the Fold Optimiser object.
 
@@ -26,8 +27,9 @@ class BaseOptimiser(ABC):
 
     @staticmethod
     @abstractmethod
-    def setup_geological_knowledge(geological_knowledge: InputGeologicalKnowledge = None):
-
+    def setup_geological_knowledge(
+        geological_knowledge: InputGeologicalKnowledge = None,
+    ):
         """
         Setup the geological knowledge.
 
@@ -80,7 +82,7 @@ class BaseOptimiser(ABC):
         """
 
         # Check if method is specified in kwargs and assign the appropriate solver
-        if self.method == 'differential_evolution':
+        if self.method == "differential_evolution":
             self.solver = self._solvers[SolverType.DIFFERENTIAL_EVOLUTION]
 
         else:

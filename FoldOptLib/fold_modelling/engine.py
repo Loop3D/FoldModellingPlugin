@@ -76,7 +76,9 @@ class FoldModel(BaseEngine):
         self.dimensions = dimensions
         self.model = None
         self.gradient_data = self.data[["gx", "gy", "gz"]].to_numpy()
-        self.points = self.data[["X", "Y", "Z"]].to_numpy()  # coordinates of the data points
+        self.points = self.data[
+            ["X", "Y", "Z"]
+        ].to_numpy()  # coordinates of the data points
         assert len(self.points) == len(
             self.gradient_data
         ), "coordinates must have the same length as data"
@@ -108,9 +110,13 @@ class FoldModel(BaseEngine):
         """
         self.set_data(self.raw_data)
         # self.model = GeologicalModel(self.bounding_box[0, :], self.bounding_box[1, :])
-        self.scaled_points = EuclideanTransformation(dimensions=self.dimensions)(self.points)
+        self.scaled_points = EuclideanTransformation(dimensions=self.dimensions)(
+            self.points
+        )
 
-    def process_axial_surface_proposition(self, axial_normal: numpy.ndarray) -> pandas.DataFrame:
+    def process_axial_surface_proposition(
+        self, axial_normal: numpy.ndarray
+    ) -> pandas.DataFrame:
         """
         Process the axial surface proposition at each iteration by creating a dataset from the axial surface normal.
 
@@ -190,9 +196,9 @@ class FoldModel(BaseEngine):
         foldframe = FoldFrame("sn", self.axial_surface)
 
         # calculate the gradient of the axial surface
-        s1g = self.axial_surface[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(
-            self.scaled_points
-        )
+        s1g = self.axial_surface[
+            CoordinateType.AXIAL_FOLIATION_FIELD
+        ].evaluate_gradient(self.scaled_points)
 
         # normalise the gradient
         s1g /= numpy.linalg.norm(s1g, axis=1)[:, None]
@@ -242,11 +248,15 @@ class FoldModel(BaseEngine):
             fold_axis_rotation_function = fold_function(fitted_far)
 
             # create a fold event with the axial surface and fold axis rotation function
-            fold = FoldEvent(self.axial_surface, fold_axis_rotation=fold_axis_rotation_function)
+            fold = FoldEvent(
+                self.axial_surface, fold_axis_rotation=fold_axis_rotation_function
+            )
 
             # calculate the fold limb rotation angle
             flr, fld = foldframe.calculate_fold_limb_rotation(
-                self.scaled_points, self.gradient_data, axis=fold.get_fold_axis_orientation
+                self.scaled_points,
+                self.gradient_data,
+                axis=fold.get_fold_axis_orientation,
             )
 
             # fit a fourier series to the fold limb rotation
@@ -357,7 +367,9 @@ class FoldModel(BaseEngine):
             )
 
         # Create a FourierSeriesOptimiser instance
-        fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x)
+        fourier_optimiser = FourierSeriesOptimiser(
+            fold_frame_coordinate, rotation_angle, x
+        )
 
         if self.geological_knowledge is not None:
             opt = fourier_optimiser.optimise()
@@ -388,7 +400,9 @@ class FoldModel(BaseEngine):
         s1g /= numpy.linalg.norm(s1g, axis=1)[:, None]
 
         # Get deformed orientation and normalize the fold direction
-        fold_direction, fold_axis, gz = fold.get_deformed_orientation(self.scaled_points)
+        fold_direction, fold_axis, gz = fold.get_deformed_orientation(
+            self.scaled_points
+        )
         fold_direction /= numpy.linalg.norm(fold_direction, axis=1)[:, None]
 
         # Correct any fold_direction vector to be consistent with the axial surface orientation

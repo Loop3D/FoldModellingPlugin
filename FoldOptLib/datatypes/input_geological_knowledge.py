@@ -3,7 +3,7 @@ from ..utils import strike_dip_to_vector
 from .enums import KnowledgeType
 from .probability_distributions import NormalDistribution, VonMisesFisherDistribution
 import beartype
-from typing import Dict, Union, Optional, List
+from typing import Optional
 
 
 @beartype.beartype
@@ -19,14 +19,15 @@ class InputGeologicalKnowledge:
 
     def __post_init__(self):
         if self.axial_surface is not None:
-            
+
             if len(self.axial_surface.mu) == 2:
-                self.axial_surface.mu = strike_dip_to_vector(self.axial_surface.mu[0], self.axial_surface.mu[1])
+                self.axial_surface.mu = strike_dip_to_vector(
+                    self.axial_surface.mu[0], self.axial_surface.mu[1]
+                )
 
     def __getitem__(self, input_knowledge: KnowledgeType):
 
         knowledge_map = {
-            
             KnowledgeType.ASYMMETRY: self.asymmetry,
             KnowledgeType.AXIAL_TRACE: self.axial_trace,
             KnowledgeType.WAVELENGTH: self.fold_wavelength,
@@ -37,4 +38,3 @@ class InputGeologicalKnowledge:
         }
 
         return knowledge_map[input_knowledge]
-        

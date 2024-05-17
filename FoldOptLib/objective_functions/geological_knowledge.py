@@ -67,7 +67,9 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         self.splot_function = fourier_series
         self.fittypeflag = [False] * len(FitType)
 
-    def axial_surface_objective_function(self, vector: Union[List, numpy.ndarray]) -> float:
+    def axial_surface_objective_function(
+        self, vector: Union[List, numpy.ndarray]
+    ) -> float:
         """
         Objective function for the axial surface.
         This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.
@@ -95,7 +97,10 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         vmf = VonMisesFisher(mu, kappa)
 
         # Calculate the logpdf of the input array
-        vmf_logpdf = vmf.logpdf(vector) * self.input_knowledge[KnowledgeType.AXIAL_SURFACE].weight
+        vmf_logpdf = (
+            vmf.logpdf(vector)
+            * self.input_knowledge[KnowledgeType.AXIAL_SURFACE].weight
+        )
 
         return vmf_logpdf
 
@@ -431,7 +436,9 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             sigma = constraint_info["sigma"]
 
             # Calculate the negative Gaussian log likelihood for a range of values between the lower and upper bounds
-            val = -ObjectiveFunction[ObjectiveType.LOG_NORMAL](numpy.linspace(lb, ub, 100), mu, sigma)
+            val = -ObjectiveFunction[ObjectiveType.LOG_NORMAL](
+                numpy.linspace(lb, ub, 100), mu, sigma
+            )
             # Create a NonlinearConstraint object for this constraint
             nlc = NonlinearConstraint(
                 self.objective_functions_map[constraint_name],
@@ -471,7 +478,10 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Initialize the total objective function value to 0
         total_objective_value = 0
-        if len(theta) == 3 and self.input_knowledge[KnowledgeType.AXIAL_SURFACE] is not None:
+        if (
+            len(theta) == 3
+            and self.input_knowledge[KnowledgeType.AXIAL_SURFACE] is not None
+        ):
             total_objective_value += self.axial_surface_objective_function(theta)
 
         elif len(theta) == 4:
@@ -496,7 +506,9 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
                     total_objective_value += self.hinge_angle_objective_function(theta)
 
                 elif self.input_knowledge[KnowledgeType.AXIS_WAVELENGTH] is not None:
-                    total_objective_value += self.fold_axis_wavelength_objective_function(theta)
+                    total_objective_value += (
+                        self.fold_axis_wavelength_objective_function(theta)
+                    )
 
                 # update the flag
                 self.fittypeflag[FitType.AXIS] = False

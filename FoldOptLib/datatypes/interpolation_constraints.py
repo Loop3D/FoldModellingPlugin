@@ -5,7 +5,6 @@ import numpy
 import beartype
 
 
-
 @dataclass
 class InterpolationConstraints:
     """
@@ -22,6 +21,7 @@ class InterpolationConstraints:
     gradient_constraints : Optional[Union[list, numpy.ndarray]]
         The gradient constraints for the interpolation, [x, y, z, gx, gy, gz, weight].
     """
+
     value_constraints: Optional[Union[list, numpy.ndarray]] = None
     tangent_constraints: Optional[Union[list, numpy.ndarray]] = None
     normal_constraints: Optional[Union[list, numpy.ndarray]] = None
@@ -33,6 +33,6 @@ class InterpolationConstraints:
             ConstraintType.VALUE: self.value_constraints,
             ConstraintType.TANGENT: self.tangent_constraints,
             ConstraintType.NORMAL: self.normal_constraints,
-            ConstraintType.GRADIENT: self.gradient_constraints
+            ConstraintType.GRADIENT: self.gradient_constraints,
         }
         return constraints[constraint_type]

@@ -39,7 +39,9 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 
     # Check if the inputs have the same shape
     if axial_surface.shape != folded_foliation.shape:
-        raise ValueError("Axial surface and folded foliation arrays must have the same shape.")
+        raise ValueError(
+            "Axial surface and folded foliation arrays must have the same shape."
+        )
 
     # Calculate cross product of the axial surface and folded foliation normal vectors
     li = numpy.cross(axial_surface, folded_foliation)
@@ -61,7 +63,10 @@ class AxialSurfaceOptimiser(BaseOptimiser):
     """
 
     def __init__(
-        self, data: InputData, method: str = "differential_evolution", **kwargs: Dict[str, Any]
+        self,
+        data: InputData,
+        method: str = "differential_evolution",
+        **kwargs: Dict[str, Any]
     ):
         """
         Initialise the AxialSurfaceOptimiser with data, bounding box, geological knowledge and other parameters.
@@ -128,7 +133,9 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
     @beartype.beartype
     @staticmethod
-    def setup_geological_knowledge(geological_knowledge: InputGeologicalKnowledge = None):
+    def setup_geological_knowledge(
+        geological_knowledge: InputGeologicalKnowledge = None,
+    ):
         """
         Setup the geological knowledge.
 
@@ -219,13 +226,15 @@ class AxialSurfaceOptimiser(BaseOptimiser):
             # If the optimisation type is MLE, calculate the logpdf using the log normal distribution
             if self.optimisation_type is OptimisationType.MLE:
                 self.objective_function = self.build_optimisation_function(
-                    ObjectiveFunction[ObjectiveType.LOG_NORMAL], self.get_predicted_foliation
+                    ObjectiveFunction[ObjectiveType.LOG_NORMAL],
+                    self.get_predicted_foliation,
                 )
 
             # If the optimisation type is VMF_MLE, calculate the logpdf using the Von Mises distribution
             elif self.optimisation_type is OptimisationType.VM_MLE:
                 self.objective_function = self.build_optimisation_function(
-                    ObjectiveFunction[ObjectiveType.VON_MISES], self.get_predicted_foliation
+                    ObjectiveFunction[ObjectiveType.VON_MISES],
+                    self.get_predicted_foliation,
                 )
 
     def build_optimisation_function(
@@ -245,7 +254,6 @@ class AxialSurfaceOptimiser(BaseOptimiser):
             angle_difference = ObjectiveFunction[ObjectiveType.ANGLE](
                 predicted_foliation, self.gradient_data
             )
-            
 
             # If the optimisation type is angle, return the angle difference
             if self.optimisation_type == OptimisationType.ANGLE:
@@ -258,9 +266,11 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
                 elif knowledge_function is not None:
                     # Calculate the logpdf of the angle difference
-                    logpdf = objective_function(angle_difference) + knowledge_function(unit_vector)
+                    logpdf = objective_function(angle_difference) + knowledge_function(
+                        unit_vector
+                    )
                     return logpdf
-                
+
                 # clean up memory
                 del predicted_foliation, unit_vector
                 gc.collect()
@@ -300,7 +310,9 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         if self._solver is self.optimiser._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
             return self._solver(self.objective_function, self._bounds, init=self._guess)
 
-        elif self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]:
+        elif (
+            self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]
+        ):
             return self._solver(self.objective_function, x0=self._guess)
 
         # TODO: ...add support for restricted optimisation mode...

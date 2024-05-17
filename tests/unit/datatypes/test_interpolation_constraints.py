@@ -3,6 +3,7 @@ import pytest
 from FoldOptLib.datatypes.interpolation_constraints import InterpolationConstraints
 from FoldOptLib.datatypes.enums import ConstraintType
 
+
 def test_interpolation_constraints():
     # Initialize InterpolationConstraints object
     ic = InterpolationConstraints()

@@ -9,7 +9,7 @@ import beartype
 class MetaObjectiveFunction(type):
     def __getitem__(cls, item):
         return cls.map_functions()[item]
-    
+
 
 class ObjectiveFunction(metaclass=MetaObjectiveFunction):
     """
@@ -21,11 +21,8 @@ class ObjectiveFunction(metaclass=MetaObjectiveFunction):
     # @beartype.beartype
     @staticmethod
     def log_normal(
-            b: Union[int, float],
-            mu: Union[int, float],
-            sigma: Union[int, float] = 1e-2
+        b: Union[int, float], mu: Union[int, float], sigma: Union[int, float] = 1e-2
     ):
-
         """
         Calculate the log-likelihood of a Gaussian distribution.
 
@@ -58,7 +55,9 @@ class ObjectiveFunction(metaclass=MetaObjectiveFunction):
             raise ValueError("`sigma` should be greater than 0.")
 
         # Calculate the log-likelihood
-        likelihood = -0.5 * numpy.log(2 * numpy.pi * sigma ** 2) - 0.5 * (b - mu) ** 2 / sigma ** 2
+        likelihood = (
+            -0.5 * numpy.log(2 * numpy.pi * sigma**2) - 0.5 * (b - mu) ** 2 / sigma**2
+        )
 
         # Return the log-likelihood
         return -likelihood
@@ -101,8 +100,7 @@ class ObjectiveFunction(metaclass=MetaObjectiveFunction):
     @beartype.beartype
     @staticmethod
     def fourier_series(
-            rotation_angle: numpy.ndarray,
-            fold_frame_coordinate: numpy.ndarray
+        rotation_angle: numpy.ndarray, fold_frame_coordinate: numpy.ndarray
     ):
         """
         Wrapper function to calculate the log-likelihood of a Fourier series.
@@ -129,10 +127,7 @@ class ObjectiveFunction(metaclass=MetaObjectiveFunction):
 
     @beartype.beartype
     @staticmethod
-    def angle_function(
-            v1: Union[List,numpy.ndarray],
-            v2: Union[List,numpy.ndarray]
-    ):
+    def angle_function(v1: Union[List, numpy.ndarray], v2: Union[List, numpy.ndarray]):
         """
         Calculate the angle difference between the predicted bedding and the observed one.
 
@@ -180,5 +175,5 @@ class ObjectiveFunction(metaclass=MetaObjectiveFunction):
             ObjectiveType.LOG_NORMAL: ObjectiveFunction.log_normal,
             ObjectiveType.VON_MISES: ObjectiveFunction.vonmises,
             ObjectiveType.FOURIER: ObjectiveFunction.fourier_series,
-            ObjectiveType.ANGLE: ObjectiveFunction.angle_function
+            ObjectiveType.ANGLE: ObjectiveFunction.angle_function,
         }
