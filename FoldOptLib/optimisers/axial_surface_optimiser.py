@@ -245,9 +245,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
             angle_difference = ObjectiveFunction[ObjectiveType.ANGLE](
                 predicted_foliation, self.gradient_data
             )
-            # clean up memory
-            del predicted_foliation, unit_vector
-            gc.collect()
+            
 
             # If the optimisation type is angle, return the angle difference
             if self.optimisation_type == OptimisationType.ANGLE:
@@ -262,6 +260,10 @@ class AxialSurfaceOptimiser(BaseOptimiser):
                     # Calculate the logpdf of the angle difference
                     logpdf = objective_function(angle_difference) + knowledge_function(unit_vector)
                     return logpdf
+                
+                # clean up memory
+                del predicted_foliation, unit_vector
+                gc.collect()
 
         return optimisation_function
 
