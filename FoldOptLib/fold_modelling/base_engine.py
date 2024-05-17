@@ -11,20 +11,6 @@ class BaseEngine(ABC):
         """
         pass
 
-    # @abstractmethod
-    # def import_data(self):
-    #     """
-    #     Import the data from the input file
-    #     """
-    #     pass
-    #
-    # @abstractmethod
-    # def setup_fold_frame_interpolation(self):
-    #     """
-    #     Setup the fold frame interpolation
-    #     """
-    #     pass
-
     @abstractmethod
     def build_fold_frame(self, axial_normal: np.ndarray) -> None:
         """

@@ -10,7 +10,7 @@ from ..utils.utils import (
 )
 from ..builders import FoldFrameBuilder
 from ..datatypes import DataType, CoordinateType, FitType
-from ..input import InumpyutDataProcessor, OptData
+from ..input import InumpyutDataProcessor, OptData, InputData
 from ..from_loopstructural._fold import FoldEvent
 from ..from_loopstructural._fold_frame import FoldFrame
 from .base_engine import BaseEngine
@@ -56,7 +56,7 @@ class FoldModel(BaseEngine):
     No methods defined yet.
     """
 
-    def __init__(self, data: InumpyutData, dimensions: int = 2, **kwargs: Dict[str, Any]):
+    def __init__(self, data: InputData, dimensions: int = 2, **kwargs: Dict[str, Any]):
         """
         Constructs all the necessary attributes for the FoldModel object.
 
@@ -84,7 +84,7 @@ class FoldModel(BaseEngine):
         self.scaled_points = None
         self.kwargs = kwargs
 
-    def set_data(self, data: InumpyutData) -> None:
+    def set_data(self, data: InputData) -> None:
         """
         Process the data by extracting the gradient data from the data DataFrame.
 
