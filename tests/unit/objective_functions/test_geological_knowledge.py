@@ -1,77 +1,88 @@
-import unittest
-import numpy as np
+import pytest
+import numpy
 
 # Import the class to be tested
-from FoldOptLib.fold_modelling_plugin.objective_functions.geological_knowledge import \
-    GeologicalKnowledgeFunctions
+from FoldOptLib.objective_functions import GeologicalKnowledgeFunctions
+from FoldOptLib.datatypes import InputGeologicalKnowledge
+from FoldOptLib.datatypes.probability_distributions import NormalDistribution, VonMisesFisherDistribution
 
 
-class TestGeologicalKnowledgeFunctions(unittest.TestCase):
+@pytest.fixture
+def geological_knowledge():
+    # Sample constraints and x values for testing
+    # Example of InputGeologicalKnowledge filled
+    knowledge = InputGeologicalKnowledge(
+        asymmetry=NormalDistribution(mu=0, sigma=1),
+        fold_wavelength=NormalDistribution(mu=10, sigma=2),
+        axis_wavelength=NormalDistribution(mu=5, sigma=1),
+        tightness=NormalDistribution(mu=0.5, sigma=0.1),
+        hinge_line=NormalDistribution(mu=45, sigma=5),
+        axial_trace=NormalDistribution(mu=30, sigma=3),
+        axial_surface=VonMisesFisherDistribution(mu=[0.5, 0.5, 0.5], kappa=10),
+    )
 
-    def setUp(self):
-        # Sample constraints and x values for testing
-        self.constraints = {
-            'fold_limb_rotation_angle': {
-                'tightness': {'lb': 10, 'ub': 10, 'mu': 10, 'sigma': 10, 'w': 10},
-                'asymmetry': {'lb': 10, 'ub': 10, 'mu': 10, 'sigma': 10, 'w': 10},
-                'fold_wavelength': {'lb': 10, 'ub': 10, 'mu': 10, 'sigma': 10, 'w': 10},
-                'axial_trace_1': {'mu': 10, 'sigma': 10, 'w': 10},
-                'axial_traces_2': {'mu': 10, 'sigma': 10, 'w': 10},
-                'axial_traces_3': {'mu': 10, 'sigma': 10, 'w': 10},
-                'axial_traces_4': {'mu': 10, 'sigma': 10, 'w': 10},
-            },
-            'fold_axis_rotation_angle': {
-                'hinge_angle': {'lb': 10, 'ub': 10, 'mu': 10, 'sigma': 10, 'w': 10},
-                'axis_wavelength': {'lb': 10, 'ub': 10, 'mu': 10, 'sigma': 10, 'w': 10},
-            },
-            'fold_axial_surface': {
-                'axial_surface': {'lb': 10, 'ub': 10, 'mu': [0.68, 0.6, 0.01], 'kappa': 10, 'w': 10}
-            }
-        }
-        self.x = np.arange(-100., 100.)
-        self.gkf = GeologicalKnowledgeFunctions(self.constraints['fold_limb_rotation_angle'], self.x)
+    gkf = GeologicalKnowledgeFunctions(knowledge)
+    gkf.x = numpy.linspace(-1, 1, 100)
 
-    def test_axial_surface_objective_function(self):
-        x = [0., 0., 1.]
-        gkf = GeologicalKnowledgeFunctions(self.constraints['fold_axial_surface'], self.x)
-        result = gkf.axial_surface_objective_function(x)
-        self.assertIsInstance(result, float)
-
-    def test_axial_trace_objective_function(self):
-        theta = np.array([0., 1., 1., 500.])
-        gkf = GeologicalKnowledgeFunctions(self.constraints['fold_limb_rotation_angle'], self.x)
-        result = gkf.axial_trace_objective_function(theta)
-        self.assertIsInstance(result, (float, list))
-
-    def test_wavelength_objective_function(self):
-        theta = np.array([0, 1, 1, 500])
-        result = self.gkf.wavelength_objective_function(theta)
-        self.assertIsInstance(result, float)
-
-    def test_fold_axis_wavelength_objective_function(self):
-        theta = np.array([0, 1, 1, 500])
-        gkf = GeologicalKnowledgeFunctions(self.constraints['fold_axis_rotation_angle'], self.x)
-        result = gkf.fold_axis_wavelength_objective_function(theta)
-        self.assertIsInstance(result, float)
-
-    def test_tightness_objective_function(self):
-        theta = np.array([0, 1, 1, 500])
-        result = self.gkf.tightness_objective_function(theta)
-        self.assertIsInstance(result, float)
-
-    def test_hinge_angle_objective_function(self):
-        theta = np.array([0, 1, 1, 500])
-        gkf = GeologicalKnowledgeFunctions(self.constraints['fold_axis_rotation_angle'], self.x)
-        result = gkf.hinge_angle_objective_function(theta)
-        self.assertIsInstance(result, float)
-
-    def test_asymmetry_objective_function(self):
-        theta = np.array([0, 1, 1, 500])
-        result = self.gkf.asymmetry_objective_function(theta)
-        self.assertIsInstance(result, float)
-
-    # Add more tests for other methods ...
+    return gkf
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_axial_surface_objective_function(geological_knowledge):
+    x = [0.0, 0.0, 1.0]
+    result = geological_knowledge.axial_surface_objective_function(x)
+    assert isinstance(result, float) 
+
+def test_invalid_axial_surface_objective_function(geological_knowledge):
+    x = [0.0, 0.0, 1.0, 1.0]
+    with pytest.raises(ValueError):
+        geological_knowledge.axial_surface_objective_function(x)
+
+def test_axial_trace_objective_function(geological_knowledge):
+    theta = numpy.array([0.0, 1.0, 1.0, 500.0])
+    result = geological_knowledge.axial_trace_objective_function(theta)
+    assert isinstance(result, (float)) or isinstance(result, (int)) or isinstance(result, (list, numpy.ndarray))
+
+
+def test_wavelength_objective_function(geological_knowledge):
+    theta = numpy.array([0, 1, 1, 500])
+    result = geological_knowledge.wavelength_objective_function(theta)
+    assert isinstance (result, float)
+
+
+def test_fold_axis_wavelength_objective_function(geological_knowledge):
+    theta = numpy.array([0, 1, 1, 500])
+    result = geological_knowledge.fold_axis_wavelength_objective_function(theta)
+    assert isinstance(result, float)
+
+
+def test_tightness_objective_function(geological_knowledge):
+    theta = numpy.array([0, 1, 1, 500])
+    result = geological_knowledge.tightness_objective_function(theta)
+    assert isinstance(result, float)
+
+def test_hinge_angle_objective_function(geological_knowledge):
+    theta = numpy.array([0, 1, 1, 500])
+    result = geological_knowledge.hinge_angle_objective_function(theta)
+    assert isinstance(result, float)
+
+def test_asymmetry_objective_function(geological_knowledge):
+    theta = numpy.array([0, 1, 1, 500])
+    result = geological_knowledge.asymmetry_objective_function(theta)
+    assert isinstance(result, float)
+
+def test_call_fourier_series(geological_knowledge):
+    theta = numpy.array([0, 1, 1, 500])
+    result = geological_knowledge(theta)
+    assert isinstance(result, float)
+
+def test_call_valid_vector(geological_knowledge):
+    vector = numpy.array([0, 1, 1], dtype=float)
+    vector /= numpy.linalg.norm(vector)
+    result_1 = geological_knowledge(vector)
+    assert isinstance(result_1, float)
+    
+def test_call_invalid_vector(geological_knowledge):
+    vector = numpy.array([0, 1, 1, 500, 0.5, 45, 30, 0.5, 0.5, 0.5])
+    with pytest.raises(ValueError):
+        geological_knowledge(vector)
+    

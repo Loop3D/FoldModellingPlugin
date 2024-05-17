@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 # sys.path.append("/FoldModellingPlugin/FoldModellingPlugin/fold_modelling")
-from FoldOptLib.FoldModellingPlugin.fold_modelling.engine import FoldModel
+from ...FoldOptLib.fold_modelling.engine import FoldModel
 
 
 class TestFoldModel(unittest.TestCase):
@@ -15,9 +15,9 @@ class TestFoldModel(unittest.TestCase):
             'Y': [4, 5, 6],
             'Z': [7, 8, 9],
             'feature_name': ['s0', 's0', 's0'],
-            'gx': [0.1, 0.2, 0.3],
-            'gy': [0.4, 0.5, 0.6],
-            'gz': [0.7, 0.8, 0.9]
+            'gx': [0.0, 0.0, 0.0],
+            'gy': [0.0, 0.0, 0.0],
+            'gz': [1.0, 1.0, 1.0]
         })
         self.bounding_box = np.array([[0, 0, 0], [10, 10, 10]])
         self.fold_model = FoldModel(self.data, self.bounding_box, av_fold_axis=False)
