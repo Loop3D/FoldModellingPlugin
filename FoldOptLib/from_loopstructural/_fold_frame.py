@@ -3,7 +3,6 @@
 # logger = getLogger(__name__)
 
 import numpy as np
-import LoopStructural
 from LoopStructural.modelling.features._structural_frame import StructuralFrame
 from ..datatypes.enums import CoordinateType
 
@@ -52,18 +51,14 @@ class FoldFrame(StructuralFrame):
 
         fad = self.features[CoordinateType.FOLD_AXIS_FIELD].evaluate_scalar_value(points)
         # project s0 onto axis plane B X A X B
-        projected_l1 = np.cross(
-            s1g, np.cross(l1, s1g, axisa=1, axisb=1), axisa=1, axisb=1
-        )
-        projected_s1gyg = np.cross(
-            s1g, np.cross(s1gyg, s1g, axisa=1, axisb=1), axisa=1, axisb=1
-        )
+        projected_l1 = np.cross(s1g, np.cross(l1, s1g, axisa=1, axisb=1), axisa=1, axisb=1)
+        projected_s1gyg = np.cross(s1g, np.cross(s1gyg, s1g, axisa=1, axisb=1), axisa=1, axisb=1)
 
         # einsum dot product
         far = np.einsum("ij,ij->i", projected_l1, projected_s1gyg)
         far = np.rad2deg(np.arccos(far))
         # scalar triple product
-        stp = np.einsum("ij,ij->i", np.cross(l1, s1gyg, axisa=1, axisb=1), s1g)
+        # stp = np.einsum("ij,ij->i", np.cross(l1, s1gyg, axisa=1, axisb=1), s1g)
         # check bounds
         far -= 90
         # far[stp < 0] = 360.- far[stp < 0]
@@ -127,9 +122,7 @@ class FoldFrame(StructuralFrame):
             # and 90
             vv = np.cross(s1g, s0g, axisa=1, axisb=1)
             ds = np.einsum("ij,ij->i", fold_axis, vv)
-            flr = np.rad2deg(
-                np.arcsin(r2)
-            )  # np.where(ds > 0, np.rad2deg(np.arcsin(r2)),
+            flr = np.rad2deg(np.arcsin(r2))  # np.where(ds > 0, np.rad2deg(np.arcsin(r2)),
             # (- )))
             flr[ds < 0] *= -1
 

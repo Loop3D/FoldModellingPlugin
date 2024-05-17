@@ -2,8 +2,11 @@ import numpy
 from scipy.optimize import NonlinearConstraint, BFGS
 
 # from LoopStructural.modelling.features.fold import fourier_series
-from typing import Union, Dict, List
-from ..utils.utils import *
+from typing import Union, List
+from ..utils.utils import (
+    fourier_series,
+    fourier_series_x_intercepts,
+)
 from ..splot.splot_processor import SPlotProcessor
 from .von_mises_fisher import VonMisesFisher
 from .objective_functions import ObjectiveFunction
@@ -81,7 +84,9 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             The logpdf value from the VonMisesFisher distribution.
         """
         if len(vector) != 3:
-            raise ValueError("The input array or list should be a 3D vector of type e.g., [0.0, 0.0, 0.0]")
+            raise ValueError(
+                "The input array or list should be a 3D vector of type e.g., [0.0, 0.0, 0.0]"
+            )
 
         # Extract parameters for the VonMisesFisher distribution
         mu = self.input_knowledge[KnowledgeType.AXIAL_SURFACE].mu
@@ -90,15 +95,13 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         vmf = VonMisesFisher(mu, kappa)
 
         # Calculate the logpdf of the input array
-        vmf_logpdf = (
-            vmf.logpdf(vector)
-            * self.input_knowledge[KnowledgeType.AXIAL_SURFACE].weight
-        )
+        vmf_logpdf = vmf.logpdf(vector) * self.input_knowledge[KnowledgeType.AXIAL_SURFACE].weight
 
         return vmf_logpdf
 
-    def axial_trace_objective_function(self, theta: Union[List, numpy.ndarray]) -> Union[int, float]:
-
+    def axial_trace_objective_function(
+        self, theta: Union[List, numpy.ndarray]
+    ) -> Union[int, float]:
         """
         Calculate the objective function for the 'axial_trace' constraint.
         This function calculates the negative likelihood of the axial trace(s) given the provided knowledge constraints.
@@ -129,7 +132,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             # Initialize the likelihood to 0
             likelihood = 0
             # Iterate over the knowledge constraints dictionary that have "axial_trace" in their key
-            for key, trace in filter(
+            for _key, trace in filter(
                 lambda item: "axial_trace" in item[0],
                 self.input_knowledge[KnowledgeType.AXIAL_TRACE].items(),
             ):
@@ -143,7 +146,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
                 # Update the likelihood using the Gaussian log likelihood function
                 likelihood += (
                     -ObjectiveFunction[ObjectiveType.LOG_NORMAL](
-                        intercepts[np.argmin(dist)], mu, sigma
+                        intercepts[numpy.argmin(dist)], mu, sigma
                     )
                     * w
                 )
@@ -428,9 +431,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             sigma = constraint_info["sigma"]
 
             # Calculate the negative Gaussian log likelihood for a range of values between the lower and upper bounds
-            val = -ObjectiveFunction[ObjectiveType.LOG_NORMAL](
-                np.linspace(lb, ub, 100), mu, sigma
-            )
+            val = -ObjectiveFunction[ObjectiveType.LOG_NORMAL](numpy.linspace(lb, ub, 100), mu, sigma)
             # Create a NonlinearConstraint object for this constraint
             nlc = NonlinearConstraint(
                 self.objective_functions_map[constraint_name],
@@ -470,10 +471,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
 
         # Initialize the total objective function value to 0
         total_objective_value = 0
-        if (
-            len(theta) == 3
-            and self.input_knowledge[KnowledgeType.AXIAL_SURFACE] is not None
-        ):
+        if len(theta) == 3 and self.input_knowledge[KnowledgeType.AXIAL_SURFACE] is not None:
             total_objective_value += self.axial_surface_objective_function(theta)
 
         elif len(theta) == 4:
@@ -498,17 +496,17 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
                     total_objective_value += self.hinge_angle_objective_function(theta)
 
                 elif self.input_knowledge[KnowledgeType.AXIS_WAVELENGTH] is not None:
-                    total_objective_value += (
-                        self.fold_axis_wavelength_objective_function(theta)
-                    )
+                    total_objective_value += self.fold_axis_wavelength_objective_function(theta)
 
                 # update the flag
                 self.fittypeflag[FitType.AXIS] = False
 
             else:
-                total_objective_value += 0.
-        else: 
-            raise ValueError("The input array or list should be a 3D vector of type e.g., [0.0, 0.0, 0.0] or 4 Fourier Series parameters.")
+                total_objective_value += 0.0
+        else:
+            raise ValueError(
+                "The input array or list should be a 3D vector of type e.g., [0.0, 0.0, 0.0] or 4 Fourier Series parameters."
+            )
 
             # Return the total objective function value
         return total_objective_value
@@ -528,7 +526,3 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
             The knowledge constraints for the given knowledge type.
         """
         return self.input_knowledge(knowledge_type)
-
-
-
-

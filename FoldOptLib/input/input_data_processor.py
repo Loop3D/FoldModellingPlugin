@@ -2,49 +2,43 @@ from dataclasses import dataclass
 from ..input.input_data_checker import CheckInputData
 from ..input.data_storage import InputData
 from ..datatypes import DataType
-from ..utils.utils import *
-from LoopStructural import BoundingBox
+from ..utils.utils import strike_dip_to_vectors
 
 import numpy
 import pandas
-from typing import List, Optional, Dict
 import beartype
 
 
 @beartype.beartype
 @dataclass
 class InputDataProcessor:
-
     data: InputData = None
     processed_data: pandas.DataFrame = None
 
     def __post_init__(self):
-
-
         CheckInputData()(self.data[DataType.DATA])
         if (
-
-            'strike' in self.data[DataType.DATA].columns 
-            and 'dip' in self.data[DataType.DATA].columns
-
+            "strike" in self.data[DataType.DATA].columns
+            and "dip" in self.data[DataType.DATA].columns
         ):
-
-            strike = self.data[DataType.DATA]['strike'].to_numpy()
-            dip = self.data[DataType.DATA]['dip'].to_numpy()
+            strike = self.data[DataType.DATA]["strike"].to_numpy()
+            dip = self.data[DataType.DATA]["dip"].to_numpy()
             gradient = strike_dip_to_vectors(strike, dip)
 
         elif (
-
-            'gx' in self.data[DataType.DATA].columns 
-            and 'gy' in self.data[DataType.DATA].columns 
-            and 'gz' in self.data[DataType.DATA].columns
-
+            "gx" in self.data[DataType.DATA].columns
+            and "gy" in self.data[DataType.DATA].columns
+            and "gz" in self.data[DataType.DATA].columns
         ):
-            gradient = self.data[DataType.DATA][['gx', 'gy', 'gz']].to_numpy()
+            gradient = self.data[DataType.DATA][["gx", "gy", "gz"]].to_numpy()
 
         gradient = InputDataProcessor.normalise(gradient)
 
-        self.data[DataType.DATA]['gx'], self.data[DataType.DATA]['gy'], self.data[DataType.DATA]['gz'] = gradient[:, 0], gradient[:, 1], gradient[:, 2]
+        (
+            self.data[DataType.DATA]["gx"],
+            self.data[DataType.DATA]["gy"],
+            self.data[DataType.DATA]["gz"],
+        ) = gradient[:, 0], gradient[:, 1], gradient[:, 2]
         self.processed_data = self.data[DataType.DATA]
 
         return self.processed_data

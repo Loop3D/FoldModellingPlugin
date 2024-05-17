@@ -1,24 +1,21 @@
 import gc
-from typing import Dict, Any, Union, Callable
+from typing import Dict, Any, Callable
 import numpy
-import pandas
 from .fold_optimiser import BaseOptimiser
 from ..objective_functions import GeologicalKnowledgeFunctions, ObjectiveFunction
-from ..input import CheckInputData, InputData
+from ..input import InputData
 from ..utils.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
 from ..objective_functions import VonMisesFisher
 from ..fold_modelling import FoldModel
 from ..datatypes import (
+    SolverType,
+    ObjectiveType,
+    OptimisationType,
+    InputGeologicalKnowledge,
+    KnowledgeType,
+    DataType,
+)
 
-    SolverType, 
-    ObjectiveType, 
-    OptimisationType, 
-    InputGeologicalKnowledge, 
-    KnowledgeType, 
-    DataType
-    )
-
-from LoopStructural import BoundingBox
 import beartype
 
 
@@ -56,51 +53,51 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 @beartype.beartype
 class AxialSurfaceOptimiser(BaseOptimiser):
     """
-        Optimiser for Axial Surfaces.
+    Optimiser for Axial Surfaces.
 
-        This class inherits from FoldOptimiser, FoldModel. It is used to optimise the axial surfaces
-        based on the provided data, bounding box, geological knowledge.
+    This class inherits from FoldOptimiser, FoldModel. It is used to optimise the axial surfaces
+    based on the provided data, bounding box, geological knowledge.
 
     """
 
-    def __init__(self, data: InputData,
-                 method: str = 'differential_evolution',
-                 **kwargs: Dict[str, Any]):
+    def __init__(
+        self, data: InputData, method: str = "differential_evolution", **kwargs: Dict[str, Any]
+    ):
+        """
+        Initialise the AxialSurfaceOptimiser with data, bounding box, geological knowledge and other parameters.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The input data for optimisation.
+        bounding_box : Union[list, np.ndarray]
+            The bounding box for the optimisation.
+        geological_knowledge : Optional[Dict[str, Any]], optional
+            The geological knowledge used for optimisation, by default None.
+        **kwargs : Dict[str, Any]
+            Other optional parameters for optimisation. Can include scipy optimisation parameters for
+            differential evolution and trust-constr methods.
+            mode : str, optional, optimisation mode, can be 'restricted' or 'unrestricted',
+            by default 'unrestricted'. only unrestricted mode is supported for now.
+            method : str, optional, optimisation method, can be 'differential_evolution' or 'trust-region',
+            by default 'differential_evolution'.
 
         """
-                Initialise the AxialSurfaceOptimiser with data, bounding box, geological knowledge and other parameters.
-
-                Parameters
-                ----------
-                data : pd.DataFrame
-                    The input data for optimisation.
-                bounding_box : Union[list, np.ndarray]
-                    The bounding box for the optimisation.
-                geological_knowledge : Optional[Dict[str, Any]], optional
-                    The geological knowledge used for optimisation, by default None.
-                **kwargs : Dict[str, Any]
-                    Other optional parameters for optimisation. Can include scipy optimisation parameters for
-                    differential evolution and trust-constr methods.
-                    mode : str, optional, optimisation mode, can be 'restricted' or 'unrestricted',
-                    by default 'unrestricted'. only unrestricted mode is supported for now.
-                    method : str, optional, optimisation method, can be 'differential_evolution' or 'trust-region',
-                    by default 'differential_evolution'.
-
-                """
 
         super().__init__(method=method)
         self.fold_engine = FoldModel(data, **kwargs)
 
         self.data = data
         # self.geological_knowledge = geological_knowledge
-        self.geological_knowledge = self.setup_geological_knowledge(self.data[DataType.GEOLOGICAL_KNOWLEDGE])
+        self.geological_knowledge = self.setup_geological_knowledge(
+            self.data[DataType.GEOLOGICAL_KNOWLEDGE]
+        )
         self.optimisation_type = self.setup_optimisation_type()
-        self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
+        self.gradient_data = self.data[["gx", "gy", "gz"]].to_numpy()
         self.objective_function = None
         self.guess = None
         self.bounds = None
         self.kwargs = kwargs
-
 
     def setup_optimisation_type(self):
         """
@@ -118,21 +115,20 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         elif self.geological_knowledge is not None:
             for knowledge_type in KnowledgeType:
                 if (
-                        self.geological_knowledge[knowledge_type] is not None
-                        and knowledge_type is KnowledgeType.AXIAL_SURFACE
+                    self.geological_knowledge[knowledge_type] is not None
+                    and knowledge_type is KnowledgeType.AXIAL_SURFACE
                 ):
                     return OptimisationType.VM_MLE
 
                 elif (
-                        self.geological_knowledge[knowledge_type] is not None
-                        and knowledge_type != KnowledgeType.AXIAL_SURFACE
+                    self.geological_knowledge[knowledge_type] is not None
+                    and knowledge_type != KnowledgeType.AXIAL_SURFACE
                 ):
                     return OptimisationType.MLE
 
     @beartype.beartype
     @staticmethod
     def setup_geological_knowledge(geological_knowledge: InputGeologicalKnowledge = None):
-
         """
         Setup the geological knowledge.
 
@@ -166,7 +162,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
         if self.geological_knowledge[KnowledgeType.AXIAL_SURFACE] is None:
             # use the halton method to initialise the optimisation
-            return 'halton'
+            return "halton"
 
     @beartype.beartype
     def get_predicted_foliation(self, unit_vector: numpy.ndarray):
@@ -202,13 +198,12 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
         # Check if geological knowledge about the axial surface is available
         if self.geological_knowledge is not None:
-
             # If the optimisation type is MLE, calculate the logpdf using the log normal distribution
             if self.optimisation_type is OptimisationType.MLE:
                 self.objective_function = self.build_optimisation_function(
                     ObjectiveFunction[ObjectiveType.LOG_NORMAL],
                     self.get_predicted_foliation,
-                    self.geological_knowledge
+                    self.geological_knowledge,
                 )
 
             # If the optimisation type is VMF_MLE, calculate the logpdf using the Von Mises Fisher distribution
@@ -216,32 +211,29 @@ class AxialSurfaceOptimiser(BaseOptimiser):
                 self.objective_function = self.build_optimisation_function(
                     ObjectiveFunction[ObjectiveType.VON_MISES],
                     self.get_predicted_foliation,
-                    self.geological_knowledge
+                    self.geological_knowledge,
                 )
 
         # If no geological knowledge about the axial surface is available
         elif self.geological_knowledge is None:
-
             # If the optimisation type is MLE, calculate the logpdf using the log normal distribution
             if self.optimisation_type is OptimisationType.MLE:
                 self.objective_function = self.build_optimisation_function(
-                    ObjectiveFunction[ObjectiveType.LOG_NORMAL],
-                    self.get_predicted_foliation
+                    ObjectiveFunction[ObjectiveType.LOG_NORMAL], self.get_predicted_foliation
                 )
 
             # If the optimisation type is VMF_MLE, calculate the logpdf using the Von Mises distribution
             elif self.optimisation_type is OptimisationType.VM_MLE:
                 self.objective_function = self.build_optimisation_function(
-                    ObjectiveFunction[ObjectiveType.VON_MISES],
-                    self.get_predicted_foliation
+                    ObjectiveFunction[ObjectiveType.VON_MISES], self.get_predicted_foliation
                 )
 
     def build_optimisation_function(
-            self,
-            objective_function: ObjectiveFunction,
-            foliation_function: Callable,
-            knowledge_function: GeologicalKnowledgeFunctions = None):
-
+        self,
+        objective_function: ObjectiveFunction,
+        foliation_function: Callable,
+        knowledge_function: GeologicalKnowledgeFunctions = None,
+    ):
         def optimisation_function(strike_dip):
             # Convert the strike-dip to a unit vector
             unit_vector = strike_dip_to_vector(strike_dip[0], strike_dip[1])
@@ -250,7 +242,9 @@ class AxialSurfaceOptimiser(BaseOptimiser):
             # Get the predicted foliation based on the unit vector
             predicted_foliation = foliation_function(unit_vector)
             # Calculate the angle difference between the predicted and observed foliation
-            angle_difference = ObjectiveFunction[ObjectiveType.ANGLE](predicted_foliation, self.gradient_data)
+            angle_difference = ObjectiveFunction[ObjectiveType.ANGLE](
+                predicted_foliation, self.gradient_data
+            )
             # clean up memory
             del predicted_foliation, unit_vector
             gc.collect()
@@ -272,9 +266,8 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         return optimisation_function
 
     def setup_optimisation(self):
-
         """
-           Sets up the optimisation algorithm, the solver, the objective function, and the initial guess.
+        Sets up the optimisation algorithm, the solver, the objective function, and the initial guess.
 
         """
         super().setup_optimisation()
@@ -284,9 +277,8 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
         # Setup optimisation method
         self.setup_optimisation_method()
-    
-    def optimise(self):
 
+    def optimise(self):
         """
         Runs the optimisation.
 
@@ -304,11 +296,9 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         self.setup_optimisation()
 
         if self._solver is self.optimiser._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
-
             return self._solver(self.objective_function, self._bounds, init=self._guess)
 
         elif self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]:
-
             return self._solver(self.objective_function, x0=self._guess)
 
         # TODO: ...add support for restricted optimisation mode...
