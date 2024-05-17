@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas 
 import beartype
 
 
@@ -9,17 +9,17 @@ class CheckInputData:
 
     Methods
     -------
-    __call__ (folded_foliation_data: pd.DataFrame) -> None
+    __call__ (folded_foliation_data: pandas.DataFrame) -> None
         Checks if the foliation data is a pandas dataframe and has the correct columns.
     """
-    # @beartype.beartype
-    def __call__(self, folded_foliation_data: pd.DataFrame):
+    @beartype.beartype
+    def __call__(self, folded_foliation_data: pandas.DataFrame):
         """
         Check the foliation data is a pandas dataframe and has the correct columns: X, Y, Z, feature_name and
         either strike, dip, or gx, gy, gz
         """
         # # check if the foliation data is a pandas dataframe
-        if not isinstance(folded_foliation_data, pd.DataFrame):
+        if not isinstance(folded_foliation_data, pandas.DataFrame):
             raise TypeError("Foliation data must be a pandas DataFrame.")
         required_columns = ['X', 'Y', 'Z', 'feature_name']
         if not all(column in folded_foliation_data.columns for column in required_columns):
