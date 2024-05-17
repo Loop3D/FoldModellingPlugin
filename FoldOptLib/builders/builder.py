@@ -1,24 +1,16 @@
 from .base_builder import BaseBuilder
-
-from ..datatypes import InterpolationConstraints, ConstraintType 
+from ..datatypes import InterpolationConstraints, ConstraintType
 from LoopStructural import LoopInterpolator, BoundingBox
 import numpy
-from typing import Union, Any
 
 
 class Builder(BaseBuilder):
-
     def __init__(self, boundingbox: BoundingBox):
         self.boundingbox = boundingbox
 
-        self.interpolator = LoopInterpolator(
-            self.boundingbox,
-            dimensions=3,
-            nelements=1000
-        )
-    
-    def set_constraints(self, constraints: InterpolationConstraints):
+        self.interpolator = LoopInterpolator(self.boundingbox, dimensions=3, nelements=1000)
 
+    def set_constraints(self, constraints: InterpolationConstraints):
         self.interpolator.fit(
             values=constraints[ConstraintType.VALUE],
             tangent_vectors=constraints[ConstraintType.TANGENT],
@@ -26,13 +18,11 @@ class Builder(BaseBuilder):
         )
 
     def evaluate_scalar_value(self, locations: numpy.ndarray) -> numpy.ndarray:
-        
         return self.interpolator.evaluate_scalar_value(locations)
 
     def evaluate_gradient(self, locations: numpy.ndarray) -> numpy.ndarray:
-
         return self.interpolator.evaluate_gradient(locations)
-    
+
     def min(self):
         """Calculate the min value of the fold frame
         in the model
@@ -56,4 +46,3 @@ class Builder(BaseBuilder):
         """
 
         return numpy.nanmax(self.evaluate_scalar_value(self.boundingbox.regular_grid((10, 10, 10))))
-
