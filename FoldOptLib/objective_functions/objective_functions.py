@@ -1,19 +1,24 @@
 from ..datatypes.enums import ObjectiveType
 import numpy
-from typing import Union
+from typing import Union, List
 from ..helper.utils import get_predicted_rotation_angle
 from scipy.stats import vonmises
 import beartype
 
 
-class ObjectiveFunction:
+class MetaObjectiveFunction(type):
+    def __getitem__(cls, item):
+        return cls.map_functions()[item]
+    
+
+class ObjectiveFunction(metaclass=MetaObjectiveFunction):
     """
     This class contains the functions to calculate the log-likelihood of a Gaussian distribution and the VonMisesFisher
     distribution.
 
     """
 
-    @beartype.beartype
+    # @beartype.beartype
     @staticmethod
     def log_normal(
             b: Union[int, float],
@@ -116,7 +121,7 @@ class ObjectiveFunction:
             y_pred = get_predicted_rotation_angle(theta, fold_frame_coordinate)
             log_likelihood = 0
             for fr, fd in zip(y, y_pred):
-                log_likelihood += ObjectiveFunction(ObjectiveType.LOG_NORMAL)(fr, fd)
+                log_likelihood += ObjectiveFunction.log_normal(fr, fd)
 
             return log_likelihood
 
@@ -125,8 +130,8 @@ class ObjectiveFunction:
     @beartype.beartype
     @staticmethod
     def angle_function(
-            v1: numpy.ndarray,
-            v2: numpy.ndarray
+            v1: Union[List,numpy.ndarray],
+            v2: Union[List,numpy.ndarray]
     ):
         """
         Calculate the angle difference between the predicted bedding and the observed one.
@@ -177,15 +182,3 @@ class ObjectiveFunction:
             ObjectiveType.FOURIER: ObjectiveFunction.fourier_series,
             ObjectiveType.ANGLE: ObjectiveFunction.angle_function
         }
-
-    @beartype.beartype
-    def __getitem__(self, objective_type: ObjectiveType):
-
-        functions_map = {
-            ObjectiveType.LOG_NORMAL: ObjectiveFunction.log_normal,
-            ObjectiveType.VON_MISES: ObjectiveFunction.vonmises,
-            ObjectiveType.FOURIER: ObjectiveFunction.fourier_series,
-            ObjectiveType.ANGLE: ObjectiveFunction.angle_function
-        }
-
-        return functions_map[objective_type]

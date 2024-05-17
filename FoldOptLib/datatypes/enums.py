@@ -44,12 +44,13 @@ class SolverType(IntEnum):
     PARTICLE_SWARM = 3
 
 
-class RotationType(IntEnum):
+class FitType(IntEnum):
     LIMB = 0
     AXIS = 1
+    AXIAL_SURFACE = 2
 
 
-class CoordinateType(IntEnum):
+class ConstraintType(IntEnum):
     VALUE = 0
     TANGENT = 1
     NORMAL = 2

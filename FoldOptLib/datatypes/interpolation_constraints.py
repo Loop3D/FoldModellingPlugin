@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Union, Optional
-from enums import CoordinateType
+from ..datatypes.enums import ConstraintType
 import numpy
 import beartype
 
@@ -28,11 +28,11 @@ class InterpolationConstraints:
     gradient_constraints: Optional[Union[list, numpy.ndarray]] = None
 
     @beartype.beartype
-    def __getitem__(self, constraint_type: CoordinateType):
+    def __getitem__(self, constraint_type: ConstraintType):
         constraints = {
-            CoordinateType.VALUE: self.value_constraints,
-            CoordinateType.TANGENT: self.tangent_constraints,
-            CoordinateType.NORMAL: self.normal_constraints,
-            CoordinateType.GRADIENT: self.gradient_constraints
+            ConstraintType.VALUE: self.value_constraints,
+            ConstraintType.TANGENT: self.tangent_constraints,
+            ConstraintType.NORMAL: self.normal_constraints,
+            ConstraintType.GRADIENT: self.gradient_constraints
         }
         return constraints[constraint_type]

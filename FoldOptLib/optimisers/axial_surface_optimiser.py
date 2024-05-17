@@ -8,7 +8,16 @@ from ..input import CheckInputData, InputData
 from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
 from ..objective_functions import VonMisesFisher
 from ..fold_modelling import FoldModel
-from ..datatypes import SolverType, ObjectiveType, OptimisationType, InputGeologicalKnowledge, KnowledgeType
+from ..datatypes import (
+
+    SolverType, 
+    ObjectiveType, 
+    OptimisationType, 
+    InputGeologicalKnowledge, 
+    KnowledgeType, 
+    DataType
+    )
+
 from LoopStructural import BoundingBox
 import beartype
 
@@ -83,9 +92,8 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         self.fold_engine = FoldModel(data, **kwargs)
 
         self.data = data
-        self.bounding_box = bounding_box
         # self.geological_knowledge = geological_knowledge
-        self.geological_knowledge = self.setup_geological_knowledge(geological_knowledge)
+        self.geological_knowledge = self.setup_geological_knowledge(self.data[DataType.GEOLOGICAL_KNOWLEDGE])
         self.optimisation_type = self.setup_optimisation_type()
         self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
         self.objective_function = None
@@ -276,3 +284,31 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
         # Setup optimisation method
         self.setup_optimisation_method()
+    
+    def optimise(self):
+
+        """
+        Runs the optimisation.
+
+        Returns
+        -------
+        opt : Dict
+            The result of the optimisation.
+
+        Notes
+        -----
+        This function runs the optimisation by setting up the optimisation problem,
+        checking if geological knowledge exists, and running the solver.
+        """
+
+        self.setup_optimisation()
+
+        if self._solver is self.optimiser._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
+
+            return self._solver(self.objective_function, self._bounds, init=self._guess)
+
+        elif self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]:
+
+            return self._solver(self.objective_function, x0=self._guess)
+
+        # TODO: ...add support for restricted optimisation mode...

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union, Optional
+from typing import Union, Optional, List
 import numpy
 import beartype
 
@@ -7,21 +7,21 @@ import beartype
 @beartype.beartype
 @dataclass
 class Bounds:
-    lower_bound: Optional[Union[int, float, list, numpy.ndarray]] = None
-    upper_bound: Optional[Union[int, float, list, numpy.ndarray]] = None
+    lower_bound: Optional[Union[int, float, List, numpy.ndarray]] = None
+    upper_bound: Optional[Union[int, float, List, numpy.ndarray]] = None
 
 
 @beartype.beartype
 @dataclass
 class NormalDistribution:
-    mu: Union[int, float, list, numpy.ndarray]
-    sigma: Union[int, float, list, numpy.ndarray]
-    weight: Optional[Union[int, float, list, numpy.ndarray]] = 1.
+    mu: Union[int, float]
+    sigma: Union[int, float]
+    weight: Optional[Union[int, float]] = 1.0
 
 
 @beartype.beartype
 @dataclass
 class VonMisesFisherDistribution:
-    mu: Union[int, float, list, numpy.ndarray]
-    kappa: Union[int, float, list, numpy.ndarray]
-    weight: Optional[Union[int, float, list, numpy.ndarray]] = 1.
+    mu: Union[List, numpy.ndarray]
+    kappa: Union[int, float]
+    weight: Optional[Union[int, float]] = 1.0

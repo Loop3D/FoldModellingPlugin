@@ -12,7 +12,7 @@ class CheckInputData:
     __call__ (folded_foliation_data: pd.DataFrame) -> None
         Checks if the foliation data is a pandas dataframe and has the correct columns.
     """
-    @beartype.beartype
+    # @beartype.beartype
     def __call__(self, folded_foliation_data: pd.DataFrame):
         """
         Check the foliation data is a pandas dataframe and has the correct columns: X, Y, Z, feature_name and

@@ -5,13 +5,15 @@ from LoopStructural import GeologicalModel
 # from ..helper._helper import *
 from ..helper.utils import *
 from ..builders import FoldFrameBuilder
-from ..datatypes import DataType, InterpolationConstraints, ConstraintType, CoordinateType, InputGeologicalKnowledge, KnowledgeType, RotationType
+from ..datatypes import DataType, InterpolationConstraints, ConstraintType, CoordinateType, InputGeologicalKnowledge, KnowledgeType, FitType
 from ..input import InputDataProcessor, OptData, InputData
 from ..from_loopstructural._fold import FoldEvent
 from ..from_loopstructural._fold_frame import FoldFrame
-from LoopStructural import BoundingBox
 from .base_engine import BaseEngine
-from ..optimisers.fourier_optimiser import FourierSeriesOptimiser
+from ..optimisers import FourierSeriesOptimiser
+from LoopStructural import BoundingBox
+from LoopStructural.utils._transformation import EuclideanTransformation
+
 import gc
 
 def fold_function(params):
@@ -68,20 +70,29 @@ class FoldModel(BaseEngine):
             **kwargs : dict
                 additional keyword arguments
         """
-        data_processor = InputDataProcessor(data)
-        self.data = data_processor.get_data()
-        self.geological_knowledge = geological_knowledge
-        self.bounding_box = bounding_box
+        
+        self.raw_data = data
+        self.bounding_box = data[DataType.BOUNDING_BOX]
+        self.geological_knowledge = data[DataType.GEOLOGICAL_KNOWLEDGE]
         self.dimensions = dimensions
         self.model = None
         self.gradient_data = self.data[['gx', 'gy', 'gz']].to_numpy()
         self.points = self.data[['X', 'Y', 'Z']].to_numpy()  # coordinates of the data points
         assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
-        self.kwargs = kwargs
         self.axial_surface = None
         self.scaled_points = None
-        
-        
+        self.kwargs = kwargs
+    
+    def set_data(self, data: InputData) -> None:
+        """
+        Process the data by extracting the gradient data from the data DataFrame.
+
+        Returns
+        -------
+        None
+        """
+        data_processor = InputDataProcessor(data)
+        self.data = data_processor.get_data()
 
     def initialise_model(self) -> None:
         """
@@ -94,8 +105,9 @@ class FoldModel(BaseEngine):
         -------
         None
         """
-        self.model = GeologicalModel(self.bounding_box[0, :], self.bounding_box[1, :])
-        self.scaled_points = self.model.scale(self.points)
+        self.set_data(self.raw_data)
+        # self.model = GeologicalModel(self.bounding_box[0, :], self.bounding_box[1, :])
+        self.scaled_points = EuclideanTransformation(dimensions=self.dimensions)(self.points)
 
     def process_axial_surface_proposition(self, axial_normal: np.ndarray) -> pd.DataFrame:
 
@@ -120,14 +132,14 @@ class FoldModel(BaseEngine):
         # normalise axial surface normal
         axial_normal /= np.linalg.norm(axial_normal)
         # create a dataset from the axial surface normal
-        dataset = create_dataset(axial_normal, self.points, name='sn', coord=0)
+        dataset = create_dataset(axial_normal, self.scaled_points, name='sn', coord=0)
 
-        assert len(self.points) == len(self.gradient_data), "coordinates must have the same length as data"
+        assert len(self.scaled_points) == len(self.gradient_data), "coordinates must have the same length as data"
 
         # rotate the axial normal by 90 degrees to create the Y axis of the fold frame
         y = rotate_vector(axial_normal, np.pi / 2, dimension=3)
         # create a dataset from the Y axis of the fold frame
-        y_coord = create_dataset(y, self.points, name='sn', coord=1)
+        y_coord = create_dataset(y, self.scaled_points, name='sn', coord=1)
         
 
         # append the two datasets together
@@ -177,7 +189,7 @@ class FoldModel(BaseEngine):
         foldframe = FoldFrame('sn', self.axial_surface)
 
         # calculate the gradient of the axial surface
-        s1g = self.axial_surface[0].evaluate_gradient(self.scaled_points)
+        s1g = self.axial_surface[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(self.scaled_points)
 
         # normalise the gradient
         s1g /= np.linalg.norm(s1g, axis=1)[:, None]
@@ -313,16 +325,26 @@ class FoldModel(BaseEngine):
 
         # Check the type of knowledge and generate x accordingly
         if knowledge_type == 'fold_axis_rotation_angle':
-            x = np.linspace(self.axial_surface[1].min(), self.axial_surface[1].max(), 100)
-        else:
-            x = np.linspace(self.axial_surface[0].min(), self.axial_surface[0].max(), 100)
+            self.geological_knowledge.fittypeflag[FitType.LIMB] = True
+            x = np.linspace(
+                self.axial_surface[CoordinateType.AXIAL_FOLIATION_FIELD].min(), 
+                self.axial_surface[CoordinateType.AXIAL_FOLIATION_FIELD].max(), 
+                100
+                )
+        if knowledge_type == 'fold_axis_rotation_angle':
+            self.geological_knowledge.fittypeflag[FitType.AXIS] = True
+            x = np.linspace(
+                self.axial_surface[CoordinateType.FOLD_AXIS_FIELD].min(), 
+                self.axial_surface[CoordinateType.FOLD_AXIS_FIELD].max(), 
+                100
+                )
 
         # Create a FourierSeriesOptimiser instance
         fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x)
 
         if self.geological_knowledge is not None:
 
-            opt = fourier_optimiser.optimise(geological_knowledge=self.geological_knowledge[knowledge_type])
+            opt = fourier_optimiser.optimise()
 
             return opt.x
 

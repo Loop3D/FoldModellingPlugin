@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from ..input import CheckInputData, InputData
+from ..input.input_data_checker import CheckInputData
+from ..input.data_storage import InputData
 from ..datatypes import DataType
 from ..helper.utils import *
 from LoopStructural import BoundingBox
@@ -20,7 +21,7 @@ class InputDataProcessor:
     def __post_init__(self):
 
 
-        CheckInputData(self.data[DataType.DATA])
+        CheckInputData()(self.data[DataType.DATA])
         if (
 
             'strike' in self.data[DataType.DATA].columns 
