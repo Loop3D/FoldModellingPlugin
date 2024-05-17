@@ -1,6 +1,5 @@
-import pandas 
+import pandas
 import beartype
-
 
 
 class CheckInputData:
@@ -12,6 +11,7 @@ class CheckInputData:
     __call__ (folded_foliation_data: pandas.DataFrame) -> None
         Checks if the foliation data is a pandas dataframe and has the correct columns.
     """
+
     @beartype.beartype
     def __call__(self, folded_foliation_data: pandas.DataFrame):
         """
