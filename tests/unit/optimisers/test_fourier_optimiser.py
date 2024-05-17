@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from FoldOptLib.optimisers.fourier_optimiser import FourierSeriesOptimiser
-from FoldOptLib.helper.utils import *
+from FoldOptLib.utils.utils import *
 
 
 

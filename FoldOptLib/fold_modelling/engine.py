@@ -3,7 +3,7 @@ import numpy as np
 import pandas
 from LoopStructural import GeologicalModel
 # from ..helper._helper import *
-from ..helper.utils import *
+from ..utils.utils import *
 from ..builders import FoldFrameBuilder
 from ..datatypes import DataType, InterpolationConstraints, ConstraintType, CoordinateType, InputGeologicalKnowledge, KnowledgeType, FitType
 from ..input import InputDataProcessor, OptData, InputData

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from ..from_loopstructural._svariogram import SVariogram
 import mplstereonet
-from typing import Union
+import dill
 
 
 def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=None):
@@ -20,8 +20,7 @@ def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=None):
 def get_predicted_rotation_angle(theta, fold_frame_coordinate):
     # y_pred = np.tan(np.deg2rad(fourier_series(
     #     fold_frame_coordinate, *theta)))
-    y_pred = fourier_series(
-        fold_frame_coordinate, *theta)
+    y_pred = fourier_series(fold_frame_coordinate, *theta)
 
     return y_pred
 
@@ -60,7 +59,7 @@ def fourier_series_x_intercepts(x, popt):
     return x_intr
 
 
-def save_load_object(obj=None, file_path=None, mode='save'):
+def save_load_object(obj=None, file_path=None, mode="save"):
     """
     Saves or loads a python object to/from a file using the dill library.
 
@@ -76,12 +75,12 @@ def save_load_object(obj=None, file_path=None, mode='save'):
     Raises:
     ValueError: If `mode` is not set to either 'save' or 'load'.
     """
-    if mode == 'save':
-        with open(file_path, 'wb') as file:
+    if mode == "save":
+        with open(file_path, "wb") as file:
             dill.dump(obj, file)
         print("Object saved to file:", file_path)
-    elif mode == 'load':
-        with open(file_path, 'rb') as file:
+    elif mode == "load":
+        with open(file_path, "rb") as file:
             loaded_obj = dill.load(file)
         print("Object loaded from file:", file_path)
         return loaded_obj
@@ -171,13 +170,16 @@ def rotate_vector(v, angle, dimension=2):
     """
     if dimension == 2:
         # Define the 2D rotation matrix
-        R = np.array([[np.cos(angle), -np.sin(angle)],
-                      [np.sin(angle), np.cos(angle)]])
+        R = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
     elif dimension == 3:
         # Define the 3D rotation matrix
-        R = np.array([[np.cos(angle), -np.sin(angle), 0],
-                      [np.sin(angle), np.cos(angle), 0],
-                      [0, 0, 1]])
+        R = np.array(
+            [
+                [np.cos(angle), -np.sin(angle), 0],
+                [np.sin(angle), np.cos(angle), 0],
+                [0, 0, 1],
+            ]
+        )
     else:
         raise ValueError("Dimension must be either 2 or 3.")
 
@@ -202,58 +204,87 @@ def get_fold_curves(geological_feature, fold_frame=0):
     tuple: The x values and the corresponding fold curve values.
     """
     # Check if the geological_feature has the required attributes
-    if not hasattr(geological_feature, 'fold') or not hasattr(geological_feature.fold, 'foldframe') or not hasattr(
-            geological_feature.fold, 'fold_axis_rotation') or not hasattr(geological_feature.fold,
-                                                                          'fold_limb_rotation'):
+    if (
+        not hasattr(geological_feature, "fold")
+        or not hasattr(geological_feature.fold, "foldframe")
+        or not hasattr(geological_feature.fold, "fold_axis_rotation")
+        or not hasattr(geological_feature.fold, "fold_limb_rotation")
+    ):
         raise AttributeError(
             "Geological feature must have a 'fold' attribute with 'foldframe', "
-            "'fold_axis_rotation', and 'fold_limb_rotation' attributes.")
+            "'fold_axis_rotation', and 'fold_limb_rotation' attributes."
+        )
 
     # Determine the axis to use for the calculation
     coordinate_to_use = fold_frame
 
     # Calculate the fold frame coordinate values x and the fold rotation angle curve
-    x = np.linspace(geological_feature.fold.foldframe[coordinate_to_use].min(),
-                    geological_feature.fold.foldframe[coordinate_to_use].max(), 200)
-    curve = geological_feature.fold.fold_axis_rotation(
-        x) if fold_frame == 1 else geological_feature.fold.fold_limb_rotation(x)
+    x = np.linspace(
+        geological_feature.fold.foldframe[coordinate_to_use].min(),
+        geological_feature.fold.foldframe[coordinate_to_use].max(),
+        200,
+    )
+    curve = (
+        geological_feature.fold.fold_axis_rotation(x)
+        if fold_frame == 1
+        else geological_feature.fold.fold_limb_rotation(x)
+    )
 
     return x, curve
 
 
-def create_dict(x=None, y=None, z=None, strike=None, dip=None, feature_name=None,
-                coord=None, **kwargs):
+def create_dict(
+    x=None,
+    y=None,
+    z=None,
+    strike=None,
+    dip=None,
+    feature_name=None,
+    coord=None,
+    **kwargs,
+):
     fn = np.empty(len(x)).astype(str)
     fn.fill(feature_name)
     c = np.empty((len(x))).astype(int)
     c.fill(coord)
-    dictionary = {'X': x,
-                  'Y': y,
-                  'Z': z,
-                  'strike': strike,
-                  'dip': dip,
-                  'feature_name': fn,
-                  'coord': c}
+    dictionary = {
+        "X": x,
+        "Y": y,
+        "Z": z,
+        "strike": strike,
+        "dip": dip,
+        "feature_name": fn,
+        "coord": c,
+    }
 
     return dictionary
 
 
-def create_gradient_dict(x=None, y=None, z=None,
-                         nx=None, ny=None, nz=None,
-                         feature_name=None, coord=None,
-                         **kwargs):
+def create_gradient_dict(
+    x=None,
+    y=None,
+    z=None,
+    nx=None,
+    ny=None,
+    nz=None,
+    feature_name=None,
+    coord=None,
+    **kwargs,
+):
     fn = np.empty(len(x)).astype(str)
     fn.fill(feature_name)
     c = np.empty((len(x))).astype(int)
     c.fill(coord)
-    dictionary = {'X': x,
-                  'Y': y,
-                  'Z': z,
-                  'gx': nx,
-                  'gy': ny,
-                  'gz': nz,
-                  'feature_name': fn,
-                  'coord': c}
+    dictionary = {
+        "X": x,
+        "Y": y,
+        "Z": z,
+        "gx": nx,
+        "gy": ny,
+        "gz": nz,
+        "feature_name": fn,
+        "coord": c,
+    }
     return dictionary
 
 
@@ -261,31 +292,37 @@ def create_fold_frame_dataset(model, strike=0, dip=0):
     s1_ori = np.array([strike, dip])
     xyz = model.regular_grid(nsteps=[10, 10, 10])
     s1_orientation = np.tile(s1_ori, (len(xyz), 1))
-    s1_dict = create_dict(x=xyz[:, 0][0:10:2],
-                          y=xyz[:, 1][0:10:2],
-                          z=xyz[:, 2][0:10:2],
-                          strike=s1_orientation[:, 0][0:10:2],
-                          dip=s1_orientation[:, 1][0:10:2],
-                          feature_name='s1',
-                          coord=0)
+    s1_dict = create_dict(
+        x=xyz[:, 0][0:10:2],
+        y=xyz[:, 1][0:10:2],
+        z=xyz[:, 2][0:10:2],
+        strike=s1_orientation[:, 0][0:10:2],
+        dip=s1_orientation[:, 1][0:10:2],
+        feature_name="s1",
+        coord=0,
+    )
     # Generate a dataset using s1 dictionary
-    dataset = pd.DataFrame(s1_dict, columns=['X', 'Y', 'Z', 'strike', 'dip', 'feature_name', 'coord'])
+    dataset = pd.DataFrame(
+        s1_dict, columns=["X", "Y", "Z", "strike", "dip", "feature_name", "coord"]
+    )
     # Add y coordinate axis orientation. Y coordinate axis always perpendicular
     # to the axial surface and roughly parallel to the fold axis
     s2y = dataset.copy()
-    s2s = s2y[['strike', 'dip']].to_numpy()
+    s2s = s2y[["strike", "dip"]].to_numpy()
     s2s[:, 0] += 90
     s2s[:, 1] = dip
-    s2y['strike'] = s2s[:, 0]
-    s2y['dip'] = s2s[:, 1]
-    s2y['coord'] = 1
+    s2y["strike"] = s2s[:, 0]
+    s2y["dip"] = s2s[:, 1]
+    s2y["coord"] = 1
     # Add y coordinate dictionary to s1 dataframe
     dataset = pd.concat([dataset, s2y])
 
     return dataset, xyz
 
 
-def create_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord: int = 0) -> pd.DataFrame:
+def create_dataset(
+    vec: np.ndarray, points: np.ndarray, name: str = "s0", coord: int = 0
+) -> pd.DataFrame:
     """
 
     Make a dataset from one unit vector and xyz points of the folded feature data.
@@ -309,14 +346,14 @@ def create_dataset(vec: np.ndarray, points: np.ndarray, name: str = 's0', coord:
     """
     g = np.tile(vec, (len(points), 1))
     dataset = pd.DataFrame()
-    dataset['X'] = points[:, 0]
-    dataset['Y'] = points[:, 1]
-    dataset['Z'] = points[:, 2]
-    dataset['gx'] = g[:, 0]
-    dataset['gy'] = g[:, 1]
-    dataset['gz'] = g[:, 2]
-    dataset['feature_name'] = name
-    dataset['coord'] = coord
+    dataset["X"] = points[:, 0]
+    dataset["Y"] = points[:, 1]
+    dataset["Z"] = points[:, 2]
+    dataset["gx"] = g[:, 0]
+    dataset["gy"] = g[:, 1]
+    dataset["gz"] = g[:, 2]
+    dataset["feature_name"] = name
+    dataset["coord"] = coord
 
     return dataset
 
@@ -346,7 +383,9 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
 
     # Check if the inputs have the same shape
     if axial_surface.shape != folded_foliation.shape:
-        raise ValueError("Axial surface and folded foliation arrays must have the same shape.")
+        raise ValueError(
+            "Axial surface and folded foliation arrays must have the same shape."
+        )
 
     # Calculate cross product of the axial surface and folded foliation normal vectors
     li = np.cross(axial_surface, folded_foliation)
@@ -372,7 +411,9 @@ def axial_plane_stereonet(strike, dip):
     """
     # Check if the inputs are numpy arrays
     if not isinstance(strike, np.ndarray):
-        raise TypeError(f"Expected strike to be a numpy array, got {type(strike).__name__}")
+        raise TypeError(
+            f"Expected strike to be a numpy array, got {type(strike).__name__}"
+        )
     if not isinstance(dip, np.ndarray):
         raise TypeError(f"Expected dip to be a numpy array, got {type(dip).__name__}")
 
@@ -381,19 +422,19 @@ def axial_plane_stereonet(strike, dip):
         raise ValueError("Strike and dip arrays must have the same shape.")
 
     # Find the two modes
-    centers = mplstereonet.kmeans(strike, dip, num=2, measurement='poles')
+    centers = mplstereonet.kmeans(strike, dip, num=2, measurement="poles")
 
     # Fit a girdle to the two modes
-    axis_s, axis_d = mplstereonet.fit_girdle(*zip(*centers), measurement='radians')
+    axis_s, axis_d = mplstereonet.fit_girdle(*zip(*centers), measurement="radians")
 
     # Find the midpoint
-    mid, _ = mplstereonet.find_mean_vector(*zip(*centers), measurement='radians')
+    mid, _ = mplstereonet.find_mean_vector(*zip(*centers), measurement="radians")
     midx, midy = mplstereonet.line(*mid)
 
     # Find the axial plane by fitting another girdle to the midpoint and the pole of the plunge axis
     xp, yp = mplstereonet.pole(axis_s, axis_d)
     x, y = [xp, midx], [yp, midy]
-    axial_s, axial_dip = mplstereonet.fit_girdle(x, y, measurement='radians')
+    axial_s, axial_dip = mplstereonet.fit_girdle(x, y, measurement="radians")
 
     return axial_s, axial_dip
 

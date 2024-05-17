@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ..helper import strike_dip_to_vector
+from ..utils import strike_dip_to_vector
 from .enums import KnowledgeType
 from .probability_distributions import NormalDistribution, VonMisesFisherDistribution
 import beartype

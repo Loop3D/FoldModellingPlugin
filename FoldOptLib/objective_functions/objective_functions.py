@@ -1,7 +1,7 @@
 from ..datatypes.enums import ObjectiveType
 import numpy
 from typing import Union, List
-from ..helper.utils import get_predicted_rotation_angle
+from ..utils.utils import get_predicted_rotation_angle
 from scipy.stats import vonmises
 import beartype
 

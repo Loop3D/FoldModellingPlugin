@@ -5,7 +5,7 @@ import pandas
 from .fold_optimiser import BaseOptimiser
 from ..objective_functions import GeologicalKnowledgeFunctions, ObjectiveFunction
 from ..input import CheckInputData, InputData
-from ..helper.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
+from ..utils.utils import strike_dip_to_vector, normal_vector_to_strike_and_dip
 from ..objective_functions import VonMisesFisher
 from ..fold_modelling import FoldModel
 from ..datatypes import (

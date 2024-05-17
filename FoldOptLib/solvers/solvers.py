@@ -1,9 +1,7 @@
-from typing import Optional, Dict, Any, Union, Callable, Dict, Any, Tuple
+from typing import Callable, Dict, Any, Tuple, Union, List
 import numpy as np
-from ..helper.utils import *
-from abc import ABC, abstractmethod
-from scipy.optimize import minimize, differential_evolution, NonlinearConstraint
-from ..objective_functions.geological_knowledge import GeologicalKnowledgeFunctions
+from ..utils.utils import *
+from scipy.optimize import minimize, differential_evolution
 from ..datatypes import SolverType
 import beartype
 
@@ -14,11 +12,7 @@ class Solver:
     Base class for fold geometry optimisation.
     """
 
-    def __init__(
-            self,
-            solver='differential_evolution',
-            **kwargs: Dict[str, Any]
-    ):
+    def __init__(self, solver="differential_evolution", **kwargs: Dict[str, Any]):
         """
         Constructs all the necessary attributes for the Fold Optimiser object.
 
@@ -29,28 +23,19 @@ class Solver:
         """
         self.solver = solver
         self.kwargs = kwargs
-        # Map the solver type to the solver function
-        self.solver_map = {
-            SolverType.DIFFERENTIAL_EVOLUTION: self.differential_evolution,
-            SolverType.CONSTRAINED_TRUST_REGION: self.constrained_trust_region,
-            SolverType.UNCONSTRAINED_TRUST_REGION: None,
-            SolverType.PARTICLE_SWARM: None,
-
-        }
-
 
     @beartype.beartype
     @staticmethod
     def differential_evolution(
-            objective_function: Callable,
-            bounds: Tuple,
-            init: str = 'halton',
-            maxiter: int = 5000,
-            seed: int = 80,
-            polish: bool = True,
-            strategy: str = 'best2exp',
-            mutation: Tuple[float, float] = (0.3, 0.99),
-            **kwargs
+        objective_function: Callable,
+        bounds: Union[Tuple, List],
+        init: str = "halton",
+        maxiter: int = 5000,
+        seed: int = 80,
+        polish: bool = True,
+        strategy: str = "best2exp",
+        mutation: Tuple[float, float] = (0.3, 0.99),
+        **kwargs,
     ) -> Dict:
         """
         Solves the optimization problem using the differential evolution method.
@@ -92,7 +77,7 @@ class Solver:
             polish=polish,
             strategy=strategy,
             mutation=mutation,
-            **kwargs
+            **kwargs,
         )
 
         return opt
@@ -100,11 +85,7 @@ class Solver:
     @beartype.beartype
     @staticmethod
     def constrained_trust_region(
-            objective_function: Callable,
-            x0: np.ndarray,
-            constraints=None,
-
-            **kwargs
+        objective_function: Callable, x0: np.ndarray, constraints=None, **kwargs
     ) -> Dict:
         """
         Solves the optimisation problem using the trust region method.
@@ -127,10 +108,11 @@ class Solver:
         opt = minimize(
             objective_function,
             x0,
-            method='trust-constr',
-            jac='2-point',
+            method="trust-constr",
+            jac="2-point",
             constraints=constraints,
-            **kwargs)
+            **kwargs,
+        )
 
         return opt
 
@@ -149,4 +131,11 @@ class Solver:
             solver : Callable
                 The solver function.
         """
-        return self.solver_map[solver_type]
+        # Map the solver type to the solver function
+        solver_map = {
+            SolverType.DIFFERENTIAL_EVOLUTION: self.differential_evolution,
+            SolverType.CONSTRAINED_TRUST_REGION: self.constrained_trust_region,
+            SolverType.UNCONSTRAINED_TRUST_REGION: None,
+            SolverType.PARTICLE_SWARM: None,
+        }
+        return solver_map[solver_type]

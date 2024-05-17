@@ -1,7 +1,7 @@
 import pytest
 from FoldOptLib import InputGeologicalKnowledge, KnowledgeType
 from FoldOptLib.datatypes.probability_distributions import NormalDistribution, VonMisesFisherDistribution
-from FoldOptLib.helper import strike_dip_to_vector
+from FoldOptLib.utils import strike_dip_to_vector
 
 def test_post_init():
     # _axial_surface = NormalDistribution(mu=[1, 2], sigma=1)

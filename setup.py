@@ -16,6 +16,7 @@ setup(
         "ipywidgets",
         "mplstereonet",
         "scipy>=1.11.3",  # 1.11.3 is required to use vonmises_fisher() in scipy.stats
+        "dill"
     ],
     python_requires='>=3.9',
     description="Open source Fold Geometry Optimisers for LoopStructural and Map2Loop",

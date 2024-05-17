@@ -3,7 +3,7 @@ from scipy.optimize import NonlinearConstraint, BFGS
 
 # from LoopStructural.modelling.features.fold import fourier_series
 from typing import Union, Dict, List
-from ..helper.utils import *
+from ..utils.utils import *
 from ..splot.splot_processor import SPlotProcessor
 from .von_mises_fisher import VonMisesFisher
 from .objective_functions import ObjectiveFunction

@@ -8,7 +8,7 @@ from .datatypes import (
     VonMisesFisherDistribution,
     InputGeologicalKnowledge
     )
-from .helper import utils
+from .utils import utils
 from .input import CheckInputData, InputDataProcessor
 from .objective_functions import (
     GeologicalKnowledgeFunctions, 

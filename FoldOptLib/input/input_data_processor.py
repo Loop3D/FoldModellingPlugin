@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from ..input.input_data_checker import CheckInputData
 from ..input.data_storage import InputData
 from ..datatypes import DataType
-from ..helper.utils import *
+from ..utils.utils import *
 from LoopStructural import BoundingBox
 
 import numpy

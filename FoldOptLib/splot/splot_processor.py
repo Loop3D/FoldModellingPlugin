@@ -1,6 +1,5 @@
-from ..helper.utils import *
 import numpy
-from ..helper import fourier_series
+from ..utils import fourier_series, fourier_series_x_intercepts
 
 
 class SPlotProcessor:

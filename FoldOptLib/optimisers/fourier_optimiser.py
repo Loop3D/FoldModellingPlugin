@@ -2,7 +2,7 @@ from typing import Union, Any, Dict
 from ..datatypes import ObjectiveType, InputGeologicalKnowledge, SolverType
 from .fold_optimiser import BaseOptimiser
 from ..objective_functions import ObjectiveFunction, GeologicalKnowledgeFunctions
-from ..helper.utils import *
+from ..utils.utils import *
 import numpy
 
 
