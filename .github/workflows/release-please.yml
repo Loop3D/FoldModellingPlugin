@@ -2,24 +2,24 @@ on:
   push:
 name: release-please
 jobs:
-#  linting:
-#    name: Linting
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v4
-#      - name: Install dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          pip install black ruff
-#      - name: Autoformat with black
-#        run: |
-#          black .
-#      - name: Lint with ruff
-#        run: |
-#          ruff check FoldOptLib --fix
-#      - uses: stefanzweifel/git-auto-commit-action@v5
-#        with:
-#          commit_message: "style: style fixes by ruff and autoformatting by black"
+ linting:
+   name: Linting
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v4
+     - name: Install dependencies
+       run: |
+         python -m pip install --upgrade pip
+         pip install black ruff
+     - name: Autoformat with black
+       run: |
+         black .
+     - name: Lint with ruff
+       run: |
+         ruff check FoldOptLib --fix
+     - uses: stefanzweifel/git-auto-commit-action@v5
+       with:
+         commit_message: "style: style fixes by ruff and autoformatting by black"
 
   continuous-integration:
     name: Continuous integration ${{ matrix.os }} python ${{ matrix.python-version }}
@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ${{ fromJSON(vars.BUILD_OS)}}
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
@@ -43,10 +43,10 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install . --user
-#      - name: pytest
-#        shell: bash -l {0}
-#        run: |
-#          pytest
+      - name: pytest
+        shell: bash -l {0}
+        run: |
+          pytest
 
   release-please:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: conda-incubator/setup-miniconda@v3
         with:
@@ -121,7 +121,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
       - uses: actions/download-artifact@v4
@@ -136,6 +136,7 @@ jobs:
         run: |
           conda install -c anaconda anaconda-client -y
           anaconda upload --label main conda/*/*.tar.bz2
+          
   upload_to_pypi:
     needs: ["release-please", "conda-deploy"]
     runs-on: "ubuntu-latest"
