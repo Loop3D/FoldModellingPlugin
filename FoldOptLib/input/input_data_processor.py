@@ -38,7 +38,11 @@ class InputDataProcessor:
             self.data[DataType.DATA]["gx"],
             self.data[DataType.DATA]["gy"],
             self.data[DataType.DATA]["gz"],
-        ) = gradient[:, 0], gradient[:, 1], gradient[:, 2]
+        ) = (
+            gradient[:, 0],
+            gradient[:, 1],
+            gradient[:, 2],
+        )
         self.processed_data = self.data[DataType.DATA]
 
         return self.processed_data

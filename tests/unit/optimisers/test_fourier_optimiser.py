@@ -4,7 +4,6 @@ from FoldOptLib.optimisers.fourier_optimiser import FourierSeriesOptimiser
 from FoldOptLib.utils.utils import *
 
 
-
 def test_fourier_series_optimiser_init():
     optimiser = FourierSeriesOptimiser(
         fold_frame_coordinate=np.empty(10),
@@ -53,9 +52,9 @@ def test_setup_optimisation_method():
         x=np.array([1, 2, 3]),
     )
     optimiser.setup_optimisation_method()
-    assert (
-        callable(optimiser.objective_function) #or optimiser.objective_function is None
-    )
+    assert callable(
+        optimiser.objective_function
+    )  # or optimiser.objective_function is None
 
 
 def test_setup_optimisation():
@@ -66,8 +65,6 @@ def test_setup_optimisation():
     )
     assert isinstance(optimiser, FourierSeriesOptimiser)
     optimiser.setup_optimisation()
-    assert (
-        callable(optimiser.objective_function)
-    )
+    assert callable(optimiser.objective_function)
     assert isinstance(optimiser.bounds, np.ndarray)
-    assert isinstance(optimiser.guess, np.ndarray) 
+    assert isinstance(optimiser.guess, np.ndarray)

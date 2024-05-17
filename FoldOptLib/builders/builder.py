@@ -8,7 +8,9 @@ class Builder(BaseBuilder):
     def __init__(self, boundingbox: BoundingBox):
         self.boundingbox = boundingbox
 
-        self.interpolator = LoopInterpolator(self.boundingbox, dimensions=3, nelements=1000)
+        self.interpolator = LoopInterpolator(
+            self.boundingbox, dimensions=3, nelements=1000
+        )
 
     def set_constraints(self, constraints: InterpolationConstraints):
         self.interpolator.fit(
@@ -33,7 +35,9 @@ class Builder(BaseBuilder):
             min value of the feature evaluated on a regular grid in the model domain
         """
 
-        return numpy.nanmin(self.evaluate_scalar_value(self.boundingbox.regular_grid((10, 10, 10))))
+        return numpy.nanmin(
+            self.evaluate_scalar_value(self.boundingbox.regular_grid((10, 10, 10)))
+        )
 
     def max(self):
         """Calculate the maximum value of the geological feature
@@ -45,4 +49,6 @@ class Builder(BaseBuilder):
             max value of the feature evaluated on a regular grid in the model domain
         """
 
-        return numpy.nanmax(self.evaluate_scalar_value(self.boundingbox.regular_grid((10, 10, 10))))
+        return numpy.nanmax(
+            self.evaluate_scalar_value(self.boundingbox.regular_grid((10, 10, 10)))
+        )

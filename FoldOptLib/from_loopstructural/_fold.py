@@ -1,7 +1,6 @@
-
-
 import numpy as np
 from ..datatypes.enums import CoordinateType
+
 # TODO: add logger
 # import logging
 # from ....utils import getLogger
@@ -53,8 +52,12 @@ class FoldEvent:
         if self.fold_axis_rotation is not None:
             # logger.info("Using fold_axis_rotation function")
             # get the gz direction
-            dgx = self.foldframe[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(points)
-            dgy = self.foldframe[CoordinateType.FOLD_AXIS_FIELD].evaluate_gradient(points)
+            dgx = self.foldframe[
+                CoordinateType.AXIAL_FOLIATION_FIELD
+            ].evaluate_gradient(points)
+            dgy = self.foldframe[CoordinateType.FOLD_AXIS_FIELD].evaluate_gradient(
+                points
+            )
             dgx[np.all(~np.isnan(dgx), axis=1), :] /= np.linalg.norm(
                 dgx[np.all(~np.isnan(dgx), axis=1), :], axis=1
             )[:, None]
@@ -62,7 +65,9 @@ class FoldEvent:
                 dgy[np.all(~np.isnan(dgy), axis=1)], axis=1
             )[:, None]
             # get gy
-            gy = self.foldframe[CoordinateType.FOLD_AXIS_FIELD].evaluate_scalar_value(points)
+            gy = self.foldframe[CoordinateType.FOLD_AXIS_FIELD].evaluate_scalar_value(
+                points
+            )
             R1 = self.rot_mat(-dgx, self.fold_axis_rotation(gy))
             fold_axis = np.einsum("ijk,ki->kj", R1, dgy)
             fold_axis /= np.linalg.norm(fold_axis, axis=1)[:, None]
@@ -94,7 +99,9 @@ class FoldEvent:
 
         """
         fold_axis = self.get_fold_axis_orientation(points)
-        gx = self.foldframe[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_scalar_value(points)
+        gx = self.foldframe[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_scalar_value(
+            points
+        )
         dgx = self.foldframe[CoordinateType.FOLD_AXIS_FIELD].evaluate_gradient(points)
         mask = np.all(~np.isnan(dgx), axis=1)
         dgx[mask, :] /= np.linalg.norm(dgx[mask, :], axis=1)[:, None]

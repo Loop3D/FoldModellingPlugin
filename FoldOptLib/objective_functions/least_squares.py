@@ -31,9 +31,13 @@ class LeastSquaresFunctions:
         Calculates the cost function.
     """
 
-    def __init__(self, rotation_angle: np.ndarray, fold_frame: np.ndarray,
-                 knowledge_constraints: Callable, **kwargs: Dict[str, Any]) -> None:
-
+    def __init__(
+        self,
+        rotation_angle: np.ndarray,
+        fold_frame: np.ndarray,
+        knowledge_constraints: Callable,
+        **kwargs: Dict[str, Any]
+    ) -> None:
         """
         Constructs all the necessary attributes for the Least Squares Functions object.
 
@@ -63,7 +67,6 @@ class LeastSquaresFunctions:
         self.kwargs = kwargs
 
     def square_residuals(self, theta: np.ndarray) -> np.ndarray:
-
         """
         Calculates the square residuals between observations y and predicted rotation angle _y.
 
@@ -87,7 +90,6 @@ class LeastSquaresFunctions:
         return residuals
 
     def huber_loss(self, residuals: np.ndarray, delta: float = 0.5) -> np.ndarray:
-
         """
         Calculates the Huber loss function.
 
@@ -107,14 +109,13 @@ class LeastSquaresFunctions:
 
         for i, residual in enumerate(residuals):
             if abs(residual) <= delta:
-                s[i] = 0.5 * residual ** 2
+                s[i] = 0.5 * residual**2
             else:
-                s[i] = delta * abs(residual) - 0.5 * delta ** 2
+                s[i] = delta * abs(residual) - 0.5 * delta**2
 
         return s
 
     def soft_l1_loss(self, residuals: np.ndarray, delta: float = 0.5) -> np.ndarray:
-
         """
         Calculates the Soft L1 loss function.
 
@@ -133,7 +134,7 @@ class LeastSquaresFunctions:
         l1 = np.zeros(len(residuals))
 
         for i, residual in enumerate(residuals):
-            l1[i] = 2 * delta ** 2 * (np.sqrt(1 + (residual / delta) ** 2) - 1)
+            l1[i] = 2 * delta**2 * (np.sqrt(1 + (residual / delta) ** 2) - 1)
 
         return l1
 
@@ -153,7 +154,7 @@ class LeastSquaresFunctions:
         """
         if self.knowledge_constraints is not None:
             return 0.5 * np.sum(
-                self.huber_loss(self.square_residuals(theta))) + self.knowledge_constraints(theta)
+                self.huber_loss(self.square_residuals(theta))
+            ) + self.knowledge_constraints(theta)
         else:
-            return 0.5 * np.sum(
-                self.huber_loss(self.square_residuals(theta)))
+            return 0.5 * np.sum(self.huber_loss(self.square_residuals(theta)))
