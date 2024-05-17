@@ -1,5 +1,5 @@
-import numpy as np
-import pandas as pd
+import numpy
+import pandas
 from ..from_loopstructural._svariogram import SVariogram
 import mplstereonet
 import dill
@@ -9,7 +9,7 @@ def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=None):
     svario = SVariogram(fold_frame, fold_rotation)
     svario.calc_semivariogram(lag=lag, nlag=nlag)
     wv = svario.find_wavelengths()
-    theta = np.ones(4)
+    theta = numpy.ones(4)
     theta[3] = wv[0]
     theta[0] = 0
     # py = wv[2]
@@ -18,7 +18,7 @@ def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=None):
 
 
 def get_predicted_rotation_angle(theta, fold_frame_coordinate):
-    # y_pred = np.tan(np.deg2rad(fourier_series(
+    # y_pred = numpy.tan(numpy.deg2rad(fourier_series(
     #     fold_frame_coordinate, *theta)))
     y_pred = fourier_series(fold_frame_coordinate, *theta)
 
@@ -40,18 +40,18 @@ def fourier_series(x, c0, c1, c2, w):
     -------
 
     """
-    v = np.array(x.astype(float))
+    v = numpy.array(x.astype(float))
     # v.fill(c0)
-    v = c0 + c1 * np.cos(2 * np.pi / w * x) + c2 * np.sin(2 * np.pi / w * x)
-    return np.rad2deg(np.arctan(v))
+    v = c0 + c1 * numpy.cos(2 * numpy.pi / w * x) + c2 * numpy.sin(2 * numpy.pi / w * x)
+    return numpy.rad2deg(numpy.arctan(v))
 
 
 def fourier_series_x_intercepts(x, popt):
     v = fourier_series(x, *popt)
 
-    foldrotm = np.ma.masked_where(v > 0, v)
-    b = np.roll(foldrotm.mask, 1).astype(int) - foldrotm.mask.astype(int)
-    c = np.roll(foldrotm.mask, -1).astype(int) - foldrotm.mask.astype(int)
+    foldrotm = numpy.ma.masked_where(v > 0, v)
+    b = numpy.roll(foldrotm.mask, 1).astype(int) - foldrotm.mask.astype(int)
+    c = numpy.roll(foldrotm.mask, -1).astype(int) - foldrotm.mask.astype(int)
     x_int = x[b != 0]
     x_int2 = x[c != 0]
     x_intr = x_int + x_int2
@@ -79,7 +79,7 @@ def save_load_object(obj=None, file_path=None, mode="save"):
         with open(file_path, "wb") as file:
             dill.dump(obj, file)
         print("Object saved to file:", file_path)
-    elif mode == "load":
+    if mode == "load":
         with open(file_path, "rb") as file:
             loaded_obj = dill.load(file)
         print("Object loaded from file:", file_path)
@@ -89,13 +89,13 @@ def save_load_object(obj=None, file_path=None, mode="save"):
 
 
 def strike_dip_to_vectors(strike, dip):
-    vec = np.zeros((len(strike), 3))
-    s_r = np.deg2rad(strike)
-    d_r = np.deg2rad((dip))
-    vec[:, 0] = np.sin(d_r) * np.cos(s_r)
-    vec[:, 1] = -np.sin(d_r) * np.sin(s_r)
-    vec[:, 2] = np.cos(d_r)
-    vec /= np.linalg.norm(vec, axis=1)[:, None]
+    vec = numpy.zeros((len(strike), 3))
+    s_r = numpy.deg2rad(strike)
+    d_r = numpy.deg2rad((dip))
+    vec[:, 0] = numpy.sin(d_r) * numpy.cos(s_r)
+    vec[:, 1] = -numpy.sin(d_r) * numpy.sin(s_r)
+    vec[:, 2] = numpy.cos(d_r)
+    vec /= numpy.linalg.norm(vec, axis=1)[:, None]
     return vec
 
 
@@ -108,26 +108,26 @@ def strike_dip_to_vector(strike, dip):
     dip (float): The dip angle in degrees.
 
     Returns:
-    np.ndarray: The normalized strike-dip vector.
+    numpy.ndarray: The normalized strike-dip vector.
     """
-    # Check if the inputs are of correct type
+    # Check if the inumpyuts are of correct type
     if not isinstance(strike, (int, float)):
         raise TypeError(f"Expected strike to be a number, got {type(strike).__name__}")
     if not isinstance(dip, (int, float)):
         raise TypeError(f"Expected dip to be a number, got {type(dip).__name__}")
 
     # Convert degrees to radians
-    s_r = np.deg2rad(strike)
-    d_r = np.deg2rad(dip)
+    s_r = numpy.deg2rad(strike)
+    d_r = numpy.deg2rad(dip)
 
     # Calculate the components of the strike-dip vector
-    nx = np.sin(d_r) * np.cos(s_r)
-    ny = -np.sin(d_r) * np.sin(s_r)
-    nz = np.cos(d_r)
+    nx = numpy.sin(d_r) * numpy.cos(s_r)
+    ny = -numpy.sin(d_r) * numpy.sin(s_r)
+    nz = numpy.cos(d_r)
 
     # Create the vector and normalize it
-    vec = np.array([nx, ny, nz]).T
-    vec /= np.linalg.norm(vec)
+    vec = numpy.array([nx, ny, nz]).T
+    vec /= numpy.linalg.norm(vec)
 
     return vec
 
@@ -137,25 +137,25 @@ def normal_vector_to_strike_and_dip(normal_vector):
     Calculate the strike and dip angles given a normal vector.
 
     Parameters:
-    normal_vector (np.ndarray): The normal vector.
+    normal_vector (numpy.ndarray): The normal vector.
 
     Returns:
-    np.ndarray: The strike and dip angles in degrees.
+    numpy.ndarray: The strike and dip angles in degrees.
     """
-    # Check if the input is a numpy array
-    if not isinstance(normal_vector, np.ndarray):
+    # Check if the inumpyut is a numpy array
+    if not isinstance(normal_vector, numpy.ndarray):
         raise TypeError("Normal vector must be a numpy array.")
 
     # Normalize the normal vector
-    normal_vector /= np.linalg.norm(normal_vector, axis=1)[:, None]
+    normal_vector /= numpy.linalg.norm(normal_vector, axis=1)[:, None]
 
     # Calculate the dip angle
-    dip = np.degrees(np.arccos(normal_vector[:, 2]))
+    dip = numpy.degrees(numpy.arccos(normal_vector[:, 2]))
 
     # Calculate the strike angle
-    strike = -np.rad2deg(np.arctan2(normal_vector[:, 1], normal_vector[:, 0]))
+    strike = -numpy.rad2deg(numpy.arctan2(normal_vector[:, 1], normal_vector[:, 0]))
 
-    return np.array([strike, dip]).T
+    return numpy.array([strike, dip]).T
 
 
 def rotate_vector(v, angle, dimension=2):
@@ -170,13 +170,13 @@ def rotate_vector(v, angle, dimension=2):
     """
     if dimension == 2:
         # Define the 2D rotation matrix
-        R = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        R = numpy.array([[numpy.cos(angle), -numpy.sin(angle)], [numpy.sin(angle), numpy.cos(angle)]])
     elif dimension == 3:
         # Define the 3D rotation matrix
-        R = np.array(
+        R = numpy.array(
             [
-                [np.cos(angle), -np.sin(angle), 0],
-                [np.sin(angle), np.cos(angle), 0],
+                [numpy.cos(angle), -numpy.sin(angle), 0],
+                [numpy.sin(angle), numpy.cos(angle), 0],
                 [0, 0, 1],
             ]
         )
@@ -184,8 +184,8 @@ def rotate_vector(v, angle, dimension=2):
         raise ValueError("Dimension must be either 2 or 3.")
 
     # Rotate the vector by multiplying with the rotation matrix
-    v_rotated = np.dot(R, v)
-    v_rotated /= np.linalg.norm(v_rotated)
+    v_rotated = numpy.dot(R, v)
+    v_rotated /= numpy.linalg.norm(v_rotated)
 
     return v_rotated
 
@@ -219,7 +219,7 @@ def get_fold_curves(geological_feature, fold_frame=0):
     coordinate_to_use = fold_frame
 
     # Calculate the fold frame coordinate values x and the fold rotation angle curve
-    x = np.linspace(
+    x = numpy.linspace(
         geological_feature.fold.foldframe[coordinate_to_use].min(),
         geological_feature.fold.foldframe[coordinate_to_use].max(),
         200,
@@ -243,9 +243,9 @@ def create_dict(
     coord=None,
     **kwargs,
 ):
-    fn = np.empty(len(x)).astype(str)
+    fn = numpy.empty(len(x)).astype(str)
     fn.fill(feature_name)
-    c = np.empty((len(x))).astype(int)
+    c = numpy.empty((len(x))).astype(int)
     c.fill(coord)
     dictionary = {
         "X": x,
@@ -271,9 +271,9 @@ def create_gradient_dict(
     coord=None,
     **kwargs,
 ):
-    fn = np.empty(len(x)).astype(str)
+    fn = numpy.empty(len(x)).astype(str)
     fn.fill(feature_name)
-    c = np.empty((len(x))).astype(int)
+    c = numpy.empty((len(x))).astype(int)
     c.fill(coord)
     dictionary = {
         "X": x,
@@ -289,9 +289,9 @@ def create_gradient_dict(
 
 
 def create_fold_frame_dataset(model, strike=0, dip=0):
-    s1_ori = np.array([strike, dip])
+    s1_ori = numpy.array([strike, dip])
     xyz = model.regular_grid(nsteps=[10, 10, 10])
-    s1_orientation = np.tile(s1_ori, (len(xyz), 1))
+    s1_orientation = numpy.tile(s1_ori, (len(xyz), 1))
     s1_dict = create_dict(
         x=xyz[:, 0][0:10:2],
         y=xyz[:, 1][0:10:2],
@@ -302,7 +302,7 @@ def create_fold_frame_dataset(model, strike=0, dip=0):
         coord=0,
     )
     # Generate a dataset using s1 dictionary
-    dataset = pd.DataFrame(
+    dataset = pandas.DataFrame(
         s1_dict, columns=["X", "Y", "Z", "strike", "dip", "feature_name", "coord"]
     )
     # Add y coordinate axis orientation. Y coordinate axis always perpendicular
@@ -315,23 +315,23 @@ def create_fold_frame_dataset(model, strike=0, dip=0):
     s2y["dip"] = s2s[:, 1]
     s2y["coord"] = 1
     # Add y coordinate dictionary to s1 dataframe
-    dataset = pd.concat([dataset, s2y])
+    dataset = pandas.concat([dataset, s2y])
 
     return dataset, xyz
 
 
 def create_dataset(
-    vec: np.ndarray, points: np.ndarray, name: str = "s0", coord: int = 0
-) -> pd.DataFrame:
+    vec: numpy.ndarray, points: numpy.ndarray, name: str = "s0", coord: int = 0
+) -> pandas.DataFrame:
     """
 
     Make a dataset from one unit vector and xyz points of the folded feature data.
 
     Parameters
     ----------
-    vec : np.ndarray
+    vec : numpy.ndarray
         The unit vector to be used as the gradient.
-    points : np.ndarray
+    points : numpy.ndarray
         The xyz coordinates of the data points.
     name : str, optional
         The name of the feature, by default 's0'.
@@ -340,12 +340,12 @@ def create_dataset(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         A DataFrame where each row represents a data point with its coordinates (X, Y, Z),
         gradient (gx, gy, gz), feature name, and coordinate.
     """
-    g = np.tile(vec, (len(points), 1))
-    dataset = pd.DataFrame()
+    g = numpy.tile(vec, (len(points), 1))
+    dataset = pandas.DataFrame()
     dataset["X"] = points[:, 0]
     dataset["Y"] = points[:, 1]
     dataset["Z"] = points[:, 2]
@@ -359,7 +359,7 @@ def create_dataset(
 
 
 def get_wavelength_guesses(guess, size):
-    rng = np.random.default_rng(1651465414615413541564580)
+    rng = numpy.random.default_rng(1651465414615413541564580)
 
     mu, sigma = guess, guess / 3
     return rng.standard_normal(mu, abs(sigma), size)
@@ -370,29 +370,27 @@ def calculate_intersection_lineation(axial_surface, folded_foliation):
     Calculate the intersection lineation of the axial surface and the folded foliation.
 
     Parameters:
-    axial_surface (np.ndarray): The normal vector of the axial surface.
-    folded_foliation (np.ndarray): The normal vector of the folded foliation.
+    axial_surface (numpy.ndarray): The normal vector of the axial surface.
+    folded_foliation (numpy.ndarray): The normal vector of the folded foliation.
 
     Returns:
-    np.ndarray: The normalised intersection lineation vector.
+    numpy.ndarray: The normalised intersection lineation vector.
     """
-    # Check if the inputs are numpy arrays
-    if not isinstance(axial_surface, np.ndarray):
+    # Check if the inumpyuts are numpy arrays
+    if not isinstance(axial_surface, numpy.ndarray):
         raise TypeError("Axial surface vector must be a numpy array.")
-    if not isinstance(folded_foliation, np.ndarray):
+    if not isinstance(folded_foliation, numpy.ndarray):
         raise TypeError("Folded foliation vector must be a numpy array.")
 
-    # Check if the inputs have the same shape
+    # Check if the inumpyuts have the same shape
     if axial_surface.shape != folded_foliation.shape:
-        raise ValueError(
-            "Axial surface and folded foliation arrays must have the same shape."
-        )
+        raise ValueError("Axial surface and folded foliation arrays must have the same shape.")
 
     # Calculate cross product of the axial surface and folded foliation normal vectors
-    li = np.cross(axial_surface, folded_foliation)
+    li = numpy.cross(axial_surface, folded_foliation)
 
     # Normalise the intersection lineation vector
-    li /= np.linalg.norm(li, axis=1)[:, None]
+    li /= numpy.linalg.norm(li, axis=1)[:, None]
 
     return li
 
@@ -404,21 +402,19 @@ def axial_plane_stereonet(strike, dip):
     credit: https://mplstereonet.readthedocs.io/en/latest/examples/axial_plane.html
 
     Parameters:
-    strike (np.ndarray): The strike angles in degrees.
-    dip (np.ndarray): The dip angles in degrees.
+    strike (numpy.ndarray): The strike angles in degrees.
+    dip (numpy.ndarray): The dip angles in degrees.
 
     Returns:
     tuple: The axial strike and dip angles in degrees.
     """
-    # Check if the inputs are numpy arrays
-    if not isinstance(strike, np.ndarray):
-        raise TypeError(
-            f"Expected strike to be a numpy array, got {type(strike).__name__}"
-        )
-    if not isinstance(dip, np.ndarray):
+    # Check if the inumpyuts are numpy arrays
+    if not isinstance(strike, numpy.ndarray):
+        raise TypeError(f"Expected strike to be a numpy array, got {type(strike).__name__}")
+    if not isinstance(dip, numpy.ndarray):
         raise TypeError(f"Expected dip to be a numpy array, got {type(dip).__name__}")
 
-    # Check if the inputs have the same shape
+    # Check if the inumpyuts have the same shape
     if strike.shape != dip.shape:
         raise ValueError("Strike and dip arrays must have the same shape.")
 

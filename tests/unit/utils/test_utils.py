@@ -1,8 +1,18 @@
 import numpy as np
 import pandas as pd
 import os
-from FoldOptLib.utils.utils import *
-import dill 
+from FoldOptLib.utils.utils import (
+    get_predicted_rotation_angle,
+    fourier_series,
+    fourier_series_x_intercepts,
+    save_load_object,
+    strike_dip_to_vectors,
+    strike_dip_to_vector,
+    rotate_vector,
+    create_dict,
+    create_gradient_dict,
+    create_dataset,
+)
 
 # Common setup for the tests
 fold_frame = np.array([1, 2])
@@ -88,5 +98,5 @@ def test_create_gradient_dict():
 def test_make_dataset():
     vec = np.array([1, 0, 0])
     points = np.array([[1, 2, 3], [4, 5, 6]])
-    result = make_dataset(vec, points)
+    result = create_dataset(vec, points)
     assert isinstance(result, pd.DataFrame)
