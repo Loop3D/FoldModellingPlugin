@@ -3,7 +3,9 @@
 # logger = getLogger(__name__)
 
 import numpy as np
+import LoopStructural
 from LoopStructural.modelling.features._structural_frame import StructuralFrame
+from ..datatypes.enums import CoordinateType
 
 
 class FoldFrame(StructuralFrame):
@@ -38,9 +40,9 @@ class FoldFrame(StructuralFrame):
         # in the restored space
         # self.features[0].faults_enabled = False
         # self.features[1].faults_enabled = False
-        s1g = self.features[0].evaluate_gradient(points)
+        s1g = self.features[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(points)
         s1g /= np.linalg.norm(s1g, axis=1)[:, None]
-        s1gyg = self.features[1].evaluate_gradient(points)
+        s1gyg = self.features[CoordinateType.FOLD_AXIS_FIELD].evaluate_gradient(points)
         s1gyg /= np.linalg.norm(s1gyg, axis=1)[:, None]
         l1 = self.calculate_intersection_lineation(points, gradient)
         l1 /= np.linalg.norm(l1, axis=1)[:, None]
@@ -48,7 +50,7 @@ class FoldFrame(StructuralFrame):
             if fold_axis.shape[0] > 0 and fold_axis.shape[1] == 6:
                 l1 = np.vstack([l1, fold_axis])
 
-        fad = self.features[1].evaluate_value(points)
+        fad = self.features[CoordinateType.FOLD_AXIS_FIELD].evaluate_scalar_value(points)
         # project s0 onto axis plane B X A X B
         projected_l1 = np.cross(
             s1g, np.cross(l1, s1g, axisa=1, axisb=1), axisa=1, axisb=1
@@ -98,9 +100,9 @@ class FoldFrame(StructuralFrame):
         # calculate the gradient and value of the first coordinate of the
         # fold frame
         # for the locations and normalise
-        s1g = self.features[0].evaluate_gradient(points)
+        s1g = self.features[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(points)
         s1g /= np.linalg.norm(s1g, axis=1)[:, None]
-        s1 = self.features[0].evaluate_value(points)
+        s1 = self.features[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_scalar_value(points)
         # self.features[0].faults_enabled = True
         # self.features[1].faults_enabled = True
 
@@ -153,7 +155,7 @@ class FoldFrame(StructuralFrame):
 
         """
         points = np.vstack(points)
-        s1g = self.features[0].evaluate_gradient(points)
+        s1g = self.features[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(points)
         s1g /= np.linalg.norm(points, axis=1)[:, None]
         gradient /= np.linalg.norm(gradient, axis=1)[:, None]
         l1 = np.cross(s1g, gradient)
