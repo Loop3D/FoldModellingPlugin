@@ -15,7 +15,6 @@ from ..from_loopstructural._fold import FoldEvent
 from ..from_loopstructural._fold_frame import FoldFrame
 from .base_engine import BaseEngine
 from ..optimisers import FourierSeriesOptimiser
-from LoopStructural.utils._transformation import EuclideanTransformation
 import gc
 
 
@@ -114,7 +113,9 @@ class FoldModel(BaseEngine):
             self.points
         )  # EuclideanTransformation(dimensions=self.dimensions).fit_transform(self.points)
 
-    def process_axial_surface_proposition(self, axial_normal: numpy.ndarray) -> pandas.DataFrame:
+    def process_axial_surface_proposition(
+        self, axial_normal: numpy.ndarray
+    ) -> pandas.DataFrame:
         """
         Process the axial surface proposition at each iteration by creating a dataset from the axial surface normal.
 
@@ -194,9 +195,9 @@ class FoldModel(BaseEngine):
         foldframe = FoldFrame("sn", self.axial_surface)
 
         # calculate the gradient of the axial surface
-        s1g = self.axial_surface[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(
-            self.scaled_points
-        )
+        s1g = self.axial_surface[
+            CoordinateType.AXIAL_FOLIATION_FIELD
+        ].evaluate_gradient(self.scaled_points)
 
         # normalise the gradient
         s1g /= numpy.linalg.norm(s1g, axis=1)[:, None]
@@ -242,7 +243,9 @@ class FoldModel(BaseEngine):
             fold_axis_rotation_function = fold_function(fitted_far)
 
             # create a fold event with the axial surface and fold axis rotation function
-            fold = FoldEvent(self.axial_surface, fold_axis_rotation=fold_axis_rotation_function)
+            fold = FoldEvent(
+                self.axial_surface, fold_axis_rotation=fold_axis_rotation_function
+            )
 
             # calculate the fold limb rotation angle
             flr, fld = foldframe.calculate_fold_limb_rotation(
@@ -371,7 +374,9 @@ class FoldModel(BaseEngine):
             return opt.x
 
         else:
-            fourier_optimiser = FourierSeriesOptimiser(fold_frame_coordinate, rotation_angle, x)
+            fourier_optimiser = FourierSeriesOptimiser(
+                fold_frame_coordinate, rotation_angle, x
+            )
             # Optimise the Fourier series
             opt = fourier_optimiser.optimise()
 
@@ -395,7 +400,9 @@ class FoldModel(BaseEngine):
         s1g /= numpy.linalg.norm(s1g, axis=1)[:, None]
 
         # Get deformed orientation and normalize the fold direction
-        fold_direction, fold_axis, gz = fold.get_deformed_orientation(self.scaled_points)
+        fold_direction, fold_axis, gz = fold.get_deformed_orientation(
+            self.scaled_points
+        )
         fold_direction /= numpy.linalg.norm(fold_direction, axis=1)[:, None]
 
         # Correct any fold_direction vector to be consistent with the axial surface orientation

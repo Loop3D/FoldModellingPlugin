@@ -48,7 +48,6 @@ class InputDataProcessor:
         else:
             raise ValueError("Data must be a pandas DataFrame.")
 
-
     @staticmethod
     def normalise(gradient: numpy.ndarray) -> numpy.ndarray:
         """Normalise vectors."""
