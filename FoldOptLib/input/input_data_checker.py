@@ -1,4 +1,4 @@
-import pandas 
+import pandas
 
 
 class CheckInputData:
@@ -10,6 +10,7 @@ class CheckInputData:
     __call__ (folded_foliation_data: pandas.DataFrame) -> None
         Checks if the foliation data is a pandas dataframe and has the correct columns.
     """
+
     def __call__(self, folded_foliation_data: pandas.DataFrame):
         """
         Check the foliation data is a pandas dataframe and has the correct columns: X, Y, Z, feature_name and
