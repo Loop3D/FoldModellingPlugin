@@ -43,9 +43,11 @@ class InputDataProcessor:
             gradient[:, 1],
             gradient[:, 2],
         )
-        self.processed_data = self.data[DataType.DATA]
+        if isinstance(self.data[DataType.DATA], pandas.DataFrame):
+            self.processed_data = self.data[DataType.DATA]
+        else:
+            raise ValueError("Data must be a pandas DataFrame.")
 
-        return self.processed_data
 
     @staticmethod
     def normalise(gradient: numpy.ndarray) -> numpy.ndarray:

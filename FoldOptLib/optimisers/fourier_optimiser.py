@@ -39,7 +39,7 @@ class FourierSeriesOptimiser(BaseOptimiser):
         fold_frame_coordinate: Union[list, numpy.ndarray],
         rotation_angle: Union[list, numpy.ndarray],
         x: Union[list, numpy.ndarray],
-        geological_knowledge: GeologicalKnowledgeFunctions = None,
+        geological_knowledge: InputGeologicalKnowledge = None,
         method="differential_evolution",
         **kwargs: Dict[str, Any],
     ):

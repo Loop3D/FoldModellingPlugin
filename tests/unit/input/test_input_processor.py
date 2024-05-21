@@ -25,11 +25,12 @@ def test_post_init_strike_dip():
         }
     )
     input_data = InputData(data, BoundingBox([0, 0, 0], [1, 1, 1]))
-    processor = InputDataProcessor(data=input_data)
-    processed_data = processor.__post_init__()
-    assert "gx" in processed_data.columns
-    assert "gy" in processed_data.columns
-    assert "gz" in processed_data.columns
+    processed_data = InputDataProcessor(data=input_data)
+    assert isinstance(processed_data.data, InputData)
+    assert isinstance(processed_data.processed_data, pd.DataFrame)
+    assert "gx" in processed_data.processed_data.columns
+    assert "gy" in processed_data.processed_data.columns
+    assert "gz" in processed_data.processed_data.columns
 
 
 def test_post_init_gx_gy_gz():
@@ -46,7 +47,7 @@ def test_post_init_gx_gy_gz():
     )
     input_data = InputData(data, BoundingBox([0, 0, 0], [1, 1, 1]))
     processor = InputDataProcessor(data=input_data)
-    processed_data = processor.__post_init__()
+    processed_data = processor.processed_data
     assert "gx" in processed_data.columns
     assert "gy" in processed_data.columns
     assert "gz" in processed_data.columns

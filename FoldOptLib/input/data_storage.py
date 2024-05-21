@@ -135,7 +135,11 @@ class OptData:
             ].to_numpy()
         except:
             mean_x, mean_y, mean_z = self.axial_normals()[["X", "Y", "Z"]].mean(0)
-            value_constraints = numpy.array([mean_x, mean_y, mean_z, 0.0])
+            min_x, min_y, min_z = self.axial_normals()[["X", "Y", "Z"]].min(0)
+            max_x, max_y, max_z = self.axial_normals()[["X", "Y", "Z"]].max(0)
+            value_constraints = numpy.array([[mean_x, mean_y, mean_z, 0.0, 1.0],
+                                             [min_x, min_y, min_z, -1.0, 1.0],
+                                             [max_x, max_y, max_z, 1.0, 1.0]], dtype=float)
 
         normal_constraints = self.axial_normals()[
             ["X", "Y", "Z", "gx", "gy", "gz", "weight"]
@@ -157,7 +161,11 @@ class OptData:
             ].to_numpy()
         except:
             mean_x, mean_y, mean_z = self.y_normals()[["X", "Y", "Z"]].mean(0)
-            value_constraints = numpy.array([mean_x, mean_y, mean_z, 0.0])
+            min_x, min_y, min_z = self.y_normals()[["X", "Y", "Z"]].min(0)
+            max_x, max_y, max_z = self.y_normals()[["X", "Y", "Z"]].max(0)
+            value_constraints = numpy.array([[mean_x, mean_y, mean_z, 0.0, 1.0],
+                                             [min_x, min_y, min_z, -1.0, 1.0],
+                                             [max_x, max_y, max_z, 1.0, 1.0]], dtype=float)
 
         normal_constraints = self.y_normals()[
             ["X", "Y", "Z", "gx", "gy", "gz", "weight"]

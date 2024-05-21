@@ -359,6 +359,7 @@ def create_dataset(
     dataset["gz"] = g[:, 2]
     dataset["feature_name"] = name
     dataset["coord"] = coord
+    dataset["weight"] = 1.0
 
     return dataset
 
