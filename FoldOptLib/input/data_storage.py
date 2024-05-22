@@ -140,8 +140,8 @@ class OptData:
             value_constraints = numpy.array(
                 [
                     [mean_x, mean_y, mean_z, 0.0, 1.0],
-                    [min_x, min_y, min_z, -1.0, 1.0],
-                    [max_x, max_y, max_z, 1.0, 1.0],
+                    [min_x, min_y, min_z, -500., 1.0],
+                    [max_x, max_y, max_z, 500.0, 1.0],
                 ],
                 dtype=float,
             )
@@ -171,8 +171,8 @@ class OptData:
             value_constraints = numpy.array(
                 [
                     [mean_x, mean_y, mean_z, 0.0, 1.0],
-                    [min_x, min_y, min_z, -1.0, 1.0],
-                    [max_x, max_y, max_z, 1.0, 1.0],
+                    [min_x, min_y, min_z, -500., 1.0],
+                    [max_x, max_y, max_z, 500.0, 1.0],
                 ],
                 dtype=float,
             )

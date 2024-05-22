@@ -1,4 +1,4 @@
-import numpy as np
+import numpy
 
 
 def sample_random_dataset(bounding_box, sample_size=2, seed=1806545646548564032015):
@@ -20,7 +20,7 @@ def sample_random_dataset(bounding_box, sample_size=2, seed=18065456465485640320
         A sample_size x 3 array of random 3D coordinates within the specified bounding box.
     """
     # Set the seed for the random number generator for reproducible results
-    rng = np.random.default_rng(seed)
+    rng = numpy.random.default_rng(seed)
 
     # Extract the maximum x and y coordinates from the bounding box
     xmax, ymax = bounding_box[1, 0], bounding_box[1, 1]
@@ -29,15 +29,15 @@ def sample_random_dataset(bounding_box, sample_size=2, seed=18065456465485640320
     zmax = 0.0
 
     # Generate 'sample_size' number of random x-coordinates
-    xn = rng.random.uniform(low=bounding_box[0, 0], high=xmax, size=sample_size)
+    xn = numpy.random.uniform(low=bounding_box[0, 0], high=xmax, size=sample_size)
 
     # Generate 'sample_size' number of random y-coordinates
-    yn = rng.random(low=bounding_box[0, 1], high=ymax, size=sample_size)
+    yn = numpy.random.uniform(low=bounding_box[0, 1], high=ymax, size=sample_size)
 
     # Create an array of z-coordinates, all set to 'zmax' (fixed z-coordinate for all points)
-    zn = np.tile(zmax, sample_size)
+    zn = numpy.tile(zmax, sample_size)
 
     # Combine the x, y, and z coordinates into a single 2D array (shape: sample_size x 3)
-    random_xyz = np.array([xn, yn, zn]).T
+    random_xyz = numpy.array([xn, yn, zn]).T
 
     return random_xyz

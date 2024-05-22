@@ -453,7 +453,7 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         # Return the list of constraints
         return constraints
 
-    def __call__(self, theta: numpy.ndarray) -> float:
+    def __call__(self, theta: numpy.ndarray):
         """
         Calculate the total geological knowledge objective function value for all constraints by summing up the
         objective function values for all constraints. This objective function represent only the
@@ -537,4 +537,4 @@ class GeologicalKnowledgeFunctions(SPlotProcessor):
         Union[NormalDistribution, VonMisesFisherDistribution]
             The knowledge constraints for the given knowledge type.
         """
-        return self.input_knowledge(knowledge_type)
+        return self.input_knowledge[knowledge_type]

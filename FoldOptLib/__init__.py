@@ -8,7 +8,7 @@ from FoldOptLib.datatypes import (
     InputGeologicalKnowledge,
 )
 from FoldOptLib.utils import utils
-from FoldOptLib.input import CheckInputData, InputDataProcessor
+from FoldOptLib.input import CheckInputData, InputDataProcessor, InputData
 from FoldOptLib.objective_functions import (
     GeologicalKnowledgeFunctions,
     VonMisesFisher,

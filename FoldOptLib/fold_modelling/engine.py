@@ -368,7 +368,7 @@ class FoldModel(BaseEngine):
             )
 
             # Check the type of knowledge and set the fit type flag
-            self.geological_knowledge.fittypeflag[fit_type] = True
+            fourier_optimiser.geological_knowledge.fittypeflag[fit_type] = True
             opt = fourier_optimiser.optimise()
 
             return opt.x
@@ -439,10 +439,11 @@ class FoldModel(BaseEngine):
         # Build the fold frame
         self.build_fold_frame(axial_normal)
 
-        # Create and build fold event
-        self.create_and_build_fold_event()
-
         # Calculate folded foliation vectors
         predicted_foliation = self.calculate_folded_foliation_vectors()
+
+        # clean up memory
+        del self.axial_surface
+        gc.collect()
 
         return predicted_foliation

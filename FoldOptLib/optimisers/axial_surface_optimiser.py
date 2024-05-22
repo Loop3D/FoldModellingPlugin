@@ -1,5 +1,5 @@
 import gc
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, Union
 import numpy
 from .fold_optimiser import BaseOptimiser
 from ..objective_functions import GeologicalKnowledgeFunctions, ObjectiveFunction
@@ -19,40 +19,9 @@ from ..datatypes import (
 import beartype
 
 
-@beartype.beartype
-def calculate_intersection_lineation(axial_surface, folded_foliation):
-    """
-    Calculate the intersection lineation of the axial surface and the folded foliation.
-
-    Parameters:
-    axial_surface (np.ndarray): The normal vector of the axial surface.
-    folded_foliation (np.ndarray): The normal vector of the folded foliation.
-
-    Returns:
-    np.ndarray: The normalised intersection lineation vector.
-    """
-    # Check if the inputs are numpy arrays
-    if not isinstance(axial_surface, numpy.ndarray):
-        raise TypeError("Axial surface vector must be a numpy array.")
-    if not isinstance(folded_foliation, numpy.ndarray):
-        raise TypeError("Folded foliation vector must be a numpy array.")
-
-    # Check if the inputs have the same shape
-    if axial_surface.shape != folded_foliation.shape:
-        raise ValueError(
-            "Axial surface and folded foliation arrays must have the same shape."
-        )
-
-    # Calculate cross product of the axial surface and folded foliation normal vectors
-    li = numpy.cross(axial_surface, folded_foliation)
-
-    # Normalise the intersection lineation vector
-    li /= numpy.linalg.norm(li, axis=1)[:, None]
-
-    return li
 
 
-@beartype.beartype
+
 class AxialSurfaceOptimiser(BaseOptimiser):
     """
     Optimiser for Axial Surfaces.
@@ -91,14 +60,12 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
         super().__init__(method=method)
         self.fold_engine = FoldModel(data, **kwargs)
-
         self.data = data
-        # self.geological_knowledge = geological_knowledge
         self.geological_knowledge = self.setup_geological_knowledge(
             self.data[DataType.GEOLOGICAL_KNOWLEDGE]
         )
         self.optimisation_type = self.setup_optimisation_type()
-        self.gradient_data = self.data[["gx", "gy", "gz"]].to_numpy()
+        self.gradient_data = self.data[DataType.DATA][["gx", "gy", "gz"]].to_numpy()
         self.objective_function = None
         self.guess = None
         self.bounds = None
@@ -134,7 +101,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
     @beartype.beartype
     @staticmethod
     def setup_geological_knowledge(
-        geological_knowledge: InputGeologicalKnowledge = None,
+        geological_knowledge: Union[InputGeologicalKnowledge, None] = None,
     ):
         """
         Setup the geological knowledge.
@@ -157,19 +124,21 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         """
         self.bounds = [(0, 360), (0, 90)]
 
-        if self.geological_knowledge[KnowledgeType.AXIAL_SURFACE] is not None:
-            # Create a VonMisesFisher distribution with the given parameters
-            mu = self.geological_knowledge[KnowledgeType.AXIAL_SURFACE].mu
-            kappa = 5
-            vmf = VonMisesFisher(mu, kappa)
-            # Sample from the distribution
-            initial_guess = vmf.draw_samples(size=20, random_state=180)
-            initial_guess = normal_vector_to_strike_and_dip(initial_guess)
-            return initial_guess
+        if self.geological_knowledge is not None:
 
-        if self.geological_knowledge[KnowledgeType.AXIAL_SURFACE] is None:
-            # use the halton method to initialise the optimisation
-            return "halton"
+            if self.geological_knowledge[KnowledgeType.AXIAL_SURFACE] is not None:
+                # Create a VonMisesFisher distribution with the given parameters
+                mu = self.geological_knowledge[KnowledgeType.AXIAL_SURFACE].mu
+                kappa = self.geological_knowledge[KnowledgeType.AXIAL_SURFACE].kappa
+                vmf = VonMisesFisher(mu, kappa)
+                # Sample from the distribution
+                initial_guess = vmf.draw_samples(size=20, random_state=180564327)
+                initial_guess = normal_vector_to_strike_and_dip(initial_guess)
+                return initial_guess
+
+        if self.geological_knowledge is None:
+                # use the halton method to initialise the optimisation
+                return "halton"
 
     @beartype.beartype
     def get_predicted_foliation(self, unit_vector: numpy.ndarray):
@@ -222,7 +191,12 @@ class AxialSurfaceOptimiser(BaseOptimiser):
                 )
 
         # If no geological knowledge about the axial surface is available
-        elif self.geological_knowledge is None:
+        if self.geological_knowledge is None:
+            if self.optimisation_type is OptimisationType.ANGLE:
+                self.objective_function = self.build_optimisation_function(
+                    ObjectiveFunction[ObjectiveType.ANGLE],
+                    self.get_predicted_foliation,
+                )
             # If the optimisation type is MLE, calculate the logpdf using the log normal distribution
             if self.optimisation_type is OptimisationType.MLE:
                 self.objective_function = self.build_optimisation_function(
@@ -231,7 +205,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
                 )
 
             # If the optimisation type is VMF_MLE, calculate the logpdf using the Von Mises distribution
-            elif self.optimisation_type is OptimisationType.VM_MLE:
+            if self.optimisation_type is OptimisationType.VM_MLE:
                 self.objective_function = self.build_optimisation_function(
                     ObjectiveFunction[ObjectiveType.VON_MISES],
                     self.get_predicted_foliation,
@@ -244,6 +218,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         knowledge_function: GeologicalKnowledgeFunctions = None,
     ):
         def optimisation_function(strike_dip):
+            print(strike_dip)
             # Convert the strike-dip to a unit vector
             unit_vector = strike_dip_to_vector(strike_dip[0], strike_dip[1])
             # Normalize the unit vector
@@ -254,21 +229,22 @@ class AxialSurfaceOptimiser(BaseOptimiser):
             angle_difference = ObjectiveFunction[ObjectiveType.ANGLE](
                 predicted_foliation, self.gradient_data
             )
+            print("angle difference: ",angle_difference)
 
             # If the optimisation type is angle, return the angle difference
             if self.optimisation_type == OptimisationType.ANGLE:
                 return angle_difference
             else:
-                if knowledge_function is None:
-                    # Calculate the logpdf of the angle difference
-                    logpdf = objective_function(angle_difference)
-                    return logpdf
-
-                elif knowledge_function is not None:
+                if knowledge_function is not None:
                     # Calculate the logpdf of the angle difference
                     logpdf = objective_function(angle_difference) + knowledge_function(
                         unit_vector
                     )
+                    return logpdf
+                
+                elif knowledge_function is None:
+                    # Calculate the logpdf of the angle difference
+                    logpdf = objective_function(angle_difference)
                     return logpdf
 
                 # clean up memory
@@ -307,12 +283,11 @@ class AxialSurfaceOptimiser(BaseOptimiser):
 
         self.setup_optimisation()
 
-        if self._solver is self.optimiser._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
-            return self._solver(self.objective_function, self._bounds, init=self._guess)
+        if self.solver is self._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
+            return self.solver(self.objective_function, self.bounds, init=self.guess)
 
-        elif (
-            self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]
-        ):
-            return self._solver(self.objective_function, x0=self._guess)
+        if self.solver is self._solvers[SolverType.CONSTRAINED_TRUST_REGION]:
+        
+            return self.solver(self.objective_function, x0=self.guess)
 
         # TODO: ...add support for restricted optimisation mode...

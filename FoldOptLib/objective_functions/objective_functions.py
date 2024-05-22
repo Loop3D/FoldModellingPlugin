@@ -64,7 +64,7 @@ class ObjectiveFunction(metaclass=MetaObjectiveFunction):
 
     @beartype.beartype
     @staticmethod
-    def vonmises(x: Union[list, numpy.ndarray]):
+    def vonmises(x: Union[int, float, list, numpy.ndarray]):
         """
         Objective function for the axial surface.
         This function calculates the loglikelihood of an axial surface using the VonMisesFisher distribution.

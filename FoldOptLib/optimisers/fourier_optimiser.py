@@ -70,7 +70,6 @@ class FourierSeriesOptimiser(BaseOptimiser):
         )
         # TODO: check how to initialise self.x = x in self.geological_knowledge
         self.x = x
-        self.solver = None
         self.objective_function = None
         self.guess = None
         self.bounds = None
@@ -214,12 +213,12 @@ class FourierSeriesOptimiser(BaseOptimiser):
 
         self.setup_optimisation()
 
-        if self._solver is self.optimiser._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
-            return self._solver(self.objective_function, self._bounds, init=self._guess)
+        if self.solver is self._solvers[SolverType.DIFFERENTIAL_EVOLUTION]:
+            return self.solver(self.objective_function, self.bounds)
 
         elif (
-            self._solver is self.optimiser._solvers[SolverType.CONSTRAINED_TRUST_REGION]
+            self.solver is self._solvers[SolverType.CONSTRAINED_TRUST_REGION]
         ):
-            return self._solver(self.objective_function, x0=self._guess)
+            return self.solver(self.objective_function, x0=self.guess)
 
         # TODO: ...add support for restricted optimisation mode...

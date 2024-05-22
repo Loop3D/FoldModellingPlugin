@@ -1,5 +1,5 @@
 from typing import Callable, Dict, Any, Tuple, Union, List
-import numpy as np
+import numpy 
 from ..utils.utils import *
 from scipy.optimize import minimize, differential_evolution
 from ..datatypes import SolverType
@@ -28,8 +28,8 @@ class Solver:
     @staticmethod
     def differential_evolution(
         objective_function: Callable,
-        bounds: Union[Tuple, List],
-        init: str = "halton",
+        bounds: Union[Tuple, List, numpy.ndarray],
+        init: Union[str, numpy.ndarray] = "halton",
         maxiter: int = 5000,
         seed: int = 80,
         polish: bool = True,
@@ -85,7 +85,7 @@ class Solver:
     @beartype.beartype
     @staticmethod
     def constrained_trust_region(
-        objective_function: Callable, x0: np.ndarray, constraints=None, **kwargs
+        objective_function: Callable, x0: numpy.ndarray, constraints=None, **kwargs
     ) -> Dict:
         """
         Solves the optimisation problem using the trust region method.
@@ -95,7 +95,7 @@ class Solver:
 
             objective_function: Callable
                 The objective function to be optimised.
-            x0 : np.ndarray
+            x0 : numpy.ndarray
                 Initial guess of the parameters to be optimised.
 
         Returns

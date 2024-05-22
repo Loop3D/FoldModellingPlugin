@@ -9,7 +9,9 @@ class Builder(BaseBuilder):
         self.boundingbox = boundingbox
 
         self.interpolator = LoopInterpolator(
-            self.boundingbox, dimensions=3, nelements=1000
+            self.boundingbox, 
+            dimensions=self.boundingbox.dimensions, 
+            nelements=1000
         )
 
     def set_constraints(self, constraints: InterpolationConstraints):
@@ -23,7 +25,9 @@ class Builder(BaseBuilder):
         return self.interpolator.evaluate_scalar_value(locations)
 
     def evaluate_gradient(self, locations: numpy.ndarray) -> numpy.ndarray:
-        return self.interpolator.evaluate_gradient(locations)
+        gradient = self.interpolator.evaluate_gradient(locations)
+        gradient /= numpy.linalg.norm(gradient, axis=1)[:, None]
+        return gradient
 
     def min(self):
         """Calculate the min value of the fold frame
