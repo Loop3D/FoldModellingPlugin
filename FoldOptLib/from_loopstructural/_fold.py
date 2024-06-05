@@ -102,7 +102,7 @@ class FoldEvent:
         gx = self.foldframe[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_scalar_value(
             points
         )
-        dgx = self.foldframe[CoordinateType.FOLD_AXIS_FIELD].evaluate_gradient(points)
+        dgx = self.foldframe[CoordinateType.AXIAL_FOLIATION_FIELD].evaluate_gradient(points)
         mask = np.all(~np.isnan(dgx), axis=1)
         dgx[mask, :] /= np.linalg.norm(dgx[mask, :], axis=1)[:, None]
         dgz = np.zeros_like(dgx)
