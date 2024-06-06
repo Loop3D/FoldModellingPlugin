@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Any, Tuple, Union, List
 import numpy 
-from ..utils.utils import create_progress_bar
+# from ..utils.utils import create_progress_bar
 from scipy.optimize import minimize, differential_evolution
 from ..datatypes import SolverType
 import beartype
@@ -35,7 +35,7 @@ class Solver:
         polish: bool = False,
         strategy: str = "best2exp",
         mutation: Tuple[float, float] = (0.3, 0.99),
-        callback=create_progress_bar(5000),
+        # callback=create_progress_bar(5000),
         **kwargs,
     ) -> Dict:
         """
@@ -90,7 +90,7 @@ class Solver:
         objective_function: Callable, 
         x0: numpy.ndarray, 
         constraints=None, 
-        callback=create_progress_bar(5000),
+        # callback=create_progress_bar(5000),
         **kwargs
     ) -> Dict:
         """
@@ -117,7 +117,7 @@ class Solver:
             method="trust-constr",
             jac="2-point",
             constraints=constraints,
-            callback=callback,
+            # callback=callback,
             **kwargs,
         )
 
