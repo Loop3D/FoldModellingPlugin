@@ -122,7 +122,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         The initial guess is generated using the Von Mises Fisher distribution.
 
         """
-        self.bounds = [(0, 360), (0, 90)]
+        self.bounds = [(0, numpy.pi*2), (0, numpy.pi/2)]
 
         if self.geological_knowledge is not None:
 
@@ -134,6 +134,7 @@ class AxialSurfaceOptimiser(BaseOptimiser):
                 # Sample from the distribution
                 initial_guess = vmf.draw_samples(size=20, random_state=180564327)
                 initial_guess = normal_vector_to_strike_and_dip(initial_guess)
+                initial_guess = numpy.deg2rad(initial_guess)
                 return initial_guess
 
         if self.geological_knowledge is None:
@@ -218,7 +219,6 @@ class AxialSurfaceOptimiser(BaseOptimiser):
         knowledge_function: GeologicalKnowledgeFunctions = None,
     ):
         def optimisation_function(strike_dip):
-            print(strike_dip)
             # Convert the strike-dip to a unit vector
             unit_vector = strike_dip_to_vector(strike_dip[0], strike_dip[1])
             # Normalize the unit vector
@@ -229,7 +229,6 @@ class AxialSurfaceOptimiser(BaseOptimiser):
             angle_difference = ObjectiveFunction[ObjectiveType.ANGLE](
                 predicted_foliation, self.gradient_data
             )
-            print("angle difference: ",angle_difference)
 
             # If the optimisation type is angle, return the angle difference
             if self.optimisation_type == OptimisationType.ANGLE:

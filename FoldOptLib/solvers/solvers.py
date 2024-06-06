@@ -1,6 +1,6 @@
 from typing import Callable, Dict, Any, Tuple, Union, List
 import numpy 
-from ..utils.utils import *
+from ..utils.utils import create_progress_bar
 from scipy.optimize import minimize, differential_evolution
 from ..datatypes import SolverType
 import beartype
@@ -32,9 +32,10 @@ class Solver:
         init: Union[str, numpy.ndarray] = "halton",
         maxiter: int = 5000,
         seed: int = 80,
-        polish: bool = True,
+        polish: bool = False,
         strategy: str = "best2exp",
         mutation: Tuple[float, float] = (0.3, 0.99),
+        callback=create_progress_bar(5000),
         **kwargs,
     ) -> Dict:
         """
@@ -77,6 +78,7 @@ class Solver:
             polish=polish,
             strategy=strategy,
             mutation=mutation,
+            callback=callback,
             **kwargs,
         )
 
@@ -85,7 +87,11 @@ class Solver:
     @beartype.beartype
     @staticmethod
     def constrained_trust_region(
-        objective_function: Callable, x0: numpy.ndarray, constraints=None, **kwargs
+        objective_function: Callable, 
+        x0: numpy.ndarray, 
+        constraints=None, 
+        callback=create_progress_bar(5000),
+        **kwargs
     ) -> Dict:
         """
         Solves the optimisation problem using the trust region method.
@@ -111,6 +117,7 @@ class Solver:
             method="trust-constr",
             jac="2-point",
             constraints=constraints,
+            callback=callback,
             **kwargs,
         )
 

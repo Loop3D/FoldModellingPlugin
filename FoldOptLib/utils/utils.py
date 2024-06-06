@@ -3,6 +3,7 @@ import pandas
 from ..from_loopstructural._svariogram import SVariogram
 import mplstereonet
 import dill
+from tqdm import tqdm
 
 
 def calculate_semivariogram(fold_frame, fold_rotation, lag=None, nlag=None):
@@ -117,8 +118,8 @@ def strike_dip_to_vector(strike, dip):
         raise TypeError(f"Expected dip to be a number, got {type(dip).__name__}")
 
     # Convert degrees to radians
-    s_r = numpy.deg2rad(strike)
-    d_r = numpy.deg2rad(dip)
+    s_r = strike
+    d_r = dip
 
     # Calculate the components of the strike-dip vector
     nx = numpy.sin(d_r) * numpy.cos(s_r)
@@ -459,3 +460,18 @@ def objective_wrapper(func1, func2):
         return func1(x) + func2(x)
 
     return objective_function
+
+def create_progress_bar(max_iter):
+    pbar = tqdm(dynamic_ncols=True, desc="Optimisation Progress")
+
+    # def callback(xk, convergence):
+    def callback(xk, convergence):
+        # pbar.set_description(f"Strike/Dip: {numpy.rad2deg(xk):.4f}")
+        pbar.update(1)
+        if convergence < 1e-6:
+            pbar.close()
+            return True
+        return False
+
+    return callback
+
